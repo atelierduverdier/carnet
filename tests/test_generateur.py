@@ -264,3 +264,104 @@ class SiteMasque(unittest.TestCase):
         r = appui.engendrer(self.site)
         self.assertIn('masqué', r.stdout,
                       'rien dans la sortie ne rappelle que le site est masqué')
+
+
+class SommaireEnColonne(unittest.TestCase):
+    """`sommaire: "cote"` — le sommaire reste à l'écran pendant la lecture.
+
+    Mesuré sur la page qui a motivé la fonction : 54 042 mots, 158 écrans,
+    un titre tous les 7,2 écrans, et un sommaire de 27 entrées qui occupe
+    83 % du premier écran PUIS DISPARAÎT. La carte n'existait qu'avant de
+    partir.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        cls.site = appui.site_jetable()
+        corps = 'Une page longue.\n\n' + '\n\n'.join(
+            f'## Chapitre {i}\n\nDu texte pour le chapitre {i}.' for i in range(1, 7))
+        appui.ecrire(cls.site, 'fr/livre.md',
+                     'titre: "Livre"\nlangue: "fr"\ntype: "page"\n'
+                     'slug: "livre"\nsommaire: "cote"\nstatut: "publie"', corps)
+        appui.ecrire(cls.site, 'fr/livre-bloc.md',
+                     'titre: "Livre en bloc"\nlangue: "fr"\ntype: "page"\n'
+                     'slug: "livre-bloc"\nsommaire: "oui"\nstatut: "publie"', corps)
+        appui.ecrire(cls.site, 'fr/livre-court.md',
+                     'titre: "Livre court"\nlangue: "fr"\ntype: "page"\n'
+                     'slug: "livre-court"\nsommaire: "cote"\nstatut: "publie"',
+                     'Deux sections seulement, ce qui ne fait pas un sommaire.\n\n'
+                     '## Un\n\nDu texte.\n\n## Deux\n\nDu texte.')
+        cls.r = appui.engendrer(cls.site)
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(cls.site, ignore_errors=True)
+
+    def test_la_colonne_monte_sa_grille(self):
+        h = appui.page(self.site, '/fr/livre/')
+        self.assertIn('class="colonne avec-cote"', h,
+                      'sans cette classe, le CSS ne monte aucune grille')
+        self.assertIn('sommaire-cote', h)
+        self.assertIn('<div class="corps-long">', h,
+                      'le texte doit être enveloppé, sinon chacun de ses blocs '
+                      'devient une cellule de la grille')
+
+    def test_le_tiroir_est_ouvert_dans_le_html(self):
+        """Sans JavaScript, le sommaire doit être DÉPLIÉ : le confort ne
+        conditionne pas le contenu. C'est le script qui referme, et
+        seulement sous le seuil de largeur."""
+        h = appui.page(self.site, '/fr/livre/')
+        self.assertIn('<details class="sommaire-tiroir" open>', h)
+        self.assertIn('<summary>', h)
+
+    def test_le_bloc_en_tete_ne_change_pas(self):
+        """`sommaire: "oui"` est le comportement historique : les sites
+        existants ne doivent rien voir bouger."""
+        h = appui.page(self.site, '/fr/livre-bloc/')
+        self.assertIn('class="sommaire"', h)
+        self.assertNotIn('sommaire-cote', h)
+        self.assertNotIn('avec-cote', h)
+        self.assertNotIn('corps-long', h)
+
+    def test_moins_de_trois_entrees_ne_monte_pas_de_grille(self):
+        """`fabriquer_sommaire` rend une chaîne vide sous trois entrées. La
+        grille ne doit pas se monter autour d'un sommaire absent : la page
+        aurait une colonne vide et un texte poussé à droite."""
+        h = appui.page(self.site, '/fr/livre-court/')
+        self.assertNotIn('class="sommaire', h,
+                         'un sommaire est rendu là où il ne devait pas y en avoir')
+        self.assertNotIn('avec-cote', h,
+                         'la grille se monte alors que le sommaire est vide')
+        self.assertNotIn('corps-long', h)
+
+    def test_une_valeur_inconnue_arrete_tout(self):
+        """`sommaire: "coté"` — l'accent au mauvais endroit — est la faute
+        de frappe la plus probable de cette clé. Traitée avec indulgence,
+        elle ne donne AUCUN sommaire : on écrit le réglage, on régénère,
+        rien n'apparaît, et rien ne dit pourquoi. Sur une page de 158
+        écrans, c'est la fonction dont on avait besoin qui manque, en
+        silence. Le générateur doit nommer la faute et s'arrêter."""
+        site = appui.site_jetable()
+        try:
+            appui.ecrire(site, 'fr/faute.md',
+                         'titre: "Faute"\nlangue: "fr"\ntype: "page"\n'
+                         'slug: "faute"\nsommaire: "coté"\nstatut: "publie"',
+                         '## Un\n\nt\n\n## Deux\n\nt\n\n## Trois\n\nt')
+            r = appui.engendrer(site)
+            self.assertNotEqual(r.returncode, 0,
+                                'une valeur inconnue passe en silence')
+            sortie = r.stdout + r.stderr
+            self.assertIn('coté', sortie, 'la valeur fautive n’est pas nommée')
+            self.assertIn('cote', sortie, 'les valeurs admises ne sont pas dites')
+        finally:
+            shutil.rmtree(site, ignore_errors=True)
+
+    def test_les_ancres_du_sommaire_visent_de_vrais_titres(self):
+        """Le script apparie les liens aux titres par leur id : un lien
+        qui ne vise rien laisse le chapitre sans repère, en silence."""
+        h = appui.page(self.site, '/fr/livre/')
+        som = h.split('sommaire-cote')[1].split('</nav>')[0]
+        ancres = re.findall(r'href="#([^"]+)"', som)
+        self.assertEqual(len(ancres), 6)
+        for a in ancres:
+            self.assertIn(f'id="{a}"', h, f'l’ancre #{a} ne vise aucun titre')

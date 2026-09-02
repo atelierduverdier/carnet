@@ -29,7 +29,7 @@
   </ul>
 </section>
 {% endif %}
-<article class="colonne">
+<article class="colonne{% if sommaire_cote %} avec-cote{% endif %}">
   <header class="contenu-tete">
     {%- if fil %}<nav class="fil" aria-label="{{ mots.fil }}">{{ fil }}</nav>{% endif %}
     <h1{% if titre_masque %} class="hors-ecran"{% endif %}>{{ titre_affiche }}</h1>
@@ -42,7 +42,16 @@
     </svg><span>{{ mots.traduction_courte }}</span>
   </p>
   {%- endif %}
+  {%- if sommaire_cote %}
+  {#- La grille à deux colonnes : le sommaire à gauche, le texte à droite.
+      Le texte est ENVELOPPÉ, sinon chacun de ses blocs deviendrait une
+      cellule de la grille et le texte s'empilerait à côté du sommaire au
+      lieu de couler dessous. #}
+  {{ sommaire }}
+  <div class="corps-long">{{ corps }}</div>
+  {%- else %}
   {%- if sommaire %}{{ sommaire }}{% endif %}
   {{ corps }}
+  {%- endif %}
 </article>
 {% endblock %}

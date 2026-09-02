@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block contenu %}
-<article class="colonne">
+<article class="colonne{% if sommaire_cote %} avec-cote{% endif %}">
   <header class="contenu-tete">
     {%- if fil %}<nav class="fil" aria-label="{{ mots.fil }}">{{ fil }}</nav>{% endif %}
     {%- if date_lisible %}<p class="date-fiche">{{ date_lisible }}</p>{% endif %}
@@ -27,8 +27,13 @@
       et la clé était donc ignorée EN SILENCE — on l'écrit dans l'en-tête,
       rien n'apparaît, et rien ne dit pourquoi. Trouvé sur une fiche
       technique de cinq sections. #}
+  {%- if sommaire_cote %}
+  {{ sommaire }}
+  <div class="corps-long">{{ corps }}</div>
+  {%- else %}
   {%- if sommaire %}{{ sommaire }}{% endif %}
   {{ corps }}
+  {%- endif %}
 
   <nav class="voisines" aria-label="{{ mots.voisines }}">
     {%- if precedente %}<a class="precedente" href="{{ precedente.url }}">← {{ precedente.titre }}</a>{% endif %}

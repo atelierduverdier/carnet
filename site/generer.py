@@ -537,7 +537,64 @@ def normaliser_titres(h: str) -> str:
     return re.sub(r'<(/?)h([1-6])(\s[^>]*)?>', refaire, h)
 
 
-def fabriquer_sommaire(jetons, intitule, limite=LIMITE_TITRE):
+# Les valeurs admises par la clé « sommaire » de l'en-tête, et ce qu'elles
+# donnent. Trois états, pas deux : l'absence, le bloc en tête, la colonne.
+#
+# POURQUOI UNE TROISIÈME VALEUR PLUTÔT QU'UN AUTRE RÉGLAGE. Mesuré le
+# 02/09/2026 sur la page « Réflexions » de dentosophie.com — 54 042 mots,
+# 167 267 px de haut, soit 158 écrans, un titre tous les 7,2 écrans. Son
+# sommaire compte 27 entrées et occupe 877 px : 83 % du premier écran. La
+# page s'ouvre donc sur sa table des matières plutôt que sur son texte,
+# et — c'est le vrai défaut — cette table DISPARAÎT au premier
+# défilement. La carte n'existe qu'avant de partir : passé le premier
+# écran on ne sait plus ni où l'on est, ni comment aller ailleurs sans
+# remonter 158 écrans.
+#
+# « cote » répond aux deux à la fois : la carte reste à l'écran, et le
+# premier écran est rendu au texte.
+SOMMAIRE_BLOC = ('oui', 'true', 'vrai')
+SOMMAIRE_COTE = ('cote', 'côté', 'colonne')
+SOMMAIRE_RIEN = ('', 'non', 'no', 'false', 'faux')
+
+
+def genre_de_sommaire(page, origine='') -> str:
+    """'', 'bloc' ou 'cote' — ce que la clé « sommaire » demande.
+
+    UNE VALEUR INCONNUE ARRÊTE LA GÉNÉRATION, elle ne rend pas ''.
+
+    C'est le contraire du réflexe, et c'est délibéré. `sommaire: "coté"`
+    — l'accent au mauvais endroit — est la faute de frappe la plus
+    probable de cette clé. Traitée avec indulgence, elle ne donne AUCUN
+    sommaire : on écrit le réglage, on régénère, rien n'apparaît, et rien
+    ne dit pourquoi. Sur une page de 158 écrans c'est exactement la
+    fonction dont on avait besoin qui manque, en silence.
+
+    Le générateur nomme donc la valeur fautive et les valeurs admises,
+    comme il le fait pour une clé absente de config.yaml.
+    """
+    v = str(page.get('sommaire', '')).strip().lower()
+    if v in SOMMAIRE_COTE:
+        return 'cote'
+    if v in SOMMAIRE_BLOC:
+        return 'bloc'
+    if v in SOMMAIRE_RIEN:
+        return ''
+    # `str()` N'EST PAS DÉCORATIF : l'origine arrive en PosixPath, et la
+    # concaténation levait un TypeError — le message d'erreur plantait
+    # AVANT de dire quoi que ce soit. C'est le pire endroit pour une faute,
+    # puisqu'elle ne se manifeste que lorsque quelque chose va déjà mal.
+    # Attrapé par l'essai, pas à la relecture.
+    origine = str(origine or '')
+    sys.exit(f"\n  VALEUR INCONNUE POUR « sommaire »"
+             f"{' dans ' + origine if origine else ''} :\n"
+             f"     sommaire: \"{page.get('sommaire')}\"\n\n"
+             f"  Admises : {', '.join(SOMMAIRE_BLOC)} — un bloc en tête ;\n"
+             f"            {', '.join(SOMMAIRE_COTE)} — une colonne collante ;\n"
+             f"            {', '.join(x for x in SOMMAIRE_RIEN if x)} — pas de sommaire.\n\n"
+             f"  Rien n'a été engendré ; le site précédent est intact.")
+
+
+def fabriquer_sommaire(jetons, intitule, limite=LIMITE_TITRE, cote=False):
     """Bâtit le sommaire en écartant les titres qui n'en sont pas.
 
     L'auteur balise parfois un paragraphe entier en titre pour le mettre
@@ -562,8 +619,24 @@ def fabriquer_sommaire(jetons, intitule, limite=LIMITE_TITRE):
     entrees = niveau(jetons)
     if len(entrees) < 3:
         return ''
-    return Markup(f'<nav class="sommaire" aria-label="{escape(intitule)}">'
-                  f'<h2>{escape(intitule)}</h2><ul>{"".join(entrees)}</ul></nav>')
+    if not cote:
+        return Markup(f'<nav class="sommaire" aria-label="{escape(intitule)}">'
+                      f'<h2>{escape(intitule)}</h2><ul>{"".join(entrees)}</ul></nav>')
+    # LA VARIANTE EN COLONNE EST UN <details>, ET IL EST « open » ICI.
+    #
+    # Sur un écran large le script le laisse ouvert et la colonne colle ;
+    # sous le seuil il le referme, parce qu'un sommaire de 27 entrées fait
+    # 877 px et mangerait l'écran d'un téléphone. Mais l'attribut est écrit
+    # dans le HTML : SANS JAVASCRIPT le sommaire est déplié partout, donc
+    # entièrement lisible. Le repli est le comportement d'aujourd'hui, pas
+    # une page amputée — c'est la règle de la maison, le confort ne
+    # conditionne jamais le contenu.
+    return Markup(
+        f'<nav class="sommaire sommaire-cote" aria-label="{escape(intitule)}">'
+        f'<details class="sommaire-tiroir" open>'
+        f'<summary><h2>{escape(intitule)}</h2></summary>'
+        f'<ul>{"".join(entrees)}</ul>'
+        f'</details></nav>')
 
 
 def envelopper_tableaux(h: str) -> str:
@@ -1087,6 +1160,7 @@ def ecrire_annexes(config, env, contextes, menus_langue):
             menu_html=menus_langue.get(defaut, ''), titre_masque=False,
             titre_affiche=mots['erreur_titre'], a_la_une=[], ouverture='',
             mention_origine='', mention_machine='', sommaire='',
+            sommaire_cote=False,
             a_la_une_url='', a_la_une_titre='', versions={}, url_page='/404.html',
             titre_page=mots['erreur_titre'], description=mots['erreur_texte'],
             type='page', fil='', image_partage='/assets/logo.png')
@@ -1200,10 +1274,15 @@ def main():
                                        langue, textes_medias))
             # Une page de 327 000 caractères — les Réflexions — ne se
             # parcourt pas sans plan. « sommaire: oui » en pose un.
-            sommaire = ''
-            if str(p.get('sommaire', '')).lower() in ('oui', 'true'):
+            sommaire, genre = '', genre_de_sommaire(p, p.get('fichier', p.get('slug', '')))
+            if genre:
                 sommaire = fabriquer_sommaire(getattr(md, 'toc_tokens', []),
-                                              mots['sommaire'])
+                                              mots['sommaire'],
+                                              cote=(genre == 'cote'))
+            # Le gabarit doit savoir s'il monte une grille à deux colonnes.
+            # `sommaire` peut être vide alors que la clé demandait « cote »
+            # (moins de trois entrées) : dans ce cas, pas de grille non plus.
+            sommaire_cote = bool(sommaire) and genre == 'cote'
             menu_html = rendre_menu(menu, p['url'])
             menus_langue[langue] = menu_html
             v = versions.get(p['url'], {langue: p['url']})
@@ -1287,7 +1366,7 @@ def main():
                         a_la_une=une, ouverture=ouverture,
                         mention_origine=mention_origine,
                         mention_machine=mention_machine,
-                        sommaire=sommaire,
+                        sommaire=sommaire, sommaire_cote=sommaire_cote,
                         # `col_une`, PAS `reglage['collection']` : une langue
                         # peut nommer SA rubrique en vedette, et le lien
                         # « voir tout » pointait alors sur celle d'une autre

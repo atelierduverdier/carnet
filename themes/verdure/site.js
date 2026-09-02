@@ -4,7 +4,8 @@
    1. le menu qui se déplie sur téléphone ;
    2. la recherche, qui lit un index JSON engendré par site/generer.py ;
    3. la loupe sur les images, le fil de lecture, les apparitions ;
-   4. les blocs de code, qu'on coiffe d'un bouton « Copier ».
+   4. les blocs de code, qu'on coiffe d'un bouton « Copier » ;
+   5. le sommaire en colonne, et le chapitre où l'on en est.
 
    Rien d'autre : pas de bibliothèque, pas d'appel extérieur. Le site
    reste entièrement lisible si ce fichier ne charge pas.
@@ -649,4 +650,112 @@
     });
   }
   blocsDeCode();
+
+  /* --- le sommaire en colonne, et « vous êtes ici » --------------------
+     `sommaire: "cote"` engendre <nav class="sommaire sommaire-cote">
+     contenant un <details open>. Deux choses ici, et la seconde est celle
+     qui compte.
+
+     1. LE TIROIR SUIT LA LARGEUR. Au-dessus de 76 rem il y a la place
+        d'une colonne : le sommaire reste déplié et collant. En dessous,
+        on le referme — 27 entrées font 877 px, soit l'écran entier d'un
+        téléphone avant la première phrase. L'attribut `open` est écrit
+        dans le HTML : sans ce script, le sommaire est déplié partout,
+        donc entièrement lisible. Le confort ne conditionne pas le contenu.
+
+     2. LE CHAPITRE EN COURS. Vingt-sept liens identiques disent où l'on
+        peut aller, pas où l'on est — et sur une page de 158 écrans (celle
+        qui a motivé tout ceci), savoir où l'on est vaut au moins autant.
+        On marque l'entrée courante avec `aria-current`, pas avec une
+        classe : l'information est alors DANS le HTML, donc annoncée par
+        un lecteur d'écran, et pas seulement peinte. */
+  function sommaireEnColonne() {
+    var nav = document.querySelector('.sommaire-cote');
+    if (!nav) return;
+    var tiroir = nav.querySelector('details');
+    var liens = [].slice.call(nav.querySelectorAll('a[href^="#"]'));
+    if (!liens.length) return;
+
+    /* --- 1. le tiroir --- */
+    if (tiroir) {
+      var large = window.matchMedia('(min-width: 76rem)');
+      function accorder(mq) { tiroir.open = mq.matches; }
+      accorder(large);
+      /* `addEventListener` sur une MediaQueryList date de Safari 14 ;
+         `addListener`, déprécié, est le repli des moteurs plus anciens. */
+      if (large.addEventListener) large.addEventListener('change', accorder);
+      else if (large.addListener) large.addListener(accorder);
+    }
+
+    /* --- 2. le chapitre en cours ---
+       On tient une table des hauteurs de titre, et on cherche le dernier
+       titre passé au-dessus de la « ligne de lecture », posée au premier
+       cinquième de l'écran : c'est là que l'œil lit, et un titre encore au
+       bas de l'écran n'est pas celui qu'on est en train de lire.
+
+       POURQUOI PAS UN IntersectionObserver, qui semble fait pour ça : il
+       ne signale que les ENTRÉES et les SORTIES du cadre. Entre deux
+       titres distants de 7 écrans — la mesure réelle de la page qui a
+       motivé cette fonction — il ne se passe rien, et il faut de toute
+       façon retomber sur un calcul de position pour savoir dans quel
+       chapitre on se trouve. Autant ne faire que ce calcul : une seule
+       logique au lieu de deux, et on peut la vérifier à la règle.
+
+       Les hauteurs sont mesurées UNE FOIS, pas à chaque image : lire 27
+       rectangles à chaque défilement force le navigateur à recalculer la
+       mise en page soixante fois par seconde. On remesure quand la page
+       change de forme — redimensionnement, et chargement complet, les
+       images pouvant encore déplacer ce qui les suit. */
+    var reperes = [];
+    function mesurer() {
+      reperes = titres.map(function (h) {
+        return { haut: h.getBoundingClientRect().top + window.scrollY,
+                 lien: parAncre[h.id] };
+      });
+    }
+
+    var courant = null;
+    function marquer(a) {
+      if (a === courant) return;
+      if (courant) courant.removeAttribute('aria-current');
+      courant = a || null;
+      if (!courant) return;
+      courant.setAttribute('aria-current', 'true');
+      /* La liste peut défiler dans sa colonne : on y ramène l'entrée
+         courante quand elle en sort. `nearest` — jamais `center` :
+         centrer ferait sauter la liste à chaque titre franchi, un
+         mouvement que personne n'a demandé pendant qu'on lit. */
+      if (nav.scrollHeight > nav.clientHeight) {
+        var r = courant.getBoundingClientRect(), n = nav.getBoundingClientRect();
+        if (r.top < n.top || r.bottom > n.bottom) {
+          courant.scrollIntoView({ block: 'nearest' });
+        }
+      }
+    }
+
+    function situer() {
+      var ligne = window.scrollY + window.innerHeight * 0.2;
+      var trouve = null;
+      for (var i = 0; i < reperes.length; i++) {
+        if (reperes[i].haut > ligne) break;
+        trouve = reperes[i].lien;
+      }
+      marquer(trouve);
+    }
+
+    var demande = false;
+    function auDefilement() {
+      if (demande) return;
+      demande = true;
+      requestAnimationFrame(function () { demande = false; situer(); });
+    }
+
+    mesurer();
+    situer();
+    window.addEventListener('scroll', auDefilement, { passive: true });
+    window.addEventListener('resize', function () { mesurer(); situer(); },
+                            { passive: true });
+    window.addEventListener('load', function () { mesurer(); situer(); });
+  }
+  sommaireEnColonne();
 })();

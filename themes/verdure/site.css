@@ -1464,3 +1464,143 @@ pre > code {
     border-radius: 8px; }
   pre > code { white-space: inherit; }
 }
+
+
+/* ---- le sommaire en colonne, pour les pages qui font un livre ---------
+   `sommaire: "cote"` dans l'en-tête. Voir genre_de_sommaire() dans
+   site/generer.py.
+
+   CE QUE LA MESURE A DONNÉ, sur la page « Réflexions » de dentosophie.com
+   le 02/09/2026 : 54 042 mots, 167 267 px de haut — 158 écrans, 44 m de
+   papier —, un titre tous les 7,2 écrans. Son sommaire compte 27 entrées
+   et mesure 877 px, soit 83 % du premier écran.
+
+   Deux défauts, et le second est le vrai. La page s'ouvre sur sa table des
+   matières plutôt que sur son texte ; et cette table DISPARAÎT au premier
+   défilement. La carte n'existe qu'avant de partir : passé le premier
+   écran, on ne sait plus ni où l'on est, ni comment aller ailleurs sans
+   remonter 158 écrans.
+
+   LA COLONNE NE COÛTE AUCUNE LARGEUR. La feuille fait déjà `--large`
+   (70 rem) et centre son texte à `--mesure` (44 rem) PAR SON REMPLISSAGE :
+   il y a donc 13 rem inutilisés de chaque côté. On les convertit en une
+   vraie grille — 16 rem de sommaire, 2,5 d'écart, 44 de lecture, soit
+   62,5 rem dans une feuille qui en fait 70. La ligne de lecture ne perd
+   pas un signe.
+
+   LE SEUIL EST À 76 REM, et il est mesuré lui aussi : à 976 px de large,
+   la feuille occupait 883 px et il ne restait que 39 px à sa gauche. En
+   dessous du seuil il n'y a pas de place, et le sommaire redevient ce
+   qu'il était — un bloc en tête —, mais REPLIÉ, parce que 877 px sur un
+   téléphone, c'est l'écran entier avant la première phrase. */
+
+@media (min-width: 76rem) {
+
+  article.colonne.avec-cote {
+    display: grid;
+    grid-template-columns: 16rem minmax(0, var(--mesure));
+    column-gap: 2.5rem;
+    justify-content: center;
+    /* Le remplissage redevient symétrique : ce n'est plus lui qui centre
+       la lecture, c'est la grille. Garder la formule d'origine collerait
+       le sommaire à 13 rem du bord et ferait déborder la seconde colonne. */
+    padding: clamp(1.3rem, 3.2vw, 2.6rem);
+  }
+
+  /* Ce qui traverse les deux colonnes : le titre, les mentions, la
+     navigation entre fiches. Une seule règle, pour que l'ajout d'un bloc
+     d'en-tête dans le gabarit ne le laisse pas coincé dans une colonne. */
+  article.colonne.avec-cote > .contenu-tete,
+  article.colonne.avec-cote > .avis-traduction,
+  article.colonne.avec-cote > .origine,
+  article.colonne.avec-cote > .voisines { grid-column: 1 / -1; }
+
+  .sommaire-cote {
+    grid-column: 1;
+    align-self: start;
+    position: sticky;
+    /* 8 rem : la hauteur du bandeau collant, la même que le
+       `scroll-margin-top` des titres — les deux doivent s'accorder, sinon
+       une ancre place son titre derrière la bande ou le sommaire passe
+       dessous. */
+    top: 8rem;
+    /* Une liste plus longue que l'écran doit défiler DANS sa colonne.
+       27 entrées tiennent ; 60 ne tiendraient pas, et sans cette règle
+       le bas de la liste serait inatteignable. `contain` empêche la page
+       entière de repartir quand on arrive au bout de la liste. */
+    max-height: calc(100vh - 10rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    /* Dans la colonne, le sommaire n'est plus une boîte : un cadre gris à
+       côté du texte ferait deux blocs qui se disputent l'œil. Un filet
+       vertical suffit à dire « ceci est en marge ». */
+    background: none; border: 0; border-radius: 0;
+    border-left: 2px solid var(--filet);
+    padding: 0 0 0 1.1rem; margin: 0;
+    font-size: .93rem;
+  }
+
+  /* Déplié en permanence sur écran large : le script pose l'attribut, et
+     la flèche du <summary> n'a plus rien à ouvrir — on la retire. */
+  .sommaire-cote summary { list-style: none; cursor: default; }
+  .sommaire-cote summary::-webkit-details-marker { display: none; }
+  .sommaire-cote summary::marker { content: ''; }
+
+  .corps-long {
+    grid-column: 2;
+    /* INDISPENSABLE. Sans `min-width: 0`, une cellule de grille prend pour
+       largeur minimale celle de son contenu le plus large — et un bloc de
+       code en `overflow-x` compte pour sa largeur DÉROULÉE. La colonne
+       s'élargissait alors jusqu'à sortir de la feuille, et le bloc ne
+       défilait plus puisqu'il avait la place. */
+    min-width: 0;
+  }
+}
+
+/* Sous le seuil : le sommaire redevient le bloc en tête qu'il a toujours
+   été, avec sa boîte — mais son <details> est refermé par le script. */
+.sommaire-cote summary {
+  cursor: pointer;
+  /* Le <h2> vit DANS le <summary> : sans cela le titre serait à côté de la
+     flèche au lieu d'être la poignée elle-même. */
+  display: list-item;
+}
+.sommaire-cote summary h2 { display: inline; }
+.sommaire-cote summary:focus-visible { outline: 2px solid var(--orange-encre); outline-offset: 3px; }
+.sommaire-cote details[open] > ul { margin-top: .8em; }
+
+/* ---- « vous êtes ici » -----------------------------------------------
+   Le script pose `aria-current="true"` sur l'entrée du chapitre en cours.
+   SANS CE MARQUAGE LA COLONNE NE SERT QU'À MOITIÉ : vingt-sept liens
+   identiques disent où l'on peut aller, pas où l'on est — et sur une page
+   de 158 écrans, savoir où l'on est vaut au moins autant.
+
+   `aria-current` plutôt qu'une classe : l'information est portée par le
+   HTML, donc annoncée par un lecteur d'écran, et pas seulement peinte. */
+.sommaire a[aria-current] {
+  /* LA COULEUR NE DISTINGUE RIEN ICI, et c'est le piège de cette règle.
+     Écrite d'abord en `color: var(--orange-encre)` + gras, elle semblait
+     évidente — mais MESURÉ : les liens ordinaires du sommaire sont DÉJÀ
+     rgb(194,65,12), c'est-à-dire exactement cette encre. La règle ne
+     changeait donc que la graisse. Trouvé en relevant les styles calculés
+     des deux liens côte à côte, pas en regardant la page.
+
+     Ce qui distingue vraiment est un FOND : il ne se confond avec rien,
+     il ne dépend pas d'une nuance que l'œil doit comparer de mémoire à
+     dix lignes d'écart, et il survit à un daltonisme. La graisse reste,
+     elle aide ; la couleur du texte, elle, ne bouge plus. */
+  background: var(--orange-pale);
+  font-weight: 700;
+  border-radius: 4px;
+  /* Le fond déborde légèrement pour ne pas serrer le texte. */
+  margin: 0 -.45rem; padding: .1em .45rem;
+}
+.sommaire-cote a[aria-current] {
+  display: block;
+  /* Le repère se pose SUR le filet de la colonne : c'est le signal qu'on
+     lit sans lire, celui qui dit la position quand l'œil balaie. */
+  box-shadow: -1.35rem 0 0 -0.35rem var(--orange);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .sommaire a { transition: color .15s ease; }
+}
