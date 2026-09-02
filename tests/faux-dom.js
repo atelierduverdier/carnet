@@ -56,12 +56,29 @@ function elt(tag, attrs = {}) {
     setAttribute(n, v) { this._attrs[n] = v; if (n === 'class') this.className = v; },
     removeAttribute(n) { delete this._attrs[n]; },
     hasAttribute(n) { return n in this._attrs; },
-    appendChild(c) { this.children.push(c); return c; },
-    insertBefore(c) { this.children.push(c); return c; },
-    removeChild(c) { this.children = this.children.filter(x => x !== c); return c; },
-    addEventListener() {}, removeEventListener() {},
+    // `parentNode` DOIT suivre : le script remonte l'arbre pour savoir s'il
+    // a déjà enveloppé un bloc (`pre.parentNode.classList.contains(...)`).
+    // Sans cela il ré-enveloppait sans fin — et l'essai croyait qu'il
+    // n'avait rien fait.
+    appendChild(c) { this.children.push(c); c.parentNode = this; return c; },
+    insertBefore(c) { this.children.push(c); c.parentNode = this; return c; },
+    removeChild(c) {
+      this.children = this.children.filter(x => x !== c);
+      if (c.parentNode === this) c.parentNode = null;
+      return c;
+    },
+    _ecouteurs: null,
+    addEventListener(type, f) {
+      (this._ecouteurs = this._ecouteurs || {});
+      (this._ecouteurs[type] = this._ecouteurs[type] || []).push(f);
+    },
+    removeEventListener() {},
+    declencher(type) {
+      ((this._ecouteurs || {})[type] || []).forEach(f => f({ type }));
+    },
     scrollIntoView() { this._vu = true; },
-    focus() {}, select() {}, setSelectionRange() {},
+    focus() {}, setSelectionRange() {},
+    select() { doc._selection = this.value; },
     querySelector() { return null; },
     querySelectorAll() { return []; },
     getBoundingClientRect() {
@@ -96,6 +113,18 @@ nav.querySelectorAll = s => (s.startsWith('a[href') || s === 'a' ? liens : []);
 const parId = {};
 titres.forEach(h => { parId[h.id] = h; });
 
+// --- un bloc de code, pour éprouver le bouton « Copier » ----------------
+// C'est la fonction que je n'avais jamais pu contrôler : dans le volet
+// d'aperçu, l'API du presse-papiers est refusée, et la seule preuve qu'elle
+// marchait fut une notification du système. Ici on la tient.
+const COMMANDE = 'sudo pacman -Syu\necho ok\n';
+const bloc = elt('code', { class: 'language-bash', textContent: COMMANDE });
+const pre = elt('pre');
+const article = elt('article', { class: 'colonne' });
+pre.children.push(bloc); bloc.parentNode = pre;
+article.children.push(pre); pre.parentNode = article;
+let presse_papiers = null;
+
 const fenetre = {
   scrollY: 0, scrollX: 0, innerWidth: 1440, innerHeight: 900,
   _ecouteurs: {},
@@ -125,11 +154,18 @@ const doc = {
   hidden: false, visibilityState: 'visible',
   getElementById: id => parId[id] || null,
   querySelector: s => (s === '.sommaire-cote' ? nav : null),
-  querySelectorAll: () => [],
+  querySelectorAll: s => (s === 'article.colonne pre > code' ? [bloc] : []),
   createElement: t => elt(t),
   addEventListener() {}, removeEventListener() {},
   hasFocus: () => true,
-  execCommand: () => false,
+  // Pas d'API moderne (navigator.clipboard vaut null) : le script doit
+  // retomber sur l'ancienne méthode. C'est justement ce repli qui a été
+  // ajouté après avoir mesuré que `writeText` renonce même sur localhost.
+  execCommand: cmd => {
+    if (cmd === 'copy') { presse_papiers = doc._selection; return true; }
+    return false;
+  },
+  _selection: null,
 };
 
 const bac = Object.assign({}, fenetre, {
@@ -169,16 +205,40 @@ titres.forEach((h, i) => {
 // Avant le premier titre : rien ne doit être marqué.
 fenetre.scrollTo(0, 0);
 rapport.rien_avant_le_premier_titre = marque() === null;
+
+// --- le bouton « Copier » ----------------------------------------------
+const enveloppe = pre.parentNode;
+const barre = (enveloppe.children || []).find(c => c.className === 'bloc-code-barre');
+const bouton = barre && (barre.children || []).find(c => c.className === 'bloc-code-copier');
+rapport.bloc_enveloppe = !!enveloppe && enveloppe.className === 'bloc-code';
+rapport.langue_affichee = barre ? (barre.children[0] || {}).textContent : null;
+rapport.bouton_pose = !!bouton;
 rapport.tous_justes = releve.every(r => r.juste);
 rapport.releve = releve;
-if (process.env.SONDE) {
-  rapport.sonde = {
-    ecouteurs: Object.keys(fenetre._ecouteurs),
-    liens_vus: nav.querySelectorAll('a[href^="#"]').length,
-    href0: liens[0].getAttribute('href'),
-    cible0: !!doc.getElementById('chapitre-un'),
-    attrs0: liens[0]._attrs,
-    scrollY: fenetre.scrollY,
-  };
+
+// LE CLIC EST ASYNCHRONE. `copier()` rend une promesse et c'est son `.then`
+// qui change le libellé : lu tout de suite, le bouton dit encore
+// « Copier ». On laisse donc passer les micro-tâches avant de conclure —
+// sinon l'essai rapporte un échec qui n'existe pas, ce qui est pire que pas
+// d'essai du tout.
+if (bouton) {
+  bouton.declencher('click');
+  Promise.resolve().then(() => {
+    rapport.presse_papiers = presse_papiers;
+    rapport.copie_juste = presse_papiers === COMMANDE;
+    rapport.libelle_apres_clic = bouton.textContent;
+    dire_le_rapport();
+  });
+} else {
+  dire_le_rapport();
 }
-console.log(JSON.stringify(rapport));
+function dire_le_rapport() {
+  if (process.env.SONDE) {
+    rapport.sonde = {
+      ecouteurs: Object.keys(fenetre._ecouteurs),
+      liens_vus: nav.querySelectorAll('a[href^="#"]').length,
+      scrollY: fenetre.scrollY,
+    };
+  }
+  console.log(JSON.stringify(rapport));
+}

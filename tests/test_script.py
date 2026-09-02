@@ -108,6 +108,36 @@ class Script(unittest.TestCase):
                 f'  Si tout est à `null`, le script s’est arrêté avant — '
                 f'chercher un `return` au premier niveau du fichier.')
 
+    def test_le_bouton_copier_copie_vraiment(self):
+        """La fonction que je n'avais JAMAIS pu contrôler. Dans le volet
+        d'aperçu, l'API du presse-papiers est refusée même page servie
+        depuis localhost et document focalisé ; la seule preuve qu'elle
+        marchait fut une notification du système d'exploitation.
+
+        Ici on la tient : le faux DOM n'offre PAS `navigator.clipboard`,
+        donc le script doit retomber sur `document.execCommand('copy')` —
+        exactement le repli ajouté en 1.9.3 — et ce qui atterrit dans le
+        presse-papiers doit être le contenu du bloc, au caractère près.
+        Une commande fausse d'un signe ne dit pas qu'elle est fausse :
+        elle fait autre chose."""
+        for f in self.scripts():
+            r = self.jouer(f)
+            if 'bouton_pose' not in r:
+                continue
+            self.assertTrue(r['bloc_enveloppe'],
+                            'le bloc de code n’est pas enveloppé')
+            self.assertEqual(r['langue_affichee'], 'bash',
+                             'la barre n’annonce pas le langage du bloc')
+            self.assertTrue(r['bouton_pose'],
+                            'sans presse-papiers moderne, le repli doit tout '
+                            'de même poser le bouton')
+            self.assertTrue(r['copie_juste'],
+                            f'le presse-papiers ne reçoit pas le bloc : '
+                            f'{r.get("presse_papiers")!r}')
+            self.assertEqual(r['libelle_apres_clic'], 'Copié',
+                             'le bouton ne dit pas que c’est fait — sans quoi '
+                             'on clique deux fois')
+
     def test_rien_n_est_marque_avant_le_premier_titre(self):
         """Dans le préambule d'une page, on n'est dans aucun chapitre :
         marquer le premier serait mentir sur la position."""
