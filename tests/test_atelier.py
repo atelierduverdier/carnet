@@ -2,6 +2,7 @@
 """Les refus de l'atelier : ce qu'il doit empêcher, et pourquoi."""
 
 import shutil
+import re
 import unittest
 from pathlib import Path
 
@@ -248,3 +249,53 @@ class RefusDuServeur(unittest.TestCase):
         for hote in ('evil.example:8413', 'quelquechose.fr'):
             with self.subTest(hote=hote):
                 self.assertTrue(self.poste({'Host': hote}).hote_inattendu())
+
+
+class ReglagesDeLEnTete(unittest.TestCase):
+    """Un réglage affiché doit être BRANCHÉ des deux côtés.
+
+    Le formulaire des réglages et le script qui les écrit vivent dans deux
+    fichiers. Rien n'oblige l'un à connaître l'autre : on peut ajouter une
+    liste déroulante à l'interface et oublier de l'écouter, ce qui donne le
+    pire des résultats — un réglage qui a l'air de marcher, qu'on croit
+    avoir posé, et qui ne change rien.
+
+    Ces essais ne lancent pas l'atelier : ils lisent les deux fichiers et
+    vérifient qu'ils parlent l'un de l'autre.
+    """
+
+    ICI = Path(__file__).resolve().parent.parent / 'outils' / 'atelier'
+
+    def fichiers(self):
+        return ((self.ICI / 'index.html').read_text(encoding='utf-8'),
+                (self.ICI / 'atelier.js').read_text(encoding='utf-8'))
+
+    def test_chaque_reglage_est_ecoute(self):
+        """Un champ `r-*` sans écouteur est un réglage mort."""
+        html, js = self.fichiers()
+        champs = sorted(set(re.findall(r'id="(r-[\w-]+)"', html)))
+        self.assertTrue(champs, 'aucun réglage trouvé dans le formulaire')
+        # On cherche un ABONNEMENT, pas une simple mention : l'identifiant
+        # figure aussi dans la relecture à l'ouverture, si bien qu'une
+        # première version de cet essai trouvait « branché » un réglage
+        # dont l'écouteur venait d'être supprimé.
+        ecoutes = set(re.findall(r"\$\('#(r-[\w-]+)'\)\s*\.addEventListener", js))
+        muets = [c for c in champs if c not in ecoutes]
+        self.assertEqual(
+            muets, [],
+            f'ces réglages sont affichés mais jamais écoutés : {muets}\n'
+            '  Ils ont l’air de marcher et ne changent rien.')
+
+    def test_chaque_reglage_est_relu_a_l_ouverture(self):
+        """Un réglage écouté mais jamais RELU repart à sa valeur par défaut
+        quand on rouvre la page — et le premier enregistrement efface ce
+        qu'on avait posé la veille."""
+        html, js = self.fichiers()
+        champs = sorted(set(re.findall(r'id="(r-[\w-]+)"', html)))
+        bloc = js[js.index('function relireReglagesClairs'):]
+        bloc = bloc[:bloc.index('\n}\n') + 3]
+        oublies = [c for c in champs if f"'#{c}'" not in bloc]
+        self.assertEqual(
+            oublies, [],
+            f'ces réglages ne sont pas relus à l’ouverture : {oublies}\n'
+            '  Rouvrir la page les remet à zéro, et enregistrer les efface.')

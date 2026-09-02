@@ -219,6 +219,13 @@
             <label>Date <input type="date" id="r-date"></label>
             <label>Rang <input type="number" id="r-rang" min="0" step="1"
                    title="L’ordre dans la collection : 1 en premier."></label>
+            <label title="Le plan de la page, à partir de trois titres. « En tête » le pose au-dessus du texte, comme un chapitre. « En colonne » le met à gauche, il reste à l’écran pendant la lecture et surligne le chapitre où l’on en est — pour une page qui fait plusieurs dizaines d’écrans. Sur un téléphone, la colonne redevient un bloc replié.">Sommaire
+              <select id="r-sommaire">
+                <option value="">aucun</option>
+                <option value="oui">en tête de la page</option>
+                <option value="cote">en colonne, à gauche</option>
+              </select>
+            </label>
             <label class="a-cocher" title="Affiche au lecteur la mention « traduction automatique ». À décocher quand un humain a relu et corrigé la traduction.">
               <input type="checkbox" id="r-auto"> Traduction automatique
             </label>

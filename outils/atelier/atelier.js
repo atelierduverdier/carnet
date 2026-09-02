@@ -788,6 +788,14 @@ function relireReglagesClairs() {
   $('#r-statut').value = statut;
   $('#r-date').value = valeurEntete(e, 'date') || '';
   $('#r-rang').value = valeurEntete(e, 'rang') || '';
+  /* Trois états, et il faut les distinguer : « cote » ne se déduit pas
+     d'un booléen. Les orthographes admises par le générateur — « cote »,
+     « côté », « colonne » — se ramènent toutes au même choix, sinon
+     rouvrir une page écrite à la main remettrait la liste sur « aucun »
+     et le premier enregistrement effacerait le réglage. */
+  const som = (valeurEntete(e, 'sommaire') || '').trim().toLowerCase();
+  $('#r-sommaire').value = ['cote', 'côté', 'colonne'].includes(som) ? 'cote'
+                         : ['oui', 'true', 'vrai'].includes(som) ? 'oui' : '';
   $('#r-auto').checked = /^(oui|true|vrai)/i.test(valeurEntete(e, 'traduction_automatique') || '');
   $('#r-sans-jumelle').checked = /^(non|false|no)/i.test(valeurEntete(e, 'jumelle_attendue') || '');
 }
@@ -2168,6 +2176,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
   $('#r-date').addEventListener('change', (e) => poserCle('date', e.target.value));
   $('#r-rang').addEventListener('change', (e) => poserCle('rang', e.target.value));
+  /* « aucun » RETIRE la clé plutôt que d'écrire « non » : une clé absente
+     et une clé à « non » disent la même chose, et le générateur refuse
+     toute valeur qu'il ne connaît pas — mieux vaut ne rien écrire. */
+  $('#r-sommaire').addEventListener('change', (e) => poserCle('sommaire', e.target.value));
   /* Cocher écrit la ligne, décocher la RETIRE — plutôt que d'écrire
      « non » : une clé absente et une clé à « non » disent la même chose. */
   $('#r-auto').addEventListener('change', (e) =>
