@@ -1578,17 +1578,30 @@ pre > code {
    `aria-current` plutôt qu'une classe : l'information est portée par le
    HTML, donc annoncée par un lecteur d'écran, et pas seulement peinte. */
 .sommaire a[aria-current] {
-  /* LA COULEUR NE DISTINGUE RIEN ICI, et c'est le piège de cette règle.
-     Écrite d'abord en `color: var(--orange-encre)` + gras, elle semblait
-     évidente — mais MESURÉ : les liens ordinaires du sommaire sont DÉJÀ
-     rgb(194,65,12), c'est-à-dire exactement cette encre. La règle ne
-     changeait donc que la graisse. Trouvé en relevant les styles calculés
-     des deux liens côte à côte, pas en regardant la page.
+  /* TROIS SIGNAUX REDONDANTS, et il en faut trois — chacun pris seul a
+     été mesuré insuffisant. Ce bloc est le résultat de deux erreurs
+     successives, toutes deux trouvées au calcul et non à l'œil.
 
-     Ce qui distingue vraiment est un FOND : il ne se confond avec rien,
-     il ne dépend pas d'une nuance que l'œil doit comparer de mémoire à
-     dix lignes d'écart, et il survit à un daltonisme. La graisse reste,
-     elle aide ; la couleur du texte, elle, ne bouge plus. */
+     PREMIÈRE ERREUR : `color: var(--orange-encre)` + gras. Évident, et
+     inutile — les liens ORDINAIRES du sommaire sont déjà exactement dans
+     cette encre. La règle ne changeait que la graisse. Relevé en
+     comparant les styles calculés de deux liens voisins.
+
+     DEUXIÈME ERREUR, celle du correctif : « c'est un FOND qui distingue ».
+     Mesuré ensuite : la teinte pâle donne 1,11:1 contre la feuille en
+     clair et 1,21:1 en sombre. Un aplat pâle EST par définition à faible
+     écart — c'est ce qui en fait une teinte. Et on ne peut pas le foncer :
+     au-delà, le texte passe sous 4,5:1 (mesuré : #ffe9d6 → 4,41).
+
+     CE QUI PORTE VRAIMENT LE SIGNAL est donc la BARRE, en encre et non en
+     orange vif : 3,89:1 contre le filet en clair — le seuil des éléments
+     non textuels est 3 — contre 2,15 pour l'orange de la marque, qui n'y
+     arrivait pas. En sombre elle donne 6,27.
+
+     La teinte et la graisse restent : elles accompagnent, elles ne
+     portent pas. Trois signaux de natures différentes — un aplat, une
+     graisse, un trait — survivent chacun à ce qui tue les autres : un
+     daltonisme, un écran délavé, un balayage rapide. */
   background: var(--orange-pale);
   font-weight: 700;
   border-radius: 4px;
@@ -1597,9 +1610,10 @@ pre > code {
 }
 .sommaire-cote a[aria-current] {
   display: block;
-  /* Le repère se pose SUR le filet de la colonne : c'est le signal qu'on
-     lit sans lire, celui qui dit la position quand l'œil balaie. */
-  box-shadow: -1.35rem 0 0 -0.35rem var(--orange);
+  /* La barre se pose SUR le filet de la colonne. En encre : c'est le seul
+     des trois signaux à franchir un seuil de contraste dans les deux
+     livrées, donc le seul sur lequel on puisse compter. */
+  box-shadow: -1.35rem 0 0 -0.35rem var(--orange-encre);
 }
 @media (prefers-reduced-motion: no-preference) {
   .sommaire a { transition: color .15s ease; }
