@@ -8,7 +8,10 @@
   <div class="alaune-tete">
     <h2 id="titre-alaune">{{ mots.a_la_une }}</h2>
     {% if a_la_une_url %}
-    <a class="alaune-toutes" href="{{ a_la_une_url }}">{{ mots.toutes_annonces }}</a>
+    {#- Le titre de la rubrique si on l'a, sinon le mot générique : un site
+        dont la rubrique en vedette n'est pas une rubrique d'actualités ne
+        doit pas lire « toutes les annonces ». #}
+    <a class="alaune-toutes" href="{{ a_la_une_url }}">{{ (a_la_une_titre ~ ' ›') if a_la_une_titre else mots.toutes_annonces }}</a>
     {% endif %}
   </div>
   <ul class="fiches">

@@ -169,3 +169,18 @@
   article.colonne pre, .bloc-code pre, .bloc-code-barre { background: #12151a; }
   :not(pre) > code { background: #12151a; }
 }
+
+/* --- pas de sélecteur pour une seule langue --------------------------
+   Le gabarit boucle sur les langues du site et pose une pastille par
+   langue : sur un site monolingue, cela donne un « FR » solitaire, à côté
+   de la recherche, qui a toutes les apparences d'un bouton — sauf qu'il ne
+   mène qu'à la page où l'on est déjà.
+
+   On le masque plutôt que de toucher au gabarit, qui viendrait alors de
+   ce thème et ne recevrait plus les correctifs du parent. `:only-child`
+   suffit : le jour où une deuxième langue arrive, les pastilles
+   réapparaissent seules, sans qu'on ait à se souvenir de cette règle.
+
+   Le pied de page perd la même colonne, pour la même raison. */
+.langues a:only-child { display: none; }
+.pied-grille > div:last-child:has(ul li:only-child) { display: none; }
