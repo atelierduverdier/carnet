@@ -1,0 +1,43 @@
+/* =====================================================================
+   ardoise/site.css — un thème qui n'est QUE des variables
+   =====================================================================
+   Il hérite de Verdure : gabarits, script, polices et images en viennent,
+   et sa feuille s'ajoute à la sienne — la dernière règle écrite gagne.
+
+   C'est ce qu'un thème doit coûter : quarante lignes, pas deux cents
+   recopiées qui se périmeraient au premier correctif du parent.
+
+   Contrastes mesurés sur le fond (#fdfdfc) :
+     encre        #24303a   12,9:1
+     encre-douce  #5a6672    5,4:1
+     bleu-encre   #1f5a7a    6,2:1
+     accent       #b45309    4,9:1   (l'ambre, en texte)
+   ===================================================================== */
+
+:root {
+  /* L'accent : un ambre éteint, là où Verdure met son orange d'atelier. */
+  --orange:        #c2790a;
+  --orange-encre:  #b45309;
+  --orange-pale:   #fdf6e7;
+
+  /* Le bleu passe de canard à ardoise — froid, presque gris. */
+  --bleu:          #2c6c8f;
+  --bleu-encre:    #1f5a7a;
+  --bleu-pale:     #eef3f7;
+
+  --fond:          #ffffff;
+  --papier:        #fdfdfc;   /* blanc cassé, sans le crème de Verdure */
+  --fond-doux:     #f5f6f7;
+  --encre:         #24303a;   /* l'encre tire vers le bleu, pas vers le brun */
+  --encre-douce:   #5a6672;
+  --filet:         #dde3e8;   /* les filets refroidissent avec le reste */
+  --ombre:         0 1px 2px rgba(20, 30, 40, .06), 0 8px 24px rgba(20, 30, 40, .07);
+
+  /* Les titres se resserrent : même famille, moins d'air. */
+  --colonne: 42rem;
+  --mesure:  42rem;
+}
+
+/* Deux gestes de forme, pour qu'on voie que ce n'est pas qu'une palette. */
+h1, h2, h3 { letter-spacing: -.015em; }
+.bandeau { border-bottom: 1px solid var(--filet); box-shadow: none; }

@@ -1,0 +1,21 @@
+# Le site engendré : reconstruit à chaque passage, jamais versionné.
+site/public/
+# et le chantier de la régénération, qui ne vit qu'un instant
+site/.public-en-cours/
+site/.public-precedent/
+
+# Identifiants de dépôt : ne doivent jamais quitter la machine.
+outils/publier*.conf
+outils/traduire.conf
+
+# Corbeilles de l'atelier — pages et médias jetés, restaurables
+site/contenu/.corbeille/
+site/medias/.corbeille/
+
+# Marque du dernier dépôt : propre à cette machine
+site/.derniere-publication
+site/.dernier-depot.json
+
+__pycache__/
+*.pyc
+.DS_Store

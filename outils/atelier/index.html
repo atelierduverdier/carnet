@@ -1,0 +1,435 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>L'atelier</title>
+<link rel="stylesheet" href="/atelier/atelier.css">
+</head>
+<body>
+
+<div class="atelier">
+
+  <!-- ══ le rail : il ne change jamais d'écran ══════════════════════════ -->
+  <aside class="rail" id="rail">
+    <div class="rail-tete">
+      <span class="marque" id="marque">L'atelier</span>
+      <span class="sous">l'atelier</span>
+    </div>
+
+    <!-- La langue n'est plus un filtre parmi d'autres : c'est l'endroit
+         où l'on se tient. L'arbre n'affiche que celle-ci. -->
+    <div class="langues" id="langues" role="tablist" aria-label="Langue"></div>
+
+    <div class="rail-recherche">
+      <input type="search" id="filtre" placeholder="Filtrer les pages…"
+             aria-label="Filtrer les pages">
+      <kbd>Ctrl K</kbd>
+    </div>
+
+    <nav class="bloc-atelier" aria-label="Atelier">
+      <p class="rubrique">Atelier</p>
+      <button class="entree" data-ecran="tableau">
+        <span class="icone">◧</span><span class="nom">Tableau de bord</span></button>
+      <button class="entree" data-ecran="pages">
+        <span class="icone">▤</span><span class="nom">Pages</span><span class="nb" id="nb-pages"></span></button>
+      <button class="entree" data-ecran="fiches">
+        <span class="icone">▥</span><span class="nom">Fiches</span><span class="nb" id="nb-fiches"></span></button>
+      <button class="entree" data-ecran="medias">
+        <span class="icone">▣</span><span class="nom">Médias</span><span class="nb" id="nb-medias"></span></button>
+      <button class="entree" data-ecran="menus">
+        <span class="icone">≡</span><span class="nom">Menus du site</span></button>
+      <button class="entree" data-ecran="brouillons">
+        <span class="icone">◔</span><span class="nom">Brouillons</span><span class="nb" id="nb-brouillons"></span></button>
+      <button class="entree" data-ecran="corbeille" id="entree-corbeille" hidden>
+        <span class="icone">⌫</span><span class="nom">Corbeille</span><span class="nb" id="nb-corbeille"></span></button>
+    </nav>
+
+    <div class="arbre-tete">
+      <p class="rubrique">Pages · <span id="rail-langue">Français</span></p>
+      <button class="lien-neuf" id="b-nouveau">+ Nouvelle</button>
+    </div>
+
+    <!-- SEULE zone qui défile : min-height:0 dans la colonne flex -->
+    <div class="arbre" id="pages"></div>
+
+    <p class="legende">
+      <span class="past pleine">F</span> traduite
+      <span class="past auto">I</span> auto
+      <span class="past absente">E</span> absente
+    </p>
+
+    <!-- Poignée de largeur : les titres longs se coupaient. Tirer, ou
+         flèches gauche/droite au clavier, ou double-clic pour revenir. -->
+    <button class="poignee" id="poignee-rail" role="separator"
+            aria-orientation="vertical" aria-label="Largeur du panneau — flèches pour ajuster, double-clic pour revenir à la largeur d’origine"></button>
+  </aside>
+
+  <!-- ══ la zone principale : un écran à la fois ════════════════════════ -->
+  <div class="principal">
+    <header class="barre">
+      <!-- sous 62 rem le rail devient une vue à part : ce bouton l'appelle -->
+      <button class="bouton" id="b-rail">☰ Pages</button>
+      <nav class="fil-ariane" id="fil" aria-label="Où je suis"></nav>
+      <span class="pousse"></span>
+      <div class="enveloppe-filtres">
+        <button class="bouton" id="b-filtres">Filtres <span class="nb" id="nb-filtres" hidden></span></button>
+        <div class="popover" id="popover-filtres" hidden>
+          <label>Type
+            <select id="filtre-type">
+              <option value="">tous types</option>
+              <option value="page">pages</option>
+              <option value="collection">rubriques</option>
+              <option value="fiche">fiches</option>
+              <option value="conteneur">menu seul</option>
+            </select>
+          </label>
+          <label>Année <select id="filtre-annee"><option value="">toutes années</option></select></label>
+          <label>État
+            <select id="filtre-etat">
+              <option value="">tous états</option>
+              <option value="brouillon">brouillons</option>
+              <option value="sans-jumelle">sans jumelle</option>
+              <option value="auto">traduites par machine</option>
+            </select>
+          </label>
+          <menu>
+            <button class="bouton discret" id="b-filtres-effacer">Tout effacer</button>
+            <button class="bouton" id="b-filtres-fermer">Fermer</button>
+          </menu>
+        </div>
+      </div>
+      <button id="b-publier" class="bouton" title="Refabrique les pages du site sur cet ordinateur, pour les relire avant de publier. Rien ne part en ligne.">Régénérer</button>
+      <button id="b-mettre-en-ligne" class="bouton primaire" title="Envoie le site sur le serveur : c’est le seul moment où ce que voient les autres change.">Publier en ligne…</button>
+    </header>
+
+    <div class="ecrans">
+
+      <!-- ── tableau de bord ───────────────────────────────────────────── -->
+      <section class="ecran" id="ecran-tableau">
+        <div class="ecran-defile">
+          <h1>L'atelier</h1>
+          <p class="sous-titre" id="tableau-sous-titre"></p>
+          <div class="cartes" id="cartes"></div>
+          <div class="panneaux">
+            <section class="panneau">
+              <header><h2>À traduire</h2><span class="nb" id="nb-a-traduire"></span>
+                <span class="astuce">une page qui n’existe pas dans toutes les langues</span>
+                <button class="bouton discret" id="b-jeter-a-traduire" hidden></button></header>
+              <div id="a-traduire"></div>
+            </section>
+            <section class="panneau">
+              <header><h2>Modifié récemment</h2></header>
+              <div id="recents"></div>
+            </section>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── liste filtrée (Pages / Fiches / Brouillons) ───────────────── -->
+      <section class="ecran" id="ecran-liste" hidden>
+        <div class="ecran-defile">
+          <h1 id="liste-titre">Pages</h1>
+          <p class="sous-titre" id="liste-sous-titre"></p>
+          <menu id="liste-actions" hidden>
+            <button class="bouton" id="b-publier-brouillons">Mettre tout en ligne…</button>
+          </menu>
+          <div class="liste-plate" id="liste-plate"></div>
+        </div>
+      </section>
+
+      <!-- ── éditeur ──────────────────────────────────────────────────── -->
+      <section class="ecran editeur" id="ecran-editeur" hidden>
+        <div class="editeur-tete">
+          <div>
+            <h1 id="titre-courant">—</h1>
+            <span class="etiq" id="langue-courante"></span>
+            <p class="chemin" id="chemin-courant"></p>
+          </div>
+          <div class="actions">
+            <button id="b-voir" class="bouton" title="Voir la page sur le site">Voir</button>
+            <button id="b-renommer" class="bouton" title="Changer l’adresse de la page">Adresse…</button>
+            <button id="b-historique" class="bouton" title="Les versions successives de cette page, et de quoi en rétablir une">Historique…</button>
+            <button id="b-jumelle" class="bouton" title="Créer la page jumelle dans l’autre langue">Jumelle…</button>
+            <button id="b-traduire" class="bouton" hidden title="Remplace le texte de cette page par la traduction de son original. La page reste en brouillon : rien ne part en ligne.">Traduire…</button>
+            <button id="b-traduire-tout" class="bouton" hidden title="Crée les pages jumelles manquantes et les traduit, dans toutes les autres langues du site. Elles naissent en brouillon.">Traduire partout…</button>
+            <button id="b-supprimer" class="bouton discret">Mettre à la corbeille</button>
+            <button id="b-enregistrer" class="bouton primaire" title="Écrit le texte dans un fichier, sur cet ordinateur. Rien ne change en ligne.">Enregistrer chez moi</button>
+          </div>
+        </div>
+
+        <p class="avis-brouillon" id="avis-brouillon" hidden>
+          <strong>Cette page est en brouillon.</strong> Elle n’est pas engendrée,
+          donc elle n’apparaît nulle part sur le site — ni en tuile, ni dans les
+          listes.
+          <button type="button" class="bouton primaire" id="b-publier-page">Mettre en ligne</button>
+        </p>
+
+        <div class="onglets" role="tablist">
+          <button class="onglet actif" data-vue="ecrire" role="tab">Écrire</button>
+          <button class="onglet" data-vue="entete" role="tab">Réglages</button>
+          <button class="onglet" data-vue="apercu" role="tab">Aperçu</button>
+        </div>
+
+        <div class="vue" id="vue-ecrire">
+          <p class="astuce encadree" id="avis-collection" hidden>Cette page est celle d’une
+            <strong>rubrique</strong> : ce que vous écrivez ici s’affiche en tête de
+            la liste, au-dessus des tuiles — ce n’est pas un témoignage. Pour en
+            ajouter un, utilisez « + Nouvelle » et choisissez cette rubrique.</p>
+          <div class="outils-texte">
+            <button data-autour="**" title="Gras"><b>G</b></button>
+            <button data-autour="*" title="Italique"><i>I</i></button>
+            <button data-ligne="## " title="Titre">T</button>
+            <button data-ligne="> " title="Citation">”</button>
+            <button data-ligne="- " title="Liste">•</button>
+            <button data-inserer="[texte](adresse)" title="Lien">🔗</button>
+            <button id="b-inserer-media" title="Choisir une image ou un document">🖼</button>
+            <span class="separateur-outils"></span>
+            <button class="mot" data-bloc="encadre"
+                    data-titre="Encadré" data-quoi="Un bloc à filet orange, pour une adresse ou un aparté."
+                    data-exemple="encadre">Encadré</button>
+            <button class="mot" data-bloc="rappel"
+                    data-titre="Rappel" data-quoi="Un cadre plein, pour ce qu’il ne faut pas manquer."
+                    data-exemple="rappel">Rappel</button>
+            <button class="mot" data-avant="&lt;span class=&quot;voix-praticien&quot;&gt;" data-apres="&lt;/span&gt;"
+                    data-titre="Voix de Michel" data-quoi="Dans un cas clinique : ce que répond le praticien."
+                    data-exemple="praticien">Michel</button>
+            <button class="mot" data-avant="&lt;span class=&quot;voix-patient&quot;&gt;" data-apres="&lt;/span&gt;"
+                    data-titre="Voix du patient" data-quoi="Dans un cas clinique : ce qu’écrit la personne."
+                    data-exemple="patient">Patient</button>
+            <button class="mot" data-bloc="portrait"
+                    data-titre="Portrait" data-quoi="Une image qui flotte à droite, le texte l’entoure."
+                    data-exemple="portrait">Portrait</button>
+            <button class="mot" data-bloc="image-centree"
+                    data-titre="Image centrée" data-quoi="Une image seule, au milieu de la colonne."
+                    data-exemple="centree">Centrée</button>
+            <span class="astuce">Glissez une photo ou un PDF dans le texte pour le déposer.</span>
+          </div>
+          <textarea id="corps" spellcheck="true" placeholder="Le texte de la page, en Markdown…"></textarea>
+        </div>
+
+        <div class="vue" id="vue-entete" hidden>
+          <div class="reglages-clairs">
+            <label>Statut
+              <select id="r-statut">
+                <option value="publie">en ligne</option>
+                <option value="brouillon">brouillon — pas mis en ligne</option>
+              </select>
+            </label>
+            <label>Date <input type="date" id="r-date"></label>
+            <label>Rang <input type="number" id="r-rang" min="0" step="1"
+                   title="L’ordre dans la collection : 1 en premier."></label>
+            <label class="a-cocher" title="Affiche au lecteur la mention « traduction automatique ». À décocher quand un humain a relu et corrigé la traduction.">
+              <input type="checkbox" id="r-auto"> Traduction automatique
+            </label>
+            <label class="a-cocher" title="Cette page n’a pas de correspondante dans les autres langues, et c’est voulu — le tableau de bord cesse de la réclamer. Par exemple une page propre à un pays, ou un texte qui existe déjà ailleurs sous une autre forme.">
+              <input type="checkbox" id="r-sans-jumelle"> Pas de jumelle attendue
+            </label>
+          </div>
+          <p class="astuce">Ces réglages écrivent dans le texte ci-dessous.
+            Le reste s'y modifie à la main. Rien n'est enregistré si ce texte ne se
+            relit pas — l'atelier le dit plutôt que de casser la page.</p>
+          <textarea id="entete" spellcheck="false"></textarea>
+        </div>
+
+        <div class="vue" id="vue-apercu" hidden>
+          <div id="apercu" class="apercu"></div>
+        </div>
+      </section>
+
+      <!-- ── médiathèque ──────────────────────────────────────────────── -->
+      <section class="ecran ecran-medias" id="ecran-medias" hidden>
+        <p class="bandeau-insertion" id="bandeau-insertion" hidden>
+          <span>Mode insertion — le fichier cliqué sera inséré dans
+            <strong id="insertion-page"></strong></span>
+          <button class="lien" id="b-quitter-insertion">Quitter le mode insertion</button>
+        </p>
+
+        <div class="medias-tete">
+          <h1>Médias</h1>
+          <p class="meta" id="medias-meta"></p>
+          <span class="pousse"></span>
+          <button class="bouton" id="b-tout-selectionner"
+                  title="Sélectionne tout ce que les filtres montrent en ce moment">Tout sélectionner</button>
+          <label class="etiquette-champ">Trier
+            <select id="medias-tri">
+              <option value="recents">Plus récents</option>
+              <option value="anciens">Plus anciens</option>
+              <option value="nom">Nom</option>
+              <option value="poids">Poids</option>
+              <option value="usages">Usages</option>
+            </select>
+          </label>
+          <div class="bascule" role="group" aria-label="Affichage">
+            <button class="actif" id="b-vue-grille" title="Grille">▦</button>
+            <button id="b-vue-liste" title="Liste">☰</button>
+          </div>
+          <label class="bouton primaire">Déposer un fichier
+            <input type="file" id="fichier" multiple hidden></label>
+        </div>
+
+        <div class="barre-selection" id="barre-selection" hidden>
+          <span id="selection-compte"></span>
+          <button class="lien" id="b-rien-selectionner">Ne rien sélectionner</button>
+          <span class="pousse"></span>
+          <button class="bouton primaire" id="b-inserer-selection" hidden>Insérer dans la page</button>
+          <button class="bouton danger" id="b-jeter-selection">Mettre à la corbeille</button>
+        </div>
+
+        <div class="medias-corps">
+          <aside class="medias-filtres" id="medias-filtres"></aside>
+          <div class="medias-grille" id="grille-medias"></div>
+          <aside class="medias-detail" id="medias-detail"></aside>
+        </div>
+      </section>
+
+      <!-- ── menus du site ────────────────────────────────────────────── -->
+      <section class="ecran" id="ecran-menus" hidden>
+        <div class="ecran-defile">
+          <div class="menus-tete">
+            <h1>Menus du site</h1>
+            <span class="pousse"></span>
+            <button class="bouton" id="b-menu-ajouter">+ Une entrée</button>
+            <button class="bouton primaire" id="b-menu-enregistrer">Enregistrer le menu</button>
+          </div>
+          <p class="astuce">Les flèches déplacent l’entrée ; « → » la range sous celle
+            du dessus, « ← » l’en sort. Une entrée qui a des sous-entrées devient une
+            rubrique et perd son lien. Le menu suit la langue choisie à gauche.</p>
+          <ol id="liste-menu" class="liste-menu"></ol>
+        </div>
+      </section>
+
+      <!-- ── corbeille ────────────────────────────────────────────────── -->
+      <section class="ecran" id="ecran-corbeille" hidden>
+        <div class="ecran-defile">
+          <div class="menus-tete">
+            <h1>Corbeille</h1>
+            <span class="pousse"></span>
+            <button class="bouton danger" id="b-vider">Détruire pour de bon</button>
+          </div>
+          <p class="astuce">« Remettre » repose la page ou le fichier où il était.
+            « Détruire » les efface <strong>pour de bon</strong> : ils restent
+            retrouvables dans l'historique du dépôt, mais plus dans l'atelier.</p>
+          <ul id="liste-corbeille" class="liste-corbeille"></ul>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+<dialog id="fenetre-nouveau">
+  <form method="dialog">
+    <h2>Nouvelle page</h2>
+    <label>Titre <input name="titre" required autocomplete="off"></label>
+    <label>Langue <select name="langue" id="nouveau-langue"></select></label>
+    <label>Ranger dans
+      <select name="collection" id="nouveau-collection">
+        <option value="">— une page ordinaire —</option>
+      </select>
+    </label>
+    <label id="choix-place" hidden>Place dans la rubrique
+      <select name="place">
+        <option value="tete">en tête — la plus récente d’abord</option>
+        <option value="fin">à la fin</option>
+      </select>
+    </label>
+    <menu>
+      <!-- `formnovalidate` : sans lui, « Annuler » est un bouton de
+           soumission comme un autre, et le navigateur exige d'abord le
+           titre — on ne pouvait plus ni annuler ni fermer la fenêtre. -->
+      <button value="annuler" class="bouton discret" formnovalidate>Annuler</button>
+      <button value="creer" class="bouton primaire">Créer</button>
+    </menu>
+  </form>
+</dialog>
+
+<dialog id="fenetre-publier">
+  <h2>Régénération</h2>
+  <pre id="journal-publier"></pre>
+  <menu><button class="bouton" id="b-fermer-publier">Fermer</button></menu>
+</dialog>
+
+<dialog id="fenetre-ligne">
+  <h2>Mettre le site en ligne</h2>
+
+  <fieldset class="choix-destination">
+    <legend>Où déposer ?</legend>
+    <label>
+      <input type="radio" name="destination" value="maison" checked>
+      <span><strong>Chez moi</strong> — le serveur d’essai de la maison.
+      Personne d’autre ne le voit ; on peut y déposer autant qu’on veut.</span>
+    </label>
+    <label>
+      <input type="radio" name="destination" value="en-ligne">
+      <span><strong>Le site public</strong> — <span id="nom-domaine">celui que tout
+      le monde voit</span>. Ce dépôt remplace le site existant.</span>
+    </label>
+  </fieldset>
+
+  <div id="bloc-public" hidden>
+    <p class="alerte-publication">
+      Ce dépôt <strong>remplace le site que le monde voit</strong> et efface de
+      l’hébergeur tout fichier absent d’ici. Pour continuer, recopiez la phrase.
+    </p>
+    <label class="champ">Recopiez : <em>je publie en ligne</em>
+      <input type="text" id="confirmation-ligne" autocomplete="off"
+             placeholder="je publie en ligne">
+    </label>
+    <label class="champ">Mot de passe FTP
+      <input type="password" id="mdp-ligne" autocomplete="off">
+    </label>
+    <p class="astuce">Le mot de passe n’est jamais enregistré : il faut le
+    retaper à chaque dépôt.</p>
+  </div>
+
+  <p class="astuce" id="ligne-ou"></p>
+  <pre id="journal-ligne"></pre>
+  <menu>
+    <button class="bouton discret" id="b-fermer-ligne">Fermer</button>
+    <button class="bouton" id="b-essai">Essai à blanc</button>
+    <button class="bouton primaire" id="b-deposer" hidden>Déposer pour de vrai</button>
+  </menu>
+</dialog>
+
+<dialog id="fenetre-question">
+  <h2 id="question-titre"></h2>
+  <p id="question-texte"></p>
+  <label id="question-champ" hidden>
+    <input id="question-saisie" autocomplete="off">
+  </label>
+  <div id="question-choix" class="choix-langues" hidden></div>
+  <menu>
+    <button class="bouton discret" id="question-annuler">Annuler</button>
+    <button class="bouton primaire" id="question-valider">Continuer</button>
+  </menu>
+</dialog>
+
+<div id="code-perime" class="bandeau-alerte" hidden>
+  Le code de l’atelier a changé depuis son démarrage. Recharger la page ne suffit
+  pas : <b>arrêtez le serveur et relancez-le</b> pour en profiter.
+</div>
+
+<dialog id="fenetre-historique">
+  <h2>Historique de la page</h2>
+  <p class="astuce">Chaque enregistrement laisse une version. Choisissez-en une
+    pour la relire, puis rétablissez-la si elle vous convient — le
+    rétablissement est lui-même une version, on peut toujours revenir.</p>
+  <div class="histo">
+    <ul id="liste-versions" class="liste-versions"></ul>
+    <div class="histo-apercu">
+      <p class="astuce" id="histo-vide">Choisissez une version à gauche.</p>
+      <pre id="histo-texte" hidden></pre>
+    </div>
+  </div>
+  <menu>
+    <button class="bouton discret" id="b-fermer-historique">Fermer</button>
+    <button class="bouton primaire" id="b-retablir" hidden>Rétablir cette version</button>
+  </menu>
+</dialog>
+
+<div id="message" class="message" hidden></div>
+
+<script src="/atelier/atelier.js"></script>
+</body>
+</html>

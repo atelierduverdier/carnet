@@ -1,0 +1,7 @@
+nom: "Ardoise"
+description: >
+  Sobre et froid : bleu d'encre sur blanc cassé, titres serrés, filets
+  fins. Il n'apporte QUE sa feuille de style — gabarits, script, polices
+  et images viennent de Verdure, dont il hérite.
+auteur: "L'Atelier du Verdier"
+herite: verdure

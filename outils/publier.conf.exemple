@@ -1,0 +1,15 @@
+# Recopier ce fichier en « publier.conf » et le remplir.
+# publier.conf est ignoré par git : il ne partira jamais dans le dépôt.
+
+# --- hébergement avec accès SSH (le plus simple et le plus sûr) -------
+methode = rsync
+hote    = login@serveur.example.com
+distant = /var/www/dentosophie/
+port    = 22
+
+# --- hébergement mutualisé, FTP seulement ----------------------------
+# methode = ftp
+# hote    = ftp.example.com
+# login   = monlogin
+# distant = /www/
+# (le mot de passe est demandé au clavier, jamais écrit sur le disque)

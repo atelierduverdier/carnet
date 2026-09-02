@@ -1,0 +1,8 @@
+# Recopier ce fichier en « traduire.conf » et le remplir.
+# traduire.conf est ignoré par git : la clé ne partira jamais dans le dépôt.
+#
+# Ce fichier ne sert QU'AU MOTEUR DISTANT du bouton « Traduire… ».
+# Le moteur local n'a besoin de rien : il parle au llama-server de la
+# maison, lancé par `qwen-uncensored` sur le port 8080.
+
+cle_api = sk-ant-…

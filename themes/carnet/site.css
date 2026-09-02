@@ -1,0 +1,171 @@
+/* =====================================================================
+   carnet/site.css — la charte de l'atelier, et le fond noir
+   =====================================================================
+   Il hérite de Verdure : gabarits, script, polices et images en viennent,
+   et sa feuille s'AJOUTE à la sienne — la dernière règle écrite gagne.
+
+   Deux choses seulement, mais la seconde n'est pas gratuite.
+
+   1. LES JETONS DE LA MAISON. Les valeurs viennent de `kit/verdier.css`
+      du dépôt `atelierduverdier/site`, où elles ont été mesurées, pas
+      choisies à l'œil. On les recopie ici plutôt que de charger le kit :
+      le kit impose AUSSI sa mise en page, et ce site a celle de Verdure.
+      Si une couleur de la charte change là-bas, elle se reporte ici — et
+      nulle part ailleurs dans ce dépôt.
+
+      L'orange de la marque (#ff8a00) ne fait que 2,2:1 sur blanc : il est
+      réservé aux filets, aux aplats et aux bordures. Le texte cliquable
+      prend --orange-encre (#ac5b00, 4,94:1 sur blanc), qui est la MÊME
+      teinte à 31,8° — la marque ne bouge pas, seule la clarté descend
+      jusqu'à ce que le texte se lise.
+
+   2. LE MODE SOMBRE, que Verdure n'a pas — « le site est en blanc,
+      demandé ainsi », dit sa feuille, et c'était vrai pour ce site-là.
+      Ici le lecteur lit des commandes, souvent la nuit, souvent à côté
+      d'un terminal : lui envoyer une page blanche en pleine figure est
+      un choix, et le mauvais. On suit donc `prefers-color-scheme`, le
+      réglage que la personne a DÉJÀ fait dans son système.
+
+      Pas de bouton pour basculer. Il faudrait recopier `base.html` dans
+      ce thème pour y glisser le script anti-clignotement — et cette
+      copie ne recevrait plus jamais un correctif du gabarit parent. Le
+      réglage système est le bon endroit ; il est déjà pris.
+
+   CE QUE LE MODE SOMBRE OBLIGE À REPRENDRE. Verdure est presque
+   entièrement piloté par variables, mais pas tout à fait : quatre règles
+   portent une couleur claire ÉCRITE EN DUR (le fond du pied, celui d'un
+   rappel, celui d'un encadré, le filet du bas de page). Sur fond noir
+   elles rallumaient des rectangles blancs au milieu de la page. On les
+   repasse donc en variables — dans les DEUX livrées, pour que le rendu
+   clair ne bouge pas d'un pixel et qu'il n'y ait qu'un seul endroit à
+   corriger la prochaine fois.
+   ===================================================================== */
+
+:root {
+  /* Le navigateur peint ses ascenseurs, ses champs et son canevas dans la
+     livrée annoncée. Sans cette ligne, une page sombre garde des barres de
+     défilement blanches. */
+  color-scheme: light dark;
+
+  /* --- la charte, en clair --- */
+  --orange:        #ff8a00;   /* la marque : filets, aplats, bordures     */
+  --orange-encre:  #ac5b00;   /* la même teinte, lisible en texte 4,94:1  */
+  --orange-pale:   #fff3e2;
+
+  /* Là où Verdure met un bleu canard, la maison met son ardoise. */
+  --bleu:          #2f3540;
+  --bleu-encre:    #3c434f;
+  --bleu-pale:     #eef0f3;
+
+  --fond:          #ffffff;   /* la feuille                               */
+  --papier:        #f6f7f9;   /* l'établi sur lequel elle est posée       */
+  --fond-doux:     #f6f7f9;
+  --encre:         #23272e;
+  --encre-douce:   #5a626e;
+  --filet:         #e2e5ea;
+  --ombre:         0 1px 2px rgba(20, 25, 35, .06), 0 8px 24px rgba(20, 25, 35, .06);
+
+  /* Les six fonds que Verdure écrivait en dur. Les deux premiers sont
+     TRANSLUCIDES : le bandeau et les sous-menus laissent voir la page qui
+     défile dessous, et remplacer la transparence par un aplat ferait
+     perdre cet effet dans les deux livrées. On garde donc du rgba(). */
+  --entete-fond:   rgba(253, 251, 247, .93);
+  --sousmenu-fond: rgba(253, 251, 247, .55);
+  --rappel-fond:   #fff4ea;
+  --encadre-fond:  #fff8f2;
+  --pied-fond:     #ffeedd;
+  --pied-filet:    #f3d6ba;
+  /* Le texte posé SUR l'orange plein (la page courante de la pagination).
+     En clair c'est du blanc ; en sombre l'orange s'éclaircit et le blanc
+     n'y tient plus. */
+  --sur-orange:    #ffffff;
+}
+
+/* =====================================================================
+   La livrée sombre
+   =====================================================================
+   Les valeurs viennent du bloc `prefers-color-scheme: dark` de
+   `kit/verdier.css`, où elles sont mesurées. --papier (#14171b) est le
+   fond du bureau de l'atelier ; la feuille (#1b1f25) s'en détache d'un
+   cran, comme en clair.
+
+   L'ORANGE MONTE. #ac5b00 sur #1b1f25 ne fait que 2,4:1 : l'encre de lien
+   du mode clair est illisible ici. On prend #ffab45, qui donne 8,79:1 sur
+   la feuille — mesuré côté kit. C'est le seul jeton dont les deux livrées
+   ne partagent PAS la clarté, et c'est normal : un lien doit se lire dans
+   les deux, pas garder la même couleur dans les deux.
+   ===================================================================== */
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --orange:        #ff9a1f;
+    --orange-encre:  #ffab45;
+    --orange-pale:   #3a2b12;
+
+    /* L'ardoise ne peut pas rester l'ardoise : elle EST le fond. Les
+       titres passent donc du côté clair du même gris bleuté. */
+    --bleu:          #cbd3de;
+    --bleu-encre:    #a8b0bc;
+    --bleu-pale:     #22272e;
+
+    --fond:          #1b1f25;
+    --papier:        #14171b;
+    --fond-doux:     #22272e;
+    --encre:         #e6e9ee;
+    --encre-douce:   #a8b0bc;
+    --filet:         #2a3038;
+    --ombre:         0 1px 2px rgba(0, 0, 0, .3), 0 10px 30px rgba(0, 0, 0, .35);
+
+    /* CELUI-CI EST CELUI QUI SE VOIT. `.entete` portait un blanc cassé
+       écrit en dur : sur fond noir, le bandeau restait BLANC avec un nom
+       de site clair par-dessus — invisible, et c'est la première chose
+       qu'on voit de la page. Trouvé à l'écran, pas dans la feuille. */
+    --entete-fond:   rgba(20, 23, 27, .93);
+    --sousmenu-fond: rgba(27, 31, 37, .96);
+    --rappel-fond:   #2e2113;
+    --encadre-fond:  #20242b;
+    --pied-fond:     #12151a;
+    --pied-filet:    #2a3038;
+    --sur-orange:    #14171b;
+  }
+}
+
+/* --- les quatre règles rendues à leurs variables ---------------------
+   Elles répètent celles de Verdure à l'identique, la couleur près : la
+   feuille de l'enfant s'ajoutant à celle du parent, c'est la dernière
+   écrite qui gagne. */
+.entete  { background: var(--entete-fond); }
+.nav ul ul { background: var(--sousmenu-fond); }
+.rappel  { background: var(--rappel-fond); }
+.encadre { background: var(--encadre-fond); }
+.pied    { background: var(--pied-fond); }
+.pied-bas { border-top-color: var(--pied-filet); }
+.pagination [aria-current="page"] { color: var(--sur-orange); }
+
+/* --- le logo sur fond sombre -----------------------------------------
+   Le logo de Verdure est un rond orange sur transparent : il passe. Celui
+   qu'on posera à sa place peut être une encre ardoise, qui disparaîtrait.
+   La règle attend ce jour-là ; elle ne fait rien sur un logo qui ne porte
+   pas la classe. */
+@media (prefers-color-scheme: dark) {
+  .marque-logo.encre-sombre { filter: invert(1) hue-rotate(180deg); }
+}
+
+/* --- l'image, sur fond noir ------------------------------------------
+   Une capture d'écran de terminal, sur fond noir, se confond avec la
+   page : on ne voit plus où elle commence. Un liseré suffit — pas un
+   cadre, qui ferait tableau. */
+@media (prefers-color-scheme: dark) {
+  article.colonne img { border-radius: 6px; }
+  article.colonne figure img { box-shadow: 0 0 0 1px var(--filet); }
+}
+
+/* --- le bloc de code, sur fond noir ----------------------------------
+   `--fond-doux` détache le bloc du texte en mode clair. En sombre, il
+   faut l'inverse de l'intuition : le bloc doit être plus SOMBRE que la
+   feuille, pas plus clair — c'est ainsi que se présente un terminal, et
+   c'est ce que l'œil attend d'une commande. */
+@media (prefers-color-scheme: dark) {
+  article.colonne pre, .bloc-code pre, .bloc-code-barre { background: #12151a; }
+  :not(pre) > code { background: #12151a; }
+}

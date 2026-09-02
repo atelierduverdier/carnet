@@ -1,0 +1,35 @@
+# =====================================================================
+# config.yaml — les réglages du site
+# =====================================================================
+# Le seul endroit où se décident le nom, le domaine, les langues et la
+# page d'accueil de chacune. Le générateur ne devine rien : tout ce qui
+# est écrit ici se retrouve dans les pages, et dans l'atelier.
+# =====================================================================
+
+titre: "Le Carnet du Verdier"
+devise: "Pense-bêtes Linux d'un atelier : ce qui a marché, et pourquoi."
+domaine: "https://carnet.atelierduverdier.fr"
+courriel: "leverdier@ik.me"
+
+# Le thème du site : un dossier dans themes/.
+theme: "carnet"
+
+langue_par_defaut: fr
+
+# UNE langue suffit. Pour en ajouter une, ajouter son bloc ici et créer
+# le dossier site/contenu/<code>/ — l'atelier fera le reste (jumelage
+# des pages, pastilles, mention de traduction automatique).
+#
+# Une langue sans « accueil » n'est PAS engendrée : la valeur est le
+# `slug` de la page qui sert d'accueil.
+langues:
+  fr:
+    nom: "Français"
+    accueil: "accueil"
+    titre: "Le Carnet du Verdier"
+    devise: "Pense-bêtes Linux d'un atelier : ce qui a marché, et pourquoi."
+# La rubrique dont les fiches s'affichent en tuiles sur l'accueil, et
+# combien. Retirer ce bloc si le site n'a pas d'actualités.
+a_la_une:
+  collection: "depannage"
+  nombre: 4

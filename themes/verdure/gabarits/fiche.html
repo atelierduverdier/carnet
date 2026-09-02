@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block contenu %}
+<article class="colonne">
+  <header class="contenu-tete">
+    {%- if fil %}<nav class="fil" aria-label="{{ mots.fil }}">{{ fil }}</nav>{% endif %}
+    {%- if date_lisible %}<p class="date-fiche">{{ date_lisible }}</p>{% endif %}
+    <h1{% if titre_masque %} class="hors-ecran"{% endif %}>{{ titre_affiche }}</h1>
+    {%- if mention_origine %}
+    <p class="origine{% if mention_machine %} par-machine{% endif %}">
+      {%- if mention_machine %}<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <circle cx="12" cy="12" r="9"/>
+        <path d="M3 12h18M12 3c2.6 2.6 2.6 15.4 0 18M12 3c-2.6 2.6-2.6 15.4 0 18"/>
+      </svg>{% endif %}<span>{{ mention_origine }}</span>
+    </p>
+    {%- endif %}
+  </header>
+  {%- if page.traduction_automatique and not mention_origine %}
+  <p class="avis-traduction">
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <circle cx="12" cy="12" r="9"/>
+      <path d="M3 12h18M12 3c2.6 2.6 2.6 15.4 0 18M12 3c-2.6 2.6-2.6 15.4 0 18"/>
+    </svg><span>{{ mots.traduction_courte }}</span>
+  </p>
+  {%- endif %}
+  {#- « sommaire: oui » vaut pour une fiche comme pour une page. Le
+      générateur le calculait déjà ici ; seul ce gabarit ne l'affichait pas,
+      et la clé était donc ignorée EN SILENCE — on l'écrit dans l'en-tête,
+      rien n'apparaît, et rien ne dit pourquoi. Trouvé sur une fiche
+      technique de cinq sections. #}
+  {%- if sommaire %}{{ sommaire }}{% endif %}
+  {{ corps }}
+
+  <nav class="voisines" aria-label="{{ mots.voisines }}">
+    {%- if precedente %}<a class="precedente" href="{{ precedente.url }}">← {{ precedente.titre }}</a>{% endif %}
+    {%- if suivante %}<a class="suivante" href="{{ suivante.url }}">{{ suivante.titre }} →</a>{% endif %}
+  </nav>
+</article>
+{% endblock %}

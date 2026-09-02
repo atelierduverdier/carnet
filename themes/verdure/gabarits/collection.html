@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block contenu %}
+<div class="enveloppe">
+  <header class="contenu-tete colonne">
+    {%- if fil %}<nav class="fil" aria-label="{{ mots.fil }}">{{ fil }}</nav>{% endif %}
+    <h1{% if titre_masque %} class="hors-ecran"{% endif %}>{{ titre_affiche }}</h1>
+    {{ corps }}
+  </header>
+
+  <p class="compteur">
+    <span class="compteur-nombre">{{ total }}</span>
+    <span class="compteur-mot">{{ unite }}</span>
+  </p>
+  <ul class="fiches">
+    {%- for f in fiches %}
+    <li><a class="fiche-carte" href="{{ f.cible or f.url }}"
+           {% if f.cible and '//' in f.cible %}rel="noopener"{% endif %}>
+      {#- la condition porte sur ce qui S'AFFICHE, pas sur ce qui existe :
+          une fiche dont le titre porte déjà la date la masque (date_precision),
+          et la balise restait ouverte et vide. #}
+      {%- if f.genre or f.date_lisible %}<span class="date-fiche">
+        {%- if f.genre %}<span class="genre">{{ f.genre }}</span>{% endif %}
+        {%- if f.genre and f.date_lisible %} · {% endif %}{{ f.date_lisible }}</span>{% endif %}
+      <h2>{{ f.titre }}</h2>
+      {%- if f.extrait %}<p>{{ f.extrait }}</p>{% endif %}
+    </a></li>
+    {%- endfor %}
+  </ul>
+
+  {%- if pages_total > 1 %}
+  <nav class="pagination" aria-label="{{ mots.pagination }}">
+    {%- for n, lien in liens_pages %}
+      {%- if lien is none %}<span class="ellipse">…</span>
+      {%- elif n == page_courante %}<span aria-current="page">{{ n }}</span>
+      {%- else %}<a href="{{ lien }}">{{ n }}</a>{% endif %}
+    {%- endfor %}
+  </nav>
+  {%- endif %}
+</div>
+{% endblock %}

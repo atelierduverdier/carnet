@@ -1,0 +1,1466 @@
+/* =====================================================================
+   site.css — la charte du site
+   =====================================================================
+   Reprend l'identité de l'ancien site — l'orange #ff8700, les titres en
+   Dosis — et répare ce qui avait vieilli.
+
+   Le fond n'est plus le blanc pur demandé au départ mais un papier très
+   pâle (--papier), sur lequel le texte se pose sur une feuille blanche
+   (--fond). Ce détour vient d'un constat : la page sans couleur était
+   jugée austère, et répondre par la TEINTE coûte cher ici, où la couleur
+   porte du sens — le bleu distingue une voix, l'orange signale ce qui est
+   cliquable. On réchauffe donc par la matière, pas par la teinte.
+
+   Ce qui avait vieilli :
+
+   - le corps de texte était en 12 px : illisible sur des pages de
+     témoignages de plusieurs milliers de mots. Ici 16 px, interligne
+     1,7, colonne limitée à ~68 caractères ;
+   - l'orange #ff8700 sur blanc ne donne que 2,4:1 de contraste : bon
+     pour un aplat ou un filet, INSUFFISANT pour du texte (il en faut
+     4,5). Les liens utilisent donc --orange-encre (#b35600, 4,95:1) et
+     l'orange vif reste au décor ;
+   - mise en page fluide, sans largeur fixe ;
+   - les titres se hiérarchisent d'abord par la TAILLE, la graisse et le
+     blanc — la couleur ne fait que les accompagner. L'orange ne signale
+     que ce qui est cliquable, et le mobilier (menu, pied) reste discret :
+     sur un sujet qui se tient en marge de la médecine reçue, la sobriété
+     est un argument — mais pas jusqu'à l'austérité.
+
+   Pas de thème sombre : le site est en blanc, demandé ainsi.
+
+   Tout est piloté par les variables ci-dessous : changer l'orange ici
+   le change partout.
+   ===================================================================== */
+
+:root {
+  --orange:        #ff6b00;   /* l'accent historique, saturé d'un cran       */
+  --orange-encre:  #c2410c;   /* la même teinte, lisible en texte (5,18:1)   */
+  --orange-pale:   #fff1e6;
+
+  /* Le bleu-canard n'est pas choisi : il est REPRIS du contenu, où
+     Michel Montaud s'en sert pour distinguer SES réponses de celles du
+     patient dans les correspondances — 45 passages.
+
+     Il sert AUSSI aux grands titres, aux cartes et au pied de page — et
+     ce fut longtemps un défaut : la voix se distinguait des titres par
+     #12707d contre #178897, deux nuances séparées par 1,38:1 seulement,
+     quand il en faut environ 3 pour que l'oeil en soit sûr. La
+     distinction vivait dans cette feuille, pas dans la lecture.
+
+     Elle a d'abord été réparée en retirant le bleu à tous les titres.
+     Mesuré : 7 éléments bleus sur /fr/maintenant/, puis 2. Mais la page
+     est devenue austère — verdict du regard, le 19/08/2026, et il prime.
+
+     Le bleu est donc revenu aux titres, et la voix ne compte plus sur la
+     teinte : elle porte un FOND pâle, que nul titre ne partage. Ne pas
+     lui retirer ce fond en croyant simplifier : la couleur seule ne l'a
+     jamais distinguée.
+     4,19:1 sur blanc, d'où --bleu-encre (5,44:1) pour le texte courant. */
+  --bleu:          #0891b2;   /* vif : réservé au h1, voir plus bas          */
+  --bleu-encre:    #0e7490;   /* la même teinte, lisible en petit (5,36:1) */
+  --bleu-pale:     #e8f6fa;
+  --fond:          #ffffff;   /* la feuille                                  */
+  --papier:        #fdfbf7;   /* l'établi sur lequel elle est posée           */
+  --fond-doux:     #fbf7f1;
+  --encre:         #333331;
+  --encre-douce:   #6d6a66;
+  --filet:         #f0dcc9;   /* les filets se réchauffent avec l'orange     */
+  --ombre:         0 1px 2px rgba(50, 40, 25, .05), 0 6px 20px rgba(50, 40, 25, .06);
+
+  --titre: 'Dosis', 'Trebuchet MS', 'Lucida Grande', sans-serif;
+  --texte: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
+           'Lucida Grande', Arial, sans-serif;
+
+  /* Aucun fond d'écran par défaut : le thème n'en livre pas. Voir `body`. */
+  --fond-image: none;
+
+  --colonne: 44rem;           /* mesuré : 73 signes par ligne, marge comprise */
+  --large:   70rem;
+  --mesure:  44rem;           /* la ligne de lecture à l'intérieur de la feuille */
+  --marge:   clamp(1rem, 4vw, 2.5rem);
+}
+
+/* --- fondations ---------------------------------------------------- */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; background: var(--papier); }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
+
+body {
+  margin: 0;
+  /* Le fond d'écran du site, s'il en a un. Une aquarelle botanique très pâle
+     dans le site d'origine : l'art vit sur les bords, le centre reste calme
+     sous la feuille ; délavée à 62 % vers --papier pour la lisibilité, et
+     `fixed` fait glisser la feuille dessus au défilement.
+
+     IL PASSE PAR UNE VARIABLE, ET CE N'EST PAS DU CONFORT. L'adresse était
+     écrite en dur ici, alors que le thème ne LIVRE pas l'image — elle
+     appartenait au site d'origine. Toute page de tout site né du squelette
+     demandait donc `/assets/fond-aquarelle.jpg` et récoltait un 404, deux
+     fois par page (la règle est reprise en mode impression). Rien ne le
+     disait : le fond manquant ne se voit pas, puisqu'il est censé être
+     pâle, et le vérificateur ne lit pas les `url()` des feuilles de style,
+     seulement les liens du HTML.
+
+     Un thème qui a l'image pose `--fond-image: url("/assets/le-fichier.jpg")`
+     et ajoute le fichier à sa liste de ressources. Sinon, `none` : pas de
+     couche d'image, pas de requête. */
+  background: var(--fond-image) center top / cover fixed no-repeat,
+              var(--papier);
+  color: var(--encre);
+  font-family: var(--texte);
+  font-size: 1.08rem;
+  line-height: 1.75;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection { background: var(--orange); color: #fff; }
+
+/* Dosis est une linéale géométrique : au-delà de 500 elle épaissit vite.
+   Les titres restent en 400/500, plus fins que les 600/700 d'origine. */
+h1, h2, h3, h4, h5, h6 {
+  /* Le titre visé par une ancre doit se poser SOUS la bande fixe.
+     8 rem suffisent tant que la bande fait 114 px ; sous 46 rem de large
+     la recherche passe à la ligne et la bande monte à 157 px — la marge
+     est relevée plus bas. Sans cela le titre reste caché de 29 px, et
+     rien ne le signale. */
+  scroll-margin-top: 8rem;
+  font-family: var(--titre);
+  font-weight: 500;
+  line-height: 1.25;
+  letter-spacing: .005em;
+  color: var(--encre);
+  margin: 2em 0 .55em;
+  text-wrap: balance;
+}
+/* Les grands titres portent le bleu. Il leur a été retiré un temps pour
+   le rendre à la voix du praticien, puis remis : sans lui la page devient
+   austère, et c'est le regard qui tranche, pas le raisonnement. La voix
+   ne compte plus sur la TEINTE pour se distinguer — elle a son fond,
+   plus bas. La hiérarchie, elle, garde ce qu'elle avait gagné : la
+   taille, la graisse et le blanc. */
+/* Le bleu VIF ne va qu'au h1 : il ne descend jamais sous 27 px, donc
+   reste « grand texte » (seuil 3), tenu à 3,68:1. Le h2 suit la largeur
+   de l'écran — 24 px à 1280, mais 22,5 px à 820 — et cesse alors d'être
+   grand texte : il lui faut 4,5:1, que le vif ne donne pas. D'où le bleu
+   profond, à 5,36:1, pour lui et pour tout ce qui est plus petit. */
+h1 { font-size: clamp(1.7rem, 1.25rem + 1.9vw, 2.5rem); font-weight: 400; margin-top: 0;
+     letter-spacing: -.014em; color: var(--bleu); }
+h2 { font-size: clamp(1.2rem, 1.05rem + .7vw, 1.5rem); color: var(--bleu-encre); }
+/* Un filet gris et beaucoup de blanc au-dessus d'un h2 : la respiration
+   d'un chapitre. Deux exclusions, toutes deux payées d'une régression :
+
+   - les titres qui ne sont QU'un lien — les annonces de l'accueil —
+     sont centrés et n'en veulent pas ;
+   - le filet ne vaut que dans le FLUX de la page, d'où `article.colonne >`.
+     Sans cela il l'emportait sur `.bon-tete h2` et sur `.pied h2`, dont
+     il écrasait la marge : le titre du bon de commande se retrouvait
+     poussé de 72 px, un filet en travers, sur un formulaire destiné à
+     l'impression. */
+article.colonne > h2:not(:has(> a:only-child)) {
+  margin-top: 3em; padding-top: .75em; border-top: 3px solid var(--orange);
+}
+h3 { font-size: 1.14rem; font-weight: 600; }
+h4 { font-size: 1.04rem; font-weight: 600; }
+h5, h6 { font-size: 1rem; font-weight: 600; }
+h1 + *, h2 + *, h3 + * { margin-top: 0; }
+
+/* Un titre qui n'est QU'un lien — les annonces de l'accueil — se pose
+   centré et sans soulignement : c'est une annonce, pas un lien en
+   pleine phrase. (L'ancien site les centrait déjà, la classe
+   « has-text-align-center » s'est perdue à la conversion.) */
+h1:has(> a:only-child), h2:has(> a:only-child),
+h3:has(> a:only-child), h4:has(> a:only-child) { text-align: center; }
+h1 > a:only-child, h2 > a:only-child,
+h3 > a:only-child, h4 > a:only-child { text-decoration: none; }
+/* Aucun trait, même au survol : c'est la couleur qui répond. */
+h1 > a:only-child:hover, h2 > a:only-child:hover,
+h3 > a:only-child:hover, h4 > a:only-child:hover { text-decoration: none; }
+
+p, ul, ol, blockquote, table, figure, pre { margin: 0 0 1.15em; }
+p { margin-bottom: 1.3em; }
+ul, ol { padding-left: 1.35em; }
+li { margin-bottom: .3em; }
+li::marker { color: var(--orange); }
+
+/* Aucun trait sous les liens, dans aucun état : c'est la couleur qui
+   les signale, et elle change au passage de la souris. Qui navigue au
+   clavier garde le cadre orange du `:focus-visible` plus bas — c'est
+   le repère normal, il ne dépend pas du soulignement. */
+a { color: var(--orange-encre); text-decoration: none; transition: color .15s; }
+a:hover { color: var(--orange); }
+
+/* Les liens DANS LE TEXTE reçoivent un trait qui s'étire de gauche à
+   droite au survol — le geste du menu, porté au corps de l'article. On ne
+   touche qu'aux liens de prose et du pied : les cartes, la pagination et
+   les boutons ont leur propre survol et ne doivent pas hériter d'un trait.
+   Sur un lien qui court sur deux lignes, le dégradé souligne chaque
+   fragment — comportement voulu, pas un défaut. */
+article.colonne p a, article.colonne li a, .pied a {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-position: 0 100%; background-repeat: no-repeat;
+  background-size: 0% 1.5px;
+  transition: background-size .28s cubic-bezier(.16, 1, .3, 1), color .15s;
+  padding-bottom: .06em;
+}
+@media (hover: hover) {
+  article.colonne p a:hover, article.colonne li a:hover, .pied a:hover {
+    background-size: 100% 1.5px;
+  }
+}
+/* Sans survol possible (téléphone, tablette), le trait est acquis d'office :
+   sinon le lien n'aurait aucune marque du tout sous le doigt. */
+@media (hover: none) {
+  article.colonne p a, article.colonne li a, .pied a { background-size: 100% 1.5px; }
+}
+
+:focus-visible { outline: 3px solid var(--orange); outline-offset: 2px; border-radius: 3px; }
+
+img, video { max-width: 100%; height: auto; }
+
+/* Une image seule dans son paragraphe reste collée à gauche de la
+   colonne : rien ne la centre. La classe se pose dans le contenu, en
+   HTML, sur le paragraphe qui l'enveloppe — d'abord pour la dent
+   aquarellée des trois pages d'accueil. */
+.image-centree { text-align: center; }
+figure { margin-inline: 0; }
+figcaption, .legende { font-size: .87rem; color: var(--encre-douce); text-align: center; margin-top: .5em; }
+
+hr {
+  border: 0; height: 1px; margin: 2.5em auto;
+  background: linear-gradient(90deg, transparent, var(--orange) 18%, var(--orange) 82%, transparent);
+}
+
+blockquote {
+  margin: 1.5em 0; padding: .1em 0 .1em 1.3em;
+  border-left: 4px solid var(--orange);
+  color: var(--encre-douce); font-style: italic;
+}
+blockquote p:last-child { margin-bottom: 0; }
+
+strong, b { font-weight: 600; color: var(--encre); }
+
+/* tableaux : ceux du site sont surtout des mises en page d'images
+   avant/après ; ils doivent pouvoir défiler sur un téléphone. */
+.tableau-enveloppe { overflow-x: auto; margin-bottom: 1.4em; }
+table { border-collapse: collapse; width: 100%; }
+th, td { padding: .55em .75em; border-bottom: 1px solid var(--filet); text-align: left; vertical-align: top; }
+th { font-family: var(--titre); font-weight: 600; }
+td img { display: block; margin: 0 auto .4em; border-radius: 4px; }
+
+/* Lu par les lecteurs d'écran, invisible à l'œil. Sert au titre de
+   l'accueil : le logo dit déjà où l'on est, mais une page sans <h1>
+   laisse sans repère qui navigue à l'oreille. */
+.hors-ecran {
+  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+  overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0;
+}
+
+/* --- ossature ------------------------------------------------------ */
+
+.saut-contenu {
+  position: absolute; left: -9999px; top: 0; z-index: 100;
+  background: var(--orange); color: #fff; padding: .7em 1.2em; border-radius: 0 0 6px 0;
+}
+.saut-contenu:focus { left: 0; }
+
+.enveloppe { width: min(100% - 2 * var(--marge), var(--large)); margin-inline: auto; }
+.colonne   { width: min(100% - 2 * var(--marge), var(--colonne)); margin-inline: auto; }
+
+/* La feuille posée sur l'établi.
+
+   Elle a la largeur du bandeau et des annonces (--large) : une feuille
+   plus étroite que la bande du dessus donnait une page en escalier.
+
+   Mais une feuille large ne veut pas dire une ligne longue. La ligne de
+   lecture reste tenue à --mesure, et c'est la MARGE INTÉRIEURE qui
+   absorbe la différence — pas un plafond posé sur chaque élément. La
+   raison est que les portraits et les couvertures FLOTTENT dans le
+   texte : plafonner les enfants un par un les aurait envoyés se coller
+   au bord de la feuille, à deux cents pixels du texte qu'ils illustrent.
+   Ici ils flottent dans la boîte de contenu, donc contre la colonne.
+
+   Mesuré à 1280 px : 704 px de texte, 90 signes par ligne. C'était 622
+   et 80 quand la feuille était étroite. 90 est le haut de la fourchette
+   lisible — pour resserrer ou élargir, --mesure est le seul bouton.
+
+   Les pages de collection n'ont pas d'`article` : leurs cartes sont
+   blanches sur l'établi, ce qui dit la même chose autrement. */
+article.colonne {
+  width: min(100% - 2 * var(--marge), var(--large));
+  background: var(--fond);
+  border: 1px solid var(--filet);
+  border-radius: 12px;
+  padding: clamp(1.3rem, 3.2vw, 2.6rem)
+           max(clamp(1.3rem, 3.2vw, 2.6rem),
+               (min(100% - 2 * var(--marge), var(--large)) - var(--mesure)) / 2);
+  box-shadow: 0 1px 2px rgba(70, 50, 20, .04), 0 12px 34px rgba(70, 50, 20, .05);
+}
+
+/* --- en-tête ------------------------------------------------------- */
+
+/* La bande du haut — en-tête ET menu — reste fixe ; seul le contenu
+   défile dessous.
+
+   Les deux sont réunis dans un seul conteneur collant plutôt que collés
+   séparément : `position: sticky` se cale sur le haut de la fenêtre, si
+   bien que deux éléments frères à `top: 0` se superposeraient. Il aurait
+   fallu donner au menu un `top` égal à la hauteur de l'en-tête — or
+   celle-ci change avec la largeur de l'écran (la recherche passe à la
+   ligne sous 46 rem). Un seul conteneur s'en moque.
+
+   Ce que cette bande coûte, mesuré : 111 px sur un écran d'ordinateur,
+   157 px sur un téléphone où seul l'en-tête reste (le menu s'y replie
+   derrière son bouton). C'est autant de moins pour lire — d'où le
+   `scroll-margin-top` des titres, sans lequel les 27 ancres du sommaire
+   de « Réflexions » déposent leur titre DERRIÈRE la bande. */
+/* L'orange prend TOUT ce qui sépare ou délimite : la bande se referme
+   sur un trait franc, visible sur chaque page. Le menu perd le sien,
+   sinon les deux filets se doublent. */
+.bandeau { position: sticky; top: 0; z-index: 40; border-bottom: 3px solid var(--orange); }
+
+/* Dès qu'on a quitté le haut de page, la bande porte une ombre douce :
+   c'est l'indice de profondeur — elle « flotte » au-dessus du texte qui
+   défile dessous. En haut de page, aucune ombre : rien ne flotte encore.
+   La classe est posée par le script ; sans lui, pas d'ombre et rien ne
+   manque. */
+.bandeau { transition: box-shadow .25s ease; }
+.bandeau.detachee { box-shadow: 0 6px 24px -12px rgba(47, 42, 35, .35); }
+
+/* La recherche passe à sa propre ligne sous 46 rem : la bande grandit,
+   la marge d'ancre doit suivre. */
+@media (max-width: 46rem) {
+  h1, h2, h3, h4, h5, h6 { scroll-margin-top: 11rem; }
+}
+
+/* Sur petit écran, la bande se replie quand on descend et revient quand
+   on remonte — voir site.js. Sans JavaScript elle reste fixe,
+   comme sur grand écran : la page demeure utilisable. */
+@media (max-width: 46rem) {
+  .bandeau { transition: transform .22s ease; }
+  .bandeau.repliee { transform: translateY(-100%); }
+}
+
+/* `backdrop-filter` CRÉE UN CONTEXTE D'EMPILEMENT — c'est le piège.
+
+   Le dépliant de la recherche vit dans l'en-tête ; il portait `z-index:
+   50` contre `30` aux sous-menus et se retrouvait pourtant SOUS eux : le
+   flou d'arrière-plan l'enfermait dans l'en-tête, dont l'empilement à
+   lui, faute de `position`, se rangeait sous les entrées de menu (qui
+   sont positionnées). Monter le z-index du dépliant n'y changeait rien —
+   essayé jusqu'à 999. C'est l'EN-TÊTE qu'il faut poser au-dessus. */
+.entete {
+  position: relative; z-index: 50;
+  background: rgba(253, 251, 247, .93);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--filet);
+}
+.entete-barre { display: flex; align-items: center; gap: 1rem; padding: .6rem 0; flex-wrap: wrap; }
+
+/* Sur téléphone, la recherche écrasait le nom du site — il n'en restait
+   que « HUMAN… DENTO… ». Elle passe sur sa propre ligne : le nom, les
+   langues et le bouton de menu tiennent alors sans se chevaucher. */
+@media (max-width: 46rem) {
+  .entete-barre { gap: .5rem .7rem; }
+  .recherche { order: 10; flex: 1 0 100%; margin-bottom: .15rem; }
+}
+
+.marque { display: flex; align-items: center; gap: .7rem; text-decoration: none;
+          color: inherit; margin-right: auto; }
+.marque-logo { width: auto; height: 2.7rem; flex: 0 0 auto; }
+.marque-texte { display: flex; flex-direction: column; line-height: 1.15; }
+.marque-nom {
+  font-family: var(--titre); font-weight: 700; font-size: .95rem;
+  text-transform: uppercase; letter-spacing: .07em; color: var(--encre);
+}
+.marque-devise { font-size: .76rem; color: var(--encre-douce); display: none; }
+@media (min-width: 46rem) { .marque-devise { display: block; } }
+@media (max-width: 30rem) {
+  .marque-nom { font-size: .8rem; letter-spacing: .05em; }
+  .marque-logo { height: 2.2rem; }
+}
+
+.langues { display: flex; gap: .25rem; }
+.langues a {
+  font-family: var(--titre); font-weight: 600; font-size: .78rem; text-transform: uppercase;
+  letter-spacing: .05em; padding: .28em .58em; border-radius: 999px; text-decoration: none;
+  color: var(--encre-douce); border: 1px solid transparent;
+}
+.langues a:hover { background: var(--orange-pale); color: var(--orange-encre); }
+.langues a[aria-current="true"] { background: var(--orange); color: #fff; }
+.langues .absente { opacity: .38; pointer-events: none; }
+
+.bouton-menu {
+  display: inline-flex; align-items: center; gap: .45em; font: inherit; font-family: var(--titre);
+  font-weight: 500; background: none; border: 1px solid var(--filet); color: var(--encre);
+  padding: .35em .75em; border-radius: 6px; cursor: pointer;
+}
+.bouton-menu:hover { border-color: var(--orange); color: var(--orange-encre); }
+/* Le menu ne s'affiche en barre que s'il TIENT sur une ligne. Depuis la
+   séparation d'« Interviews/contact » en trois entrées (31/08/2026), la
+   barre compte onze intitulés et réclame ~1152 px dans sa langue la plus
+   large (mesuré, l'anglais) : sous 74rem elle passait sur deux étages.
+   Le seuil vit à QUATRE endroits coordonnés dans ce fichier plus le
+   auDoigt de site.js — à déplacer ENSEMBLE. */
+@media (min-width: 74rem) { .bouton-menu { display: none; } }
+
+/* --- navigation ---------------------------------------------------- */
+
+.nav { border-bottom: 0; background: var(--papier); }
+.nav ul { list-style: none; margin: 0; padding: 0; }
+
+/* Les deux sortes d'entrées doivent se comporter PAREIL. Une rubrique
+   sans lien est un <span> : laissé en ligne, son remplissage vertical
+   ne pousse pas la ligne, et elle remontait de 9 px par rapport aux
+   entrées cliquables — le menu partait en zigzag. */
+.nav a, .nav .intitule { display: block; text-decoration: none; color: var(--encre-douce);
+                         transition: color .18s; }
+/* L'orange d'ENCRE, pas l'orange vif : c'est du texte, il doit rester
+   lisible sur le fond crème — le trait qui s'étire dessous porte déjà
+   l'orange vif, les deux se répondent. */
+.nav a:hover, .nav .intitule:hover { color: var(--orange-encre); }
+.nav > .enveloppe > ul { display: flex; flex-wrap: wrap; align-items: stretch; gap: .1rem; }
+
+.nav > .enveloppe > ul > li > a,
+.nav > .enveloppe > ul > li > .intitule {
+  font-family: var(--titre); font-weight: 500; font-size: .85rem; letter-spacing: .04em;
+  padding: .75em .8em; position: relative; cursor: default; white-space: nowrap;
+}
+.nav > .enveloppe > ul > li > a { cursor: pointer; }
+.nav > .enveloppe > ul > li > a::after,
+.nav > .enveloppe > ul > li > .intitule::after {
+  content: ''; position: absolute; left: .8em; right: .8em; bottom: .4em; height: 2px;
+  background: var(--orange); transform: scaleX(0); transform-origin: left; transition: transform .18s;
+}
+.nav li:hover > a::after, .nav li:focus-within > a::after,
+.nav li:hover > .intitule::after, .nav li:focus-within > .intitule::after,
+.nav a[aria-current="page"]::after { transform: scaleX(1); }
+
+/* sous-menus : déroulants sur grand écran, dépliés sur petit */
+.nav li { position: relative; }
+.nav ul ul {
+  background: var(--fond); border: 1px solid var(--filet); border-radius: 10px;
+  box-shadow: 0 18px 40px -18px rgba(47, 42, 35, .4); padding: .35rem; min-width: 15rem;
+}
+/* Verre dépoli, comme la bande d'en-tête : le panneau laisse deviner la
+   page derrière lui. Sous @supports — un navigateur sans backdrop-filter
+   garde le fond plein ci-dessus, jamais un panneau transparent illisible. */
+@supports (backdrop-filter: blur(1px)) {
+  /* .68 et non .82 : à .82 sur ce fond crème, la transparence ne se voyait
+     pas — un panneau opaque avec un mot savant. Le saturate(1.6) est le
+     geste d'Apple : ce qui transparaît revient légèrement plus coloré,
+     et l'œil comprend « verre » au lieu de « voile gris ». */
+  /* .55 : le cran en dessous de .68, que Christophe voyait « très
+     léger ». La lisibilité tient parce que le flou monte avec : ce qui
+     transparaît est des taches de couleur, plus des lettres. Ne pas
+     descendre en dessous sans revérifier les entrées du menu sur une
+     page dense (les listes de témoignages). */
+  .nav ul ul { background: rgba(253, 251, 247, .55);
+               backdrop-filter: blur(22px) saturate(1.7); }
+  .nav ul ul ul { background: transparent; backdrop-filter: none; }
+}
+.nav ul ul a { padding: .48em .68em; border-radius: 5px; font-size: .89rem; white-space: normal; }
+.nav ul ul a:hover { background: var(--orange-pale); color: var(--orange-encre); }
+.nav ul ul .intitule { padding: .48em .68em; font-size: .89rem; font-weight: 600;
+                       color: var(--encre-douce); }
+.nav ul ul ul { margin-left: .7rem; border: 0; box-shadow: none; padding: .1rem 0 .1rem .35rem;
+                border-left: 2px solid var(--filet); border-radius: 0; min-width: 0; }
+
+@media (min-width: 74rem) {
+  /* le script pose « vers-la-gauche » sur les rubriques dont le panneau
+     sortirait de l'écran : il s'aligne alors sur leur bord DROIT. */
+  .nav li.vers-la-gauche > ul { left: auto; right: 0; }
+    .nav ul ul { position: absolute; top: 100%; left: 0; z-index: 30; opacity: 0; visibility: hidden;
+                 transform: translateY(6px) scale(.98); transform-origin: top;
+                 transition: opacity .2s cubic-bezier(.16, 1, .3, 1),
+                             transform .2s cubic-bezier(.16, 1, .3, 1), visibility .2s; }
+    .nav li:hover > ul, .nav li:focus-within > ul { opacity: 1; visibility: visible; transform: none; }
+  /* `visibility` s'HÉRITE : mettre `visible` ici rallumait le 3e niveau
+     alors que son parent était caché. L'`opacity: 0` du parent le
+     dérobait à l'oeil mais PAS à la souris — deux panneaux fantômes
+     flottaient sur la page et interceptaient les clics. Sur la page du
+     1er livre, l'un d'eux couvrait le lien « Bon de commande ».
+     `inherit` fait suivre le 3e niveau l'état de son parent. */
+  .nav ul ul ul { position: static; opacity: 1; visibility: inherit; transform: none; }
+
+  /* Le déroulant ne s'ouvre qu'après un survol DÉLIBÉRÉ. Sans ce délai
+     il suffisait de traverser le menu en descendant vers la page pour
+     qu'il se déplie et recouvre le contenu : sur la page du 1er livre,
+     il tombait pile sur le lien « Bon de commande ».
+     La fermeture, elle, reste immédiate — et le clavier aussi, pour qui
+     navigue à la tabulation. */
+  .nav li:hover > ul { transition-delay: .35s; }
+  .nav li:focus-within > ul { transition-delay: 0s; }
+  .nav li:not(:hover) > ul { transition-delay: 0s; }
+}
+@media (max-width: 73.99rem) {
+  /* Le menu déplié est plus haut que l'écran : 32 liens, tous les
+     sous-menus ouverts. Dans une bande COLLANTE, ce qui dépasse devient
+     inatteignable — la page défile sous la bande, pas dedans, et on
+     restait bloqué à « Dentosophie - Avant 2006 ». La bande se limite
+     donc à la hauteur de la fenêtre et défile pour son propre compte.
+
+     `dvh` plutôt que `vh` : sur téléphone, la barre d'adresse du
+     navigateur mange une partie de `vh`, et le bas du menu repassait
+     sous elle. `overscroll-behavior` empêche la page de se mettre à
+     défiler quand on arrive au bout du menu.
+
+     Réservé aux petits écrans : au-dessus de 62 rem les sous-menus sont
+     en position absolue, et `overflow` les couperait net.
+
+     Et réservé au menu OUVERT : appliqué en permanence, le même
+     `overflow` coupait le dépliant de la recherche. La bande ne fait
+     alors que 160 px de haut, et il n'en restait que neuf pixels
+     visibles — les douze résultats tombaient hors de la boîte. */
+  .bandeau:has(.nav.ouvert) {
+    max-height: 100vh;
+    max-height: 100dvh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  .nav { display: none; }
+  .nav.ouvert { display: block; }
+
+  /* Les sous-menus se replient : dépliés d'un bloc, les 32 liens
+     faisaient 2074 px à parcourir au doigt. Sans JavaScript ils restent
+     tous ouverts — la règle ci-dessous ne s'applique qu'à partir de la
+     classe que pose le script, jamais en son absence. */
+  .nav li.repliable > ul { display: none; }
+  .nav li.repliable.deplie > ul { display: block; }
+  .nav li.repliable > .intitule { position: relative; padding-right: 2.4em; cursor: pointer; }
+
+  /* Le trait orange de survol ne sert à rien au doigt : ::after est
+     récupéré pour le chevron. Toutes ses propriétés sont réécrites, la
+     règle du grand écran en pose sept. */
+  /* Le sélecteur DOIT être aussi précis que celui du grand écran, sinon
+     il perd. `.nav > .enveloppe > ul > li > .intitule::after` compte
+     trois classes et trois éléments ; `.nav li.repliable > .intitule`
+     n'en comptait que trois et deux, et se faisait imposer la
+     `height: 2px` du trait de survol. Le chevron mesurait alors
+     6,25 × 2 px — un tiret couché, pas une flèche. */
+  .nav > .enveloppe ul li.repliable > .intitule::after {
+    content: ''; position: absolute;
+    left: auto; right: 1.05em; bottom: auto; top: 50%;
+    width: .46em; height: .46em; margin-top: -.32em;
+    background: none;
+    border-right: 2px solid var(--orange); border-bottom: 2px solid var(--orange);
+    transform: rotate(45deg); transform-origin: center;
+    transition: transform .18s;
+  }
+  .nav > .enveloppe ul li.repliable.deplie > .intitule::after {
+    transform: rotate(-135deg); margin-top: -.1em;
+  }
+
+  /* 44 px pour une entrée de sous-menu comme pour les autres : elles en
+     faisaient 39, et ce sont elles qu'on vise le plus — les rubriques ne
+     font que déplier. */
+  .nav ul ul a, .nav ul ul .intitule {
+    display: flex; align-items: center; min-height: 2.75rem;
+    padding-top: .3em; padding-bottom: .3em;
+  }
+  .nav > .enveloppe > ul { display: block; padding: .4rem 0 1rem; }
+  .nav > .enveloppe > ul > li > a,
+  .nav > .enveloppe > ul > li > .intitule { white-space: normal; }
+  .nav ul ul { border: 0; box-shadow: none; padding-left: .85rem; min-width: 0;
+               border-left: 2px solid var(--filet); border-radius: 0; margin: 0 0 .3rem .3rem; }
+}
+
+/* --- contenu ------------------------------------------------------- */
+
+/* `flow-root` contient la couverture flottante. Sans lui, une page plus
+   courte que sa couverture la laissait déborder PAR-DESSUS le pied de
+   page — c'est ce qu'on voyait sur la page du 4e livre. */
+.contenu { padding: clamp(1.8rem, 4.5vw, 3rem) 0 3.5rem; display: flow-root; }
+.contenu-tete { margin-bottom: 1.8rem; }
+.fil { font-size: .82rem; color: var(--encre-douce); margin-bottom: .7rem; }
+.fil a { color: inherit; }
+.fil a:hover { color: var(--orange-encre); }
+.date-fiche { font-family: var(--titre); font-weight: 600; color: var(--encre-douce); font-size: .88rem; }
+/* « Témoignage écrit en français, traduit. » — sans quoi un lecteur
+   italien croit lire le témoignage d'un patient italien. */
+/* SOUS le titre, pas au-dessus. Mesuré sur téléphone : la mention prend
+   deux lignes sur une colonne de 300 px, et le lecteur rencontrait
+   44 px de note technique avant de savoir ce qu'il lit. Le titre
+   d'abord, la provenance ensuite — elle reste devant le texte, donc
+   personne ne commence un témoignage sans savoir qu'il est traduit. */
+.origine { font-size: .84rem; color: var(--encre-douce); font-style: italic;
+           margin: .35rem 0 0; }
+
+/* La même mention, quand c'est une machine qui a traduit : le globe s'y
+   ajoute plutôt que de faire une seconde ligne au-dessous. */
+.origine.par-machine { display: flex; align-items: center; gap: .4em; font-style: normal;
+                       font-size: .78rem; letter-spacing: .02em; }
+.origine.par-machine svg { width: .95em; height: .95em; flex: none;
+                           fill: none; stroke: currentColor; stroke-width: 1.6; opacity: .75; }
+
+/* --- image d'ouverture ----------------------------------------------
+   L'accueil portait une CAPTURE D'ÉCRAN de 990 px avec son texte
+   incrusté dedans : floue sur un écran moderne, invisible pour les
+   moteurs de recherche, illisible pour un lecteur d'écran et
+   intraduisible. La photo d'origine est reprise, et le texte redevient
+   du texte, posé par-dessus. */
+
+.hero { position: relative; margin: 0 0 2.8rem; border-radius: 12px; overflow: hidden;
+        aspect-ratio: 16 / 8; }
+
+/* Une SEULE règle. Il y en avait deux, et la seconde annulait la
+   première : `height: auto` l'emportait sur `height: 100%`, ce qui
+   rendait `object-fit: cover` sans effet. L'image gardait alors sa
+   hauteur naturelle — 226 px pour 339 px de large sur téléphone —
+   dans une boîte de 170 px qui la coupait par le bas. On voyait le
+   haut de la photo, jamais son cadrage. */
+.hero img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.hero figcaption {
+  position: absolute; inset: auto 0 0 0; margin: 0;
+  padding: 3.5rem clamp(1rem, 4vw, 2.4rem) clamp(1rem, 3vw, 1.8rem);
+  background: linear-gradient(to top, rgba(20, 14, 6, .82), rgba(20, 14, 6, .55) 55%, transparent);
+  color: #fff; text-align: left; display: flex; flex-direction: column; gap: .15rem;
+}
+.hero figcaption strong {
+  font-family: var(--titre); font-weight: 600; color: #fff;
+  font-size: clamp(1.5rem, 1rem + 2.4vw, 2.6rem); line-height: 1.1;
+}
+.hero figcaption span { font-size: clamp(.9rem, .8rem + .5vw, 1.15rem); opacity: .92; }
+.hero figcaption em {
+  font-style: normal; font-family: var(--titre); font-weight: 500;
+  font-size: clamp(.95rem, .85rem + .6vw, 1.3rem); color: var(--orange);
+  margin-top: .35rem;
+}
+/* Sur téléphone, la légende occupait 147 px des 170 px du bandeau : la
+   photo disparaissait derrière son propre titre. Le bandeau s'allonge
+   pour lui laisser de la place — mesuré à 375 px, la légende passe de
+   87 % à 58 % de la hauteur. */
+@media (max-width: 46rem) {
+  .hero { aspect-ratio: 4 / 3; }
+}
+@media (max-width: 34rem) {
+  .hero figcaption { padding-top: 2.5rem; }
+}
+
+/* ---- L'ouverture prend vie, discrètement ------------------------------
+   Deux gestes, pas un de plus. Les trois lignes du titre montent en fondu,
+   décalées ; et l'image dérive plus lentement que la page au défilement,
+   ce qui donne la profondeur.
+
+   TOUT est enfermé dans « prefers-reduced-motion: no-preference ». Ce
+   réglage n'est pas un caprice de réglage : le mouvement d'arrière-plan
+   déclenche des vertiges chez les personnes sensibles au mal des
+   transports, et des migraines chez d'autres. Qui l'a demandé voit une
+   image parfaitement immobile, et le site reste entier.
+
+   Troisième version de l'effet, et la leçon des deux premières : une
+   TRANSLATION seule est invisible — 14 px de glissement pendant 300 px de
+   défilement, l'œil ne les détache pas du mouvement de la page. Ce que
+   l'œil perçoit, c'est le ZOOM. Au repos l'image est exactement normale
+   (plus d'agrandissement permanent, donc plus de recadrage au chargement) ;
+   au défilement elle grossit jusqu'à ~8 % en glissant doucement.
+
+   L'équilibre à ne pas casser : le zoom crée sa propre réserve — à un
+   avancement a, l'image dépasse de 9 % × a de chaque côté (coefficient
+   0.18 dans le script), et le glissement de 7 % × a reste TOUJOURS
+   en dessous. C'est ce qui garantit qu'aucun bord vide n'apparaît,
+   quelle que soit la position de défilement. */
+@media (prefers-reduced-motion: no-preference) {
+  .hero img {
+    transform: translate3d(0, var(--derive-y, 0px), 0) scale(var(--derive-z, 1));
+    will-change: transform;
+  }
+
+  .hero figcaption > * {
+    animation: hero-monte .9s cubic-bezier(.16, 1, .3, 1) backwards;
+  }
+  .hero figcaption strong { animation-delay: .12s; }
+  .hero figcaption span   { animation-delay: .26s; }
+  .hero figcaption em     { animation-delay: .40s; }
+
+  @keyframes hero-monte {
+    from { opacity: 0; transform: translateY(1.1rem); }
+    to   { opacity: 1; transform: none; }
+  }
+}
+
+/* --- « À la une » ----------------------------------------------------
+   Le bloc d'annonces de l'accueil. Il n'est pas écrit à la main : il
+   affiche les entrées les plus récentes de la rubrique, rangées par
+   date. Ajouter une annonce ne demande donc pas de toucher à
+   l'accueil — c'est la date qui classe. */
+
+.alaune { margin: 0 auto 2.8rem; }
+.alaune-tete {
+  display: flex; align-items: baseline; gap: 1rem; margin-bottom: .9rem;
+  padding-bottom: .45rem; border-bottom: 1px solid var(--filet);
+}
+.alaune-tete h2 {
+  margin: 0; font-size: .95rem; font-weight: 700; color: var(--encre-douce);
+  text-transform: uppercase; letter-spacing: .09em;
+}
+.alaune-toutes {
+  margin-left: auto; font-family: var(--titre); font-weight: 600;
+  font-size: .85rem; text-decoration: none; white-space: nowrap;
+}
+.alaune .fiche-carte :is(h2, h3) { font-size: 1.02rem; line-height: 1.35; }
+
+/* Les cartes des collections font 19 rem : à quatre annonces, la
+   quatrième restait orpheline sur une deuxième ligne. Celles d'« À la
+   une » sont plus étroites, et en « auto-fit » — de sorte que trois
+   s'étalent, et que quatre tiennent sur la même ligne. */
+/* LA PLUS RÉCENTE PREND TOUTE LA LARGEUR, au-dessus des autres. Quatre
+   cartes de taille égale ne disent pas laquelle est la nouvelle : l'œil les
+   parcourt de gauche à droite sans hiérarchie, et l'annonce du jour se perd
+   parmi trois anciennes. La collection étant triée par date décroissante,
+   la première EST la plus récente.
+
+   Colonnes explicites plutôt qu'auto-fit : « grid-column: 1 / -1 » a besoin
+   d'un nombre de colonnes connu, sans quoi la carte large ne s'étend que
+   sur celles que la grille a bien voulu créer. */
+.alaune .fiches { grid-template-columns: 1fr; }
+@media (min-width: 30rem) {
+  .alaune .fiches { grid-template-columns: repeat(2, 1fr); }
+}
+/* 46 rem et non 52 : à 52, une tablette de 768 px retombait à deux colonnes
+   et une petite carte restait seule sur une rangée. Les colonnes y font
+   alors 15 rem, la largeur qu'elles avaient déjà avant cette mise en avant. */
+@media (min-width: 46rem) {
+  .alaune .fiches { grid-template-columns: repeat(3, 1fr); }
+}
+/* On s'arrête à TROIS colonnes. Quatre avait été essayé sur demande : à
+   1280 px les cartes tombaient à 269 px, leurs titres à trois lignes, et la
+   rangée paraissait chargée sans rien apprendre de plus. Trois cartes de
+   364 px se lisent d'un coup d'œil. */
+
+.alaune .fiches > li:first-child { grid-column: 1 / -1; }
+.alaune .fiches > li:first-child .fiche-carte {
+  padding: 1.5rem 1.6rem; gap: .6rem; border-top-width: 6px;
+}
+.alaune .fiches > li:first-child .fiche-carte :is(h2, h3) {
+  font-size: 1.4rem; line-height: 1.25;
+}
+.alaune .fiches > li:first-child .fiche-carte p { font-size: .96rem; }
+@media (max-width: 30rem) {
+  /* Sur un téléphone tout est déjà sur une colonne : la grossir la rendrait
+     seulement plus longue à dépasser pour atteindre les suivantes. */
+  .alaune .fiches > li:first-child .fiche-carte {
+    padding: 1.05rem 1.15rem; border-top-width: 4px;
+  }
+  .alaune .fiches > li:first-child .fiche-carte :is(h2, h3) { font-size: 1.15rem; }
+}
+
+/* l'étiquette de genre : vidéo, livre, rencontre… */
+.genre {
+  display: inline-block; background: var(--orange); color: #fff;
+  border-radius: 3px; padding: .05em .45em; margin-right: .1em;
+  font-size: .68rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+}
+
+/* --- sommaire d'une longue page -------------------------------------
+   Les Réflexions font 327 000 caractères : trente-huit textes à la
+   suite, sans plan on s'y perd. */
+
+.sommaire {
+  background: var(--fond-doux); border: 1px solid var(--filet);
+  border-radius: 10px; padding: 1.1em 1.4em; margin: 0 0 2.5em;
+}
+.sommaire h2 {
+  margin: 0 0 .6em; font-size: .9rem; font-weight: 700; color: var(--encre-douce);
+  text-transform: uppercase; letter-spacing: .08em;
+}
+.sommaire ul { list-style: none; padding: 0; margin: 0; }
+.sommaire ul ul { padding-left: 1.1em; margin-top: .2em; }
+.sommaire li { margin-bottom: .3em; line-height: 1.4; }
+.sommaire a { text-decoration: none; }
+.sommaire > ul > li > a { font-family: var(--titre); font-weight: 600; }
+
+/* --- collections --------------------------------------------------- */
+
+/* LE COMPTE EST UN ARGUMENT, PAS UNE DONNÉE TECHNIQUE. « 200 entrées —
+   page 1/9 » se lisait comme le pied d'un tableur ; ces deux cents lettres
+   sont deux cents personnes, et le chiffre mérite d'être vu.
+   Le mot n'est PAS un petit gris posé à côté : nombre et mot partagent la
+   fonte des titres et le même bleu d'encre, et ne se distinguent que par
+   la taille et la graisse — ils se lisent alors comme une seule phrase.
+   Il vit HORS de la colonne de texte, juste avant la grille : son bord
+   droit tombe ainsi sur celui des cartes (1193 px contre 985 px pour la
+   colonne — collé au texte, il aurait flotté au milieu de rien).
+   Le rang de la page a été retiré d'ici : la navigation en bas de page le
+   dit déjà, et le répéter abîmait le chiffre. */
+.compteur { display: flex; align-items: baseline; flex-wrap: wrap;
+            justify-content: flex-end; gap: 0 .35rem;
+            font-family: var(--titre); color: var(--bleu-encre);
+            margin: 0 0 .7rem; }
+.compteur-nombre { font-size: 1.5rem; font-weight: 700; line-height: 1;
+                   font-variant-numeric: tabular-nums; }
+.compteur-mot { font-size: 1rem; font-weight: 500; line-height: 1.1; }
+.fiches { list-style: none; padding: 0; margin: 0; display: grid; gap: .9rem;
+          grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr)); }
+.fiche-carte {
+  display: flex; flex-direction: column; gap: .45rem; height: 100%;
+  padding: 1.05rem 1.15rem; background: var(--fond);
+  border: 1px solid var(--filet); border-top: 4px solid var(--orange);
+  border-radius: 10px;
+  text-decoration: none; color: inherit;
+  transition: border-color .2s, transform .2s cubic-bezier(.16, 1, .3, 1),
+              box-shadow .2s;
+}
+/* Le survol se sent : la carte monte de 4 px (au lieu de 2) et porte une
+   ombre plus large et plus douce, et seul le TITRE passe à l'orange — le
+   reste ne bouge pas, sinon la carte entière clignote. Le tout sous
+   @media (hover: hover) : au doigt, une carte « survolée » au moment du
+   tap resterait soulevée ensuite, l'air cassée. */
+@media (hover: hover) {
+  .fiche-carte:hover {
+    border-color: var(--orange); transform: translateY(-4px);
+    box-shadow: 0 14px 30px -16px rgba(47, 42, 35, .5); color: inherit;
+  }
+  .fiche-carte:hover :is(h2, h3) { color: var(--orange); }
+}
+.fiche-carte :is(h2, h3) { transition: color .2s; }
+.fiche-carte :is(h2, h3) { font-size: 1rem; margin: 0; font-weight: 600; color: var(--bleu-encre); }
+.fiche-carte p { font-size: .89rem; color: var(--encre-douce); margin: 0; line-height: 1.6; }
+
+.pagination { display: flex; flex-wrap: wrap; gap: .3rem; justify-content: center; margin-top: 2.2rem; }
+
+/* 44 px de côté, pas moins : c'est la cible qu'un doigt atteint sans
+   s'appliquer. Mesuré avant : 40 × 45 — assez haut, trop étroit, et sur
+   une liste de neuf pages viser le « 5 » demandait de la précision.
+   `min-width` en em suivait la taille du texte au lieu de garantir une
+   surface ; en rem elle ne dépend plus que de la racine. La hauteur est
+   posée par le même chemin, pour que les deux côtés se valent. */
+.pagination a, .pagination span {
+  font-family: var(--titre); font-weight: 500; text-align: center;
+  min-width: 2.75rem; min-height: 2.75rem;
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: .3em .6em; border: 1px solid var(--filet); border-radius: 6px; text-decoration: none;
+}
+.pagination a:hover { border-color: var(--orange); background: var(--orange-pale); }
+.pagination [aria-current="page"] { background: var(--orange); color: #fff; border-color: var(--orange); }
+.pagination .ellipse { border: 0; }
+
+/* liens page précédente / suivante au bas d'une fiche */
+.voisines { display: flex; justify-content: space-between; gap: 1rem; margin-top: 2.6rem;
+            padding-top: 1.3rem; border-top: 1px solid var(--filet);
+            font-family: var(--titre); font-weight: 500; font-size: .95rem; }
+.voisines a { text-decoration: none; }
+.voisines .suivante { margin-left: auto; text-align: right; }
+
+/* --- recherche ----------------------------------------------------- */
+
+.recherche { position: relative; }
+.recherche input {
+  font: inherit; font-size: .9rem; padding: .42em 2.1em .42em .85em; width: 100%;
+  border: 1px solid var(--filet); border-radius: 999px; background: var(--fond-doux); color: var(--encre);
+}
+.recherche input:focus { border-color: var(--orange); background: var(--fond); }
+.recherche-resultats {
+  position: absolute; top: calc(100% + .4rem); left: 0; right: 0; z-index: 50;
+  background: var(--fond); border: 1px solid var(--filet); border-radius: 10px; box-shadow: var(--ombre);
+  max-height: 24rem; overflow-y: auto; padding: .3rem; margin: 0; list-style: none;
+}
+.recherche-resultats:empty { display: none; }
+.recherche-resultats a { display: block; padding: .5em .65em; border-radius: 6px; text-decoration: none; color: inherit; }
+.recherche-resultats a:hover, .recherche-resultats a:focus { background: var(--orange-pale); }
+.recherche-resultats .ou { display: block; font-size: .76rem; color: var(--encre-douce); }
+.recherche-resultats .extrait {
+  font-size: .78rem; color: var(--encre-douce); margin-top: .15em;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.recherche-resultats mark { background: color-mix(in srgb, var(--orange) 30%, transparent); color: inherit; border-radius: 2px; }
+
+/* --- les deux voix des correspondances ------------------------------
+   Dans les cas cliniques, la page est un échange : le patient écrit,
+   Michel Montaud répond. Le site d'origine ne distinguait que SES
+   réponses, par la couleur — d'où `voix-praticien`, posée à l'import.
+   `voix-patient` a été ajoutée après coup (outils/marquer_voix_patient.py)
+   pour que l'autre voix existe aussi.
+
+   Trois traitements ont été essayés avant celui-ci :
+
+   - la TEINTE seule : les titres portent le même bleu, et les deux
+     nuances censées les séparer ne se distinguent qu'à 1,38:1 — l'oeil
+     n'y voyait rien ;
+   - le FOND pâle : lisible et sans confusion possible, mais sur le cas
+     clinique 8 il surlignait 50 lignes, soit 26 % de la page. Jugé trop
+     chargé le 19/08/2026 ;
+   - le filet en marge, ci-dessous : le tour de parole se voit à la
+     réglure, le texte reste noir sur blanc.
+
+   Le filet se pose sur le PARAGRAPHE, pas sur le <span> : un `span` en
+   ligne ne porte qu'un bord par fragment de ligne, ce qui aurait
+   dessiné un trait par ligne au lieu d'un par tour. */
+
+p:has(> .voix-praticien),
+p:has(> .voix-patient) {
+  padding-left: 1.1em;
+  border-left: 2px solid var(--filet);
+  margin-left: .1em;
+}
+p:has(> .voix-praticien) { border-left-color: var(--bleu); }
+p:has(> .voix-patient)   { border-left-color: var(--filet); }
+
+/* Dans un dialogue, c'est le FILET qui parle : le texte reprend l'encre.
+   Ailleurs, la classe garde sa couleur — l'import a marqué du même nom
+   deux TITRES de la page MAINTENANT, qui n'étaient pas une voix mais
+   simplement en couleur dans l'original. Neutraliser partout les aurait
+   éteints. */
+p:has(> .voix-praticien) > .voix-praticien,
+p:has(> .voix-patient)   > .voix-patient { color: inherit; }
+
+/* Deux paragraphes du même tour se suivent : on resserre pour que la
+   réglure se lise comme un seul bloc, et non comme des traits épars. */
+p:has(> .voix-praticien) + p:has(> .voix-praticien),
+p:has(> .voix-patient) + p:has(> .voix-patient) { margin-top: -.9em; padding-top: .9em; }
+
+/* --- page de contact -------------------------------------------------
+   Le contact se fait par courrier postal, avec enveloppe timbrée : ce
+   n'est pas un détail mais la condition d'une réponse. L'adresse est
+   donc présentée comme une étiquette, et le rappel se voit.
+   Elle s'étalait avant sur sept paragraphes séparés. */
+
+.portrait { float: right; margin: .2rem 0 1.2rem 1.8rem; width: min(11rem, 38%); }
+.portrait img { display: block; width: 100%; height: auto; border-radius: 10px; box-shadow: var(--ombre); }
+@media (max-width: 34rem) {
+  .portrait { float: none; margin: 0 auto 1.4rem; width: min(12rem, 60%); }
+}
+
+/* La couverture d'un livre : le lecteur la reconnaît en librairie, elle
+   vaut mieux qu'un titre en gras. Flottée à droite pour que le texte
+   l'entoure, centrée sur téléphone. */
+/* --- agrandissement d'une image au clic ------------------------------ */
+.sans-defilement { overflow: hidden; }
+
+.loupe {
+  position: fixed; inset: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: center;
+  padding: clamp(1rem, 4vw, 3rem);
+  background: rgba(18, 16, 14, .82);
+}
+.loupe[hidden] { display: none; }
+/* Pas de fondu sur le voile : une animation qui ne se joue pas — onglet
+   en arrière-plan, navigateur qui la diffère — laisserait la loupe
+   invisible ALORS QUE la page est déjà bloquée. Elle se montre donc
+   d'emblée. Seule l'image s'anime, et son état de départ (97 %) est
+   déjà parfaitement lisible si l'animation ne tourne pas. */
+
+.loupe figure { margin: 0; text-align: center; max-height: 100%; }
+.loupe img {
+  display: block; margin: 0 auto;
+  max-width: min(100%, 60rem); max-height: 82vh;
+  width: auto; height: auto;
+  border-radius: 3px; background: var(--fond);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, .45);
+  animation: loupe-image .18s ease;
+}
+@keyframes loupe-image { from { transform: scale(.97); } }
+.loupe figcaption {
+  margin-top: .9rem; color: #f2ece4; font-size: .92rem; line-height: 1.5;
+  max-width: 42rem; margin-inline: auto;
+}
+.loupe-fermer {
+  position: absolute; top: .6rem; right: .9rem;
+  width: 2.4rem; height: 2.4rem; padding: 0;
+  font-size: 1.9rem; line-height: 1;
+  color: #f2ece4; background: none; border: 0; border-radius: 4px;
+  cursor: pointer;
+}
+.loupe-fermer:hover { background: rgba(255, 255, 255, .14); }
+
+/* Sans JS le lien ouvre le fichier : la loupe ne se montre qu'avec. */
+.couverture a { cursor: zoom-in; }
+
+@media (prefers-reduced-motion: reduce) {
+  .loupe, .loupe img { animation: none; }
+}
+
+.couverture { float: right; margin: .2rem 0 1.4rem 2rem; width: min(13rem, 42%); }
+.couverture a { display: block; transition: transform .15s; }
+.couverture a:hover { transform: scale(1.02); }
+.couverture img {
+  display: block; width: 100%; height: auto; border-radius: 4px;
+  box-shadow: 0 0 0 1px var(--orange), 0 12px 28px rgba(120, 60, 10, .16);
+}
+@media (max-width: 34rem) {
+  .couverture { float: none; margin: 0 auto 1.6rem; width: min(14rem, 62%); }
+}
+
+address.adresse {
+  font-style: normal;
+  white-space: pre-line;          /* les retours à la ligne comptent, ici */
+  display: inline-block; min-width: min(100%, 16rem);
+  background: var(--fond-doux);
+  border: 1px solid var(--filet); border-left: 3px solid var(--orange);
+  border-radius: 0 8px 8px 0;
+  padding: .9em 1.4em; margin: 1.4em 0; line-height: 1.7;
+}
+address.adresse strong { font-family: var(--titre); font-size: 1.08em; font-weight: 600; }
+
+/* Un bloc ordinaire NE CONTOURNE PAS un flottant : seules ses lignes de
+   texte se raccourcissent, sa bordure et son fond passent DESSOUS. Sur la
+   page du 2e livre, l'encadré filait ainsi 208 px sous la couverture.
+   `flow-root` ouvre un contexte de formatage : la boîte se rétrécit alors
+   pour éviter le flottant, fond et bordure compris. */
+.rappel, .encadre, .sommaire, blockquote { display: flow-root; }
+
+.rappel {
+  background: #fff4ea;
+  border: 1px solid var(--orange);
+  border-radius: 8px; padding: .8em 1.1em; font-size: .96rem; line-height: 1.6;
+}
+.rappel strong { font-weight: 600; }
+
+/* --- deux planches côte à côte (recto / verso d'une couverture) ------ */
+
+.planches { margin: 1.8em 0; }
+.planches .paire { display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-start; }
+.planches .paire a, .planches .paire img { display: block; }
+.planches img {
+  width: 12rem; max-width: 100%; height: auto; border-radius: 4px;
+  box-shadow: 0 2px 6px rgba(40, 30, 15, .14), 0 10px 24px rgba(40, 30, 15, .10);
+}
+.planches a { cursor: zoom-in; }
+
+/* Sur téléphone les deux planches passent l'une sous l'autre — elles
+   font 12 rem, la colonne 295 px : elles ne tiennent pas côte à côte.
+   Empilées et calées à gauche, chacune laissait 103 px de blanc à sa
+   droite. Elles se centrent, et prennent la colonne : ce sont des pièces
+   à regarder — une quatrième de couverture, une édition ancienne —, pas
+   des vignettes. */
+@media (max-width: 34rem) {
+  .planches .paire { justify-content: center; }
+  .planches img { width: 100%; }
+}
+.planches figcaption {
+  margin-top: .7em; font-size: .9rem; color: var(--encre-douce);
+}
+
+/* --- encadrés (les anciens [infobox]) ------------------------------- */
+
+.encadre {
+  background: #fff8f2; border: 1px solid var(--filet); border-left: 4px solid var(--orange);
+  border-radius: 0 8px 8px 0; padding: 1em 1.2em; margin: 1.5em 0; font-style: normal; color: var(--encre);
+}
+
+/* --- pied ---------------------------------------------------------- */
+
+/* Le pied ferme la page sur une bande chaude. Contrastes mesurés
+   dessus : texte 4,75, titres 4,73, liens 4,57 — au-dessus du seuil de
+   4,5, mais de peu. Ne pas foncer ce fond davantage sans éclaircir le
+   texte. */
+.pied { margin-top: 3.5rem; padding: 2.2rem 0 1.8rem; background: #ffeedd;
+        border-top: 4px solid var(--orange); font-size: .9rem; color: var(--encre-douce); }
+.pied-grille { display: grid; gap: 1.8rem; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); }
+.pied h2 { font-size: .95rem; font-weight: 600; margin: 0 0 .5em; color: var(--bleu-encre); }
+.pied ul { list-style: none; padding: 0; margin: 0; }
+.pied li { margin-bottom: .28em; }
+.pied-bas { margin-top: 1.8rem; padding-top: 1.1rem; border-top: 1px solid #f3d6ba;
+            display: flex; flex-wrap: wrap; gap: .7rem 1.4rem; align-items: center; font-size: .84rem; }
+.pied-bas p { margin: 0; }
+
+/* --- lecteurs vidéo et audio ----------------------------------------
+   Les vidéos étaient des blocs d'incorporation WordPress : une URL nue
+   que le site changeait en lecteur à l'affichage. YouTube est appelé
+   par son domaine « nocookie », en chargement différé : la page ne
+   prévient Google qu'au moment où l'on regarde. */
+
+.video, .audio { margin: 1.8em 0; }
+.video { position: relative; aspect-ratio: 16 / 9; }
+.video iframe {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  border: 0; border-radius: 8px; background: var(--fond-doux);
+}
+.video figcaption, .audio figcaption { margin-top: .6em; }
+.audio audio { width: 100%; display: block; }
+.audio figcaption br:first-child { display: none; }
+
+/* --- bon de commande -------------------------------------------------
+   L'ancien était un export Word au format LETTER américain — il
+   s'imprimait de travers en France —, sans logo ni couvertures, la
+   moitié de la page vide. Celui-ci s'imprime en A4, montre les livres
+   et se remplit à la main comme à l'écran. */
+
+.a-imprimer { font-size: .9rem; color: var(--encre-douce); margin-bottom: 1.6rem; }
+
+.bon { border: 1px solid var(--filet); border-radius: 10px; padding: clamp(1rem, 3vw, 2rem); }
+.bon-tete { display: flex; align-items: center; gap: 1.2rem; margin-bottom: 1.8rem;
+            padding-bottom: 1.2rem; border-bottom: 2px solid var(--orange); }
+.bon-tete img { width: 4.2rem; height: auto; flex: 0 0 auto; }
+.bon-tete h2 { margin: 0; font-size: 1.5rem; color: var(--bleu-encre); }
+.bon-tete p { margin: .1rem 0 0; color: var(--encre-douce); font-size: .95rem; }
+
+.bon-champs { display: grid; gap: .9rem 1.4rem; margin-bottom: 2rem;
+              grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); }
+.bon-champs label { font-family: var(--titre); font-weight: 600; font-size: .9rem;
+                    color: var(--encre-douce); display: flex; flex-direction: column; gap: .25rem; }
+.bon-champs span { display: block; height: 1.9rem; border-bottom: 1px solid var(--filet); }
+
+.bon-livres { width: 100%; border-collapse: collapse; margin-bottom: .8rem; }
+.bon-livres th { font-family: var(--titre); font-size: .82rem; text-transform: uppercase;
+                 letter-spacing: .04em; color: var(--encre-douce); border-bottom: 1px solid var(--filet);
+                 padding: .5em .6em; text-align: right; vertical-align: bottom; }
+.bon-livres th:nth-child(2) { text-align: left; }
+.bon-livres td { padding: .7em .6em; border-bottom: 1px solid var(--filet); text-align: right;
+                 vertical-align: middle; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.bon-livres td:nth-child(2) { white-space: normal; }
+.bon-livres td:nth-child(2) { text-align: left; line-height: 1.4; }
+.bon-livres td img { width: 2.6rem; height: auto; float: left; margin: 0 .8rem .2rem 0;
+                     border-radius: 2px; box-shadow: 0 1px 3px rgba(0,0,0,.2); }
+.bon-livres .case { width: 1.6rem; }
+.bon-livres .case::before {
+  content: ''; display: inline-block; width: 1.05rem; height: 1.05rem;
+  border: 1.5px solid var(--encre-douce); border-radius: 3px; vertical-align: middle;
+}
+.bon-livres .lot td:nth-child(2) { font-family: var(--titre); font-weight: 600; }
+.bon-livres .somme td { border-bottom: 0; padding-top: 1.1em; font-family: var(--titre);
+                        font-weight: 700; font-size: 1.05rem; }
+.bon-livres .somme .case { border-bottom: 2px solid var(--orange); }
+.bon-livres .somme .case::before { display: none; }
+
+.bon-note { font-size: .84rem; color: var(--encre-douce); margin: 0 0 1.8rem; }
+
+.bon-envoi { background: var(--fond-doux); border-left: 3px solid var(--orange);
+             border-radius: 0 8px 8px 0; padding: 1em 1.3em; }
+.bon-envoi p { margin: 0 0 .4em; }
+.bon-envoi address { font-style: normal; white-space: pre-line; line-height: 1.6; margin: 0; }
+
+/* La table se replie en lignes empilées sous 34 rem — mais l'en-tête
+   disparaît avec elle, et les chiffres restaient NUS : « 22 € 7 € 29 € »
+   sous un titre de livre, sans dire lequel est le prix, lequel le port,
+   lequel la somme. Sur un bon de commande c'est le pire endroit pour
+   laisser deviner. Chaque cellule porte donc son intitulé, repris de la
+   colonne dont elle vient. */
+@media (max-width: 34rem) {
+  .bon-livres thead { display: none; }
+  .bon-livres tr { display: grid; grid-template-columns: 1.6rem 1fr; gap: .2rem .5rem;
+                   padding: .6em 0; border-bottom: 1px solid var(--filet); }
+  .bon-livres td { border: 0; padding: .1em 0; }
+  .bon-livres td:nth-child(3), .bon-livres td:nth-child(4),
+  .bon-livres td:nth-child(5) { grid-column: 2; text-align: left;
+                   font-size: .88rem; color: var(--encre-douce); }
+  .bon-livres td[data-etiquette]::before {
+    content: attr(data-etiquette) " : ";
+    font-family: var(--titre); font-weight: 600; color: var(--encre-douce);
+  }
+  .bon-livres td:nth-child(5) { color: var(--encre); }
+}
+
+@media print {
+  /* A4, et non le format Letter américain de l'ancien bon : il
+     s'imprimait de travers sur du papier français. Tout doit tenir sur
+     UNE page — un bon de commande qui déborde se remplit mal. */
+  @page { size: A4; margin: 14mm 15mm; }
+  .bon { border: 0; padding: 0; }
+  .a-imprimer { display: none; }
+  .bon-tete img { width: 3.2rem; }
+  .bon-tete h2 { font-size: 1.3rem; }
+  .bon-champs { gap: .5rem 1.2rem; margin-bottom: 1.2rem; }
+  .bon-champs span { height: 1.5rem; }
+  .bon-livres td { padding: .45em .5em; }
+  .bon-livres td img { width: 2rem; }
+  .bon-livres .somme td { padding-top: .7em; }
+  .bon-note { margin-bottom: 1rem; }
+  .bon-envoi { padding: .7em 1em; }
+  .contenu { padding: 0; }
+  .contenu-tete { display: none; }
+}
+
+/* --- pièces jointes ------------------------------------------------ */
+
+a[href$=".pdf"]::after { content: ' (PDF)'; font-size: .8em; color: var(--encre-douce); }
+audio { width: 100%; margin: 1em 0; }
+
+/* --- mention de traduction automatique ------------------------------ */
+
+/* Ce n'est plus un avertissement mais un RENSEIGNEMENT : la page dit
+   d'où vient sa traduction, elle ne met pas en garde contre elle. Le
+   cadre orange — la couleur qui, partout ailleurs sur ce site, signale
+   ce qui appelle l'attention — laissait croire à un défaut.
+
+   Et il fallait que ça tienne en UNE LIGNE : la marque est passée de 14
+   pages à 148, dont des fiches de trois phrases. Une phrase entière en
+   tête d'un témoignage de trente mots l'aurait écrasé. Un globe et deux
+   mots suffisent.
+
+   Le globe ne dit pas « machine » à lui seul — aucun dessin de 14 px ne
+   le dirait. Ce sont les deux mots qui portent le sens ; le globe donne
+   l'accroche pour l'œil. D'où le texte TOUJOURS présent à côté, jamais
+   une icône seule. */
+.avis-traduction {
+  display: flex; align-items: center; gap: .4em;
+  font-size: .78rem; color: var(--encre-douce);
+  margin: 0 0 1.4rem; letter-spacing: .02em;
+}
+.avis-traduction svg {
+  width: .95em; height: .95em; flex: none;
+  fill: none; stroke: currentColor; stroke-width: 1.6;
+  opacity: .75;
+}
+
+/* Sur une fiche, la marque rejoint la ligne de la date : elle ne
+   s'intercale pas entre le titre et le témoignage. */
+.contenu-tete + .avis-traduction { margin-top: -.6rem; }
+
+/* --- impression ---------------------------------------------------- */
+
+@media print {
+  .entete, .nav, .pied, .voisines, .pagination, .recherche, .saut-contenu { display: none !important; }
+  body { font-size: 11pt; color: #000; background: #fff; }
+  /* La feuille blanche n'a pas de sens sur du papier : son cadre
+     s'imprimerait, et sa marge intérieure volerait 5 rem de largeur au
+     bon de commande, qui doit tenir sur UNE page. */
+  article.colonne { background: #fff; border: 0; border-radius: 0; padding: 0; box-shadow: none; }
+  a { color: #000; text-decoration: underline; }
+  a[href^="http"]::after { content: ' (' attr(href) ')'; font-size: 9pt; word-break: break-all; }
+}
+
+/* --- adresses longues ------------------------------------------------
+   Une adresse de courriel un peu longue — trente signes d'un seul tenant —
+   mesure 300 px dans une colonne de 295 px sur téléphone. Le paragraphe
+   débordait de sa feuille. Un lien peut se couper — un mot de la langue,
+   non, d'où le choix de `break-word` plutôt que `anywhere`. */
+article.colonne a, .pied a { overflow-wrap: break-word; }
+
+/* --- au doigt ---------------------------------------------------------
+   Au-dessus de 62 rem le menu redevient celui du bureau : des déroulants
+   qui s'ouvrent au survol. Une tablette en paysage passe ce seuil — et
+   n'a pas de survol. Deux choses la sauvent déjà : les rubriques sont
+   des `span` FOCALISABLES, et le déroulant répond aussi à
+   `:focus-within` sans le délai de 0,35 s réservé au survol. Une tape
+   l'ouvre donc, en sortir le referme ; vérifié à 1024 px.
+
+   Restait la taille : les entrées du déroulant font 39 px, comme celles
+   du menu replié avant qu'on les corrige — mais ce correctif-là était
+   borné à 62 rem, et ne les atteignait pas. La règle vise ici le
+   POINTEUR, pas la largeur : c'est le doigt qui décide. */
+@media (pointer: coarse) {
+  .nav ul ul a, .nav ul ul .intitule {
+    display: flex; align-items: center; min-height: 2.75rem;
+    padding-top: .3em; padding-bottom: .3em;
+  }
+}
+
+/* Un paragraphe que l'auteur avait mis en valeur en le balisant « titre ».
+   Il garde exactement l'apparence de son niveau d'origine — seule sa nature
+   change, pour que le plan du document et les lecteurs d'écran ne le
+   prennent plus pour une section. Voir degrader_faux_titres() dans
+   site/generer.py, et la limite de 70 signes qu'il partage avec le sommaire. */
+.exergue { font-family: var(--titre); font-weight: 500; line-height: 1.25;
+  letter-spacing: .005em; color: var(--encre); margin: 2em 0 .55em;
+  text-wrap: balance; }
+.exergue-1 { font-size: 1.6rem; }
+.exergue-2 { font-size: 1.32rem; }
+.exergue-3 { font-size: 1.14rem; font-weight: 600; }
+.exergue-4 { font-size: 1.04rem; font-weight: 600; }
+.exergue-5, .exergue-6 { font-size: 1rem; font-weight: 600; }
+.exergue + * { margin-top: 0; }
+
+
+/* ---- les cartes se présentent quand elles entrent dans l'écran --------
+   Fondu-montée bref, décalé de carte en carte : la liste se met en place
+   au lieu d'être déjà là. TOUT passe par la classe `.a-apparaitre`, posée
+   par le script UNIQUEMENT quand le mouvement est permis : sans
+   JavaScript, ou avec « réduire les animations », aucune carte n'est
+   jamais masquée — la règle d'or de ce genre d'effet, car un script qui
+   ne se charge pas ne doit pas emporter le contenu avec lui. */
+.a-apparaitre {
+  opacity: 0; transform: translateY(14px);
+  transition: opacity .55s cubic-bezier(.16, 1, .3, 1),
+              transform .55s cubic-bezier(.16, 1, .3, 1);
+  transition-delay: var(--cadence, 0s);
+}
+.a-apparaitre.apparu { opacity: 1; transform: none; }
+
+
+/* ---- les entrées du déroulant se présentent en cascade ----------------
+   Chacune arrive avec 30 ms de retard sur la précédente : le panneau se
+   DÉPLIE au lieu d'apparaître. Strictement limité au bureau ET au
+   mouvement permis : sur petit écran les sous-menus sont dépliés en
+   permanence — les masquer par défaut viderait le menu — et seuls les
+   enfants DIRECTS du panneau sont visés : le troisième niveau vit à
+   l'intérieur d'une entrée du deuxième et doit suivre son parent, pas
+   attendre son propre survol. */
+@media (min-width: 74rem) and (prefers-reduced-motion: no-preference) {
+  .nav > .enveloppe > ul > li > ul > li {
+    opacity: 0; transform: translateY(-5px);
+    transition: opacity .22s cubic-bezier(.16, 1, .3, 1),
+                transform .22s cubic-bezier(.16, 1, .3, 1);
+  }
+  /* LE PANNEAU S'OUVRE APRÈS 0,35 s — le garde-fou du « survol
+     délibéré », posé plus haut pour qu'une souris qui traverse le menu
+     n'ouvre rien. La cascade doit donc partir APRÈS ce délai : la
+     première version démarrait au survol, jouait panneau invisible, et
+     était finie avant d'être montrée. Christophe : « je ne vois pas le
+     menu qui se déplie ». Chaque retard ci-dessous = 350 ms + la place
+     dans la file. */
+  .nav > .enveloppe > ul > li:hover > ul > li,
+  .nav > .enveloppe > ul > li:focus-within > ul > li
+    { opacity: 1; transform: none; transition-delay: 350ms; }
+  .nav > .enveloppe > ul > li:is(:hover, :focus-within) > ul > li:nth-child(2) { transition-delay: 390ms; }
+  .nav > .enveloppe > ul > li:is(:hover, :focus-within) > ul > li:nth-child(3) { transition-delay: 430ms; }
+  .nav > .enveloppe > ul > li:is(:hover, :focus-within) > ul > li:nth-child(4) { transition-delay: 470ms; }
+  .nav > .enveloppe > ul > li:is(:hover, :focus-within) > ul > li:nth-child(5) { transition-delay: 510ms; }
+  .nav > .enveloppe > ul > li:is(:hover, :focus-within) > ul > li:nth-child(n+6) { transition-delay: 550ms; }
+  /* Au clavier, le panneau s'ouvre SANS délai (règle plus haut) : la
+     cascade non plus n'attend pas. */
+  .nav > .enveloppe > ul > li:focus-within > ul > li { transition-delay: 0ms; }
+  .nav > .enveloppe > ul > li:focus-within > ul > li:nth-child(2) { transition-delay: 40ms; }
+  .nav > .enveloppe > ul > li:focus-within > ul > li:nth-child(3) { transition-delay: 80ms; }
+  .nav > .enveloppe > ul > li:focus-within > ul > li:nth-child(4) { transition-delay: 120ms; }
+  .nav > .enveloppe > ul > li:focus-within > ul > li:nth-child(5) { transition-delay: 160ms; }
+  .nav > .enveloppe > ul > li:focus-within > ul > li:nth-child(n+6) { transition-delay: 200ms; }
+  /* À la fermeture, tout part ENSEMBLE : une cascade en se refermant
+     donnerait l'impression que le panneau traîne derrière la souris. */
+  .nav > .enveloppe > ul > li:not(:hover):not(:focus-within) > ul > li { transition-delay: 0s; }
+}
+
+
+/* ---- le fondu entre les pages -----------------------------------------
+   En passant d'une page à l'autre, l'ancienne s'efface dans la nouvelle au
+   lieu de l'écran blanc du chargement. C'est le navigateur qui fait tout :
+   même origine, pages servies — rien à orchestrer. Un navigateur qui ne
+   connaît pas la règle l'ignore et navigue comme avant ; et sous « réduire
+   les animations », rien ne fond. */
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition { navigation: auto; }
+  ::view-transition-old(root) { animation-duration: .16s; }
+  ::view-transition-new(root) { animation-duration: .16s; }
+}
+
+/* ---- le fil de lecture -------------------------------------------------
+   Sur les pages longues, un trait sombre avance le long du liseré orange
+   de la bande : où j'en suis, d'un coup d'œil. Posé par le script dans la
+   bande elle-même — il suit donc son escamotage au défilement au lieu de
+   flotter seul quand elle se cache. Il N'EST PAS soumis à « réduire les
+   animations » : il ne bouge pas tout seul, il suit la main — c'est une
+   information, pas un ornement. */
+.fil-lecture {
+  position: absolute; left: 0; bottom: -3px; height: 3px; width: 100%;
+  background: var(--orange-encre); transform: scaleX(0);
+  transform-origin: left; pointer-events: none;
+}
+
+
+/* ---- le code : en ligne, et en bloc -----------------------------------
+   `fenced_code` (voir fabriquer_convertisseur() dans site/generer.py) pose
+   désormais <pre><code class="language-xxx">. Sans les règles qui suivent,
+   le navigateur s'en tient à ses valeurs par défaut — et deux choses
+   cassent aussitôt sur un site qui montre des commandes.
+
+   LA PREMIÈRE EST LE DÉBORDEMENT. Une ligne de commande ne se coupe pas :
+   couper `LD_PRELOAD=/usr/lib/libdrm_amdgpu.so.1:/usr/lib/libdrm.so.2` au
+   milieu donnerait deux fragments qu'on ne peut plus recopier, et le
+   lecteur ne saurait pas si le retour fait partie de la commande. Le bloc
+   défile donc HORIZONTALEMENT, dans sa propre boîte — comme les tableaux,
+   pour la même raison, quelques centaines de lignes plus haut.
+
+   LA SECONDE EST LA CONFUSION AVEC LE TEXTE. Le monospace par défaut du
+   navigateur est plus petit que le texte courant d'environ un cran : à
+   côté d'un paragraphe en 16 px, un bloc de commandes devenait la chose
+   la MOINS lisible de la page, alors que c'est celle qu'on vient copier.
+   On le ramène à 0,95 em, sur un fond qui le détache.
+
+   Pas de coloration syntaxique : elle demanderait Pygments à la
+   génération, et sur du shell elle ne teinte guère que les guillemets et
+   les dièses. Le nom du langage reste en classe pour qui voudrait la
+   brancher — et le script s'en sert pour étiqueter le bloc.
+
+   L'ENCRE : `--encre` sur `--fond-doux`, pas d'orange. L'orange de cette
+   charte ne signale QUE ce qui est cliquable (voir l'en-tête du fichier) ;
+   un bloc de code n'est pas cliquable, sauf son bouton — qui, lui, l'est. */
+
+:root {
+  --mono: ui-monospace, 'SFMono-Regular', 'JetBrains Mono', 'Fira Mono',
+          'DejaVu Sans Mono', 'Liberation Mono', Menlo, Consolas, monospace;
+}
+
+/* Le code EN LIGNE, au fil d'une phrase : un nom de paquet, un drapeau.
+   `white-space: nowrap` serait une faute ici — un chemin long au milieu
+   d'un paragraphe doit pouvoir passer à la ligne, sinon c'est le
+   PARAGRAPHE qui déborde. */
+:not(pre) > code {
+  font-family: var(--mono);
+  font-size: .92em;
+  background: var(--fond-doux);
+  border: 1px solid var(--filet);
+  border-radius: 4px;
+  padding: .08em .34em;
+  overflow-wrap: break-word;
+}
+
+/* Le bloc. */
+article.colonne pre, .bloc-code pre {
+  font-family: var(--mono);
+  font-size: .95rem;
+  line-height: 1.55;
+  background: var(--fond-doux);
+  border: 1px solid var(--filet);
+  border-radius: 8px;
+  padding: .9rem 1.05rem;
+  overflow-x: auto;
+  /* Le défilement au doigt, sans à-coup, et une cible de tabulation :
+     un bloc qui défile doit être atteignable au clavier, sinon son
+     contenu caché est inaccessible à qui n'a pas de souris. */
+  -webkit-overflow-scrolling: touch;
+}
+article.colonne pre:focus-visible { outline: 2px solid var(--orange-encre); outline-offset: 2px; }
+
+/* Dans un bloc, le <code> ne reprend rien de l'habillage « en ligne » :
+   ni fond, ni cadre, ni marge — il les cumulerait avec ceux du <pre>. */
+pre > code {
+  font: inherit; background: none; border: 0; padding: 0;
+  color: var(--encre); white-space: pre;
+}
+
+/* --- l'enveloppe posée par le script ---------------------------------
+   Le script entoure chaque bloc d'un <div class="bloc-code"> coiffé d'une
+   barre : le nom du langage à gauche, « Copier » à droite. Une commande
+   est faite pour être collée dans un terminal ; la recopier à la main est
+   l'occasion exacte de se tromper d'un caractère.
+
+   Sans script — ou sans presse-papiers, l'API demande une origine sûre —
+   il ne se passe rien : le <pre> reste seul, entièrement lisible. Le
+   confort ne conditionne pas le contenu. */
+.bloc-code { margin: 0 0 1.15em; }
+.bloc-code pre { margin: 0; border-top-left-radius: 0; border-top-right-radius: 0; }
+
+.bloc-code-barre {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 1rem;
+  padding: .34rem .6rem .34rem 1.05rem;
+  background: var(--fond-doux);
+  border: 1px solid var(--filet);
+  border-bottom: 0;
+  border-radius: 8px 8px 0 0;
+  font-size: .8rem;
+  color: var(--encre-douce);
+}
+.bloc-code-langue {
+  font-family: var(--mono); letter-spacing: .04em; text-transform: lowercase;
+}
+.bloc-code-copier {
+  font: inherit; font-family: var(--texte);
+  color: var(--orange-encre); background: none;
+  border: 1px solid transparent; border-radius: 5px;
+  padding: .18rem .5rem; cursor: pointer;
+  /* 2,2 rem de haut : sous le doigt, une cible de 35 px. Les 44 px de la
+     règle générale ne s'appliquent pas — le bouton est un CONFORT, la
+     commande reste sélectionnable à la main juste en dessous. */
+  min-height: 2.2rem;
+}
+.bloc-code-copier:hover { background: var(--orange-pale); border-color: var(--filet); }
+.bloc-code-copier:focus-visible { outline: 2px solid var(--orange-encre); outline-offset: 1px; }
+.bloc-code-copier[data-fait="oui"] { color: var(--encre); }
+
+@media print {
+  /* Sur le papier il n'y a pas de défilement : un bloc en `auto` se ferait
+     COUPER à la marge, et la fin de la commande n'existerait plus. On le
+     laisse donc revenir à la ligne, seul endroit où c'est le moindre mal. */
+  .bloc-code-barre, .bloc-code-copier { display: none !important; }
+  article.colonne pre { overflow: visible; white-space: pre-wrap; word-break: break-all;
+    border-radius: 8px; }
+  pre > code { white-space: inherit; }
+}

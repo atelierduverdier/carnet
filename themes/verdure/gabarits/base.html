@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="{{ langue }}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ titre_page }}{% if not titre_page.startswith(site.titre) %} — {{ site.titre }}{% endif %}</title>
+<meta name="description" content="{{ description|e }}">
+{%- for lg, url in versions.items() %}
+<link rel="alternate" hreflang="{{ lg }}" href="{{ site.domaine }}{{ url }}">
+{%- endfor %}
+<link rel="canonical" href="{{ site.domaine }}{{ url_page }}">
+<link rel="icon" href="/assets/favicon-32.png?v={{ empreintes.logo }}" sizes="32x32">
+<link rel="apple-touch-icon" href="/assets/favicon-180.png?v={{ empreintes.logo }}">
+<link rel="stylesheet" href="/assets/polices/dosis.css">
+<link rel="stylesheet" href="/assets/site.css?v={{ empreintes.css }}">
+<meta property="og:title" content="{{ titre_page|e }}">
+<meta property="og:description" content="{{ description|e }}">
+<meta property="og:type" content="{% if type == 'fiche' %}article{% else %}website{% endif %}">
+<meta property="og:url" content="{{ site.domaine }}{{ url_page }}">
+<meta property="og:locale" content="{{ langue }}">
+<meta property="og:site_name" content="{{ site.titre }}">
+<meta property="og:image" content="{{ site.domaine }}{{ image_partage }}">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<a class="saut-contenu" href="#contenu">Aller au contenu</a>
+
+
+<div class="bandeau">
+<header class="entete">
+  <div class="enveloppe entete-barre">
+    <a class="marque" href="/{{ langue }}/">
+      <img class="marque-logo" src="/assets/logo.png?v={{ empreintes.logo }}"
+           width="216" height="119" alt="" decoding="async">
+      <span class="marque-texte">
+        <span class="marque-nom">{{ site.titre }}</span>
+        <span class="marque-devise">{{ site.devise }}</span>
+      </span>
+    </a>
+
+    <div class="recherche" role="search">
+      <input type="search" id="champ-recherche" placeholder="{{ mots.rechercher }}"
+             aria-label="{{ mots.rechercher }}" autocomplete="off"
+             data-index="/recherche-{{ langue }}.json">
+      <ul class="recherche-resultats" id="resultats-recherche" role="listbox"></ul>
+    </div>
+
+    <nav class="langues" aria-label="{{ mots.langue }}">
+      {%- for lg, meta in site.langues.items() %}
+      <a href="{{ versions.get(lg, '/' ~ lg ~ '/') }}" hreflang="{{ lg }}"
+         {% if lg == langue %}aria-current="true"{% endif %}
+         {% if lg not in versions %}class="absente" title="{{ mots.pas_traduit }}" tabindex="-1"{% endif %}>{{ lg }}</a>
+      {%- endfor %}
+    </nav>
+
+    <button class="bouton-menu" aria-expanded="false" aria-controls="menu-principal">
+      <span aria-hidden="true">☰</span> Menu
+    </button>
+  </div>
+</header>
+
+<nav class="nav" id="menu-principal" aria-label="{{ mots.menu }}">
+  <div class="enveloppe">{{ menu_html }}</div>
+</nav>
+</div>
+
+<main class="contenu" id="contenu">
+{% block contenu %}{% endblock %}
+</main>
+
+<footer class="pied">
+  <div class="enveloppe">
+    <div class="pied-grille">
+      <div>
+        <h2>{{ site.titre }}</h2>
+        <p>{{ site.devise }}</p>
+      </div>
+      <div>
+        <h2>{{ mots.contact }}</h2>
+        <ul><li><a href="mailto:{{ site.courriel }}">{{ site.courriel }}</a></li></ul>
+      </div>
+      <div>
+        <h2>{{ mots.langue }}</h2>
+        <ul>
+        {%- for lg, meta in site.langues.items() %}
+          <li><a href="{{ versions.get(lg, '/' ~ lg ~ '/') }}">{{ meta.nom }}</a></li>
+        {%- endfor %}
+        </ul>
+      </div>
+    </div>
+    <div class="pied-bas">
+      <p>© {{ annee }} {{ site.titre }}</p>
+      <p>{{ mots.engendre }}</p>
+    </div>
+  </div>
+</footer>
+
+<script src="/assets/site.js?v={{ empreintes.js }}" defer></script>
+</body>
+</html>

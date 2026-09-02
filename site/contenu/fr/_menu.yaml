@@ -1,0 +1,17 @@
+# Menu du site — modifiable à la main ou depuis l'atelier.
+# Une entrée sans « lien » est un simple intitulé de rubrique.
+
+- titre: "Accueil"
+  lien: "/fr/"
+
+- titre: "Pannes"
+  lien: "/fr/depannage/"
+
+- titre: "Système"
+  lien: "/fr/systeme/"
+
+- titre: "À l'établi"
+  lien: "/fr/atelier/"
+
+- titre: "À propos"
+  lien: "/fr/a-propos/"
