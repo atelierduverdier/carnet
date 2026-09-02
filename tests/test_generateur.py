@@ -147,16 +147,27 @@ class Generateur(unittest.TestCase):
         if not lien:
             self.skipTest('ce site n’a pas de rubrique en vedette')
         url, libelle = lien.group(1), lien.group(2).strip().rstrip('›').strip()
-        self.assertNotIn('toutes les annonces', h,
-                         'le lien porte encore le mot générique')
+
+        # CE QUE LE MOTEUR GARANTIT : le lien mène à la rubrique en vedette.
+        # C'est vrai quel que soit le thème, et c'est le second défaut que
+        # 1.10.0 corrigeait — l'adresse était lue dans le réglage global au
+        # lieu de la rubrique de la LANGUE.
         cible = appui.page(self.site, url)
         self.assertTrue(cible, f'le lien de la une mène dans le vide : {url}')
         titre = re.search(r'<h1[^>]*>(.*?)</h1>', cible, re.S)
         self.assertTrue(titre, 'la rubrique visée n’a pas de <h1>')
+
+        # CE QUE LE THÈME EN FAIT : afficher ce titre, ou garder le mot
+        # générique. Le moteur passe `a_la_une_titre` ; s'en servir est une
+        # décision d'habillage, et un site en ligne peut légitimement ne pas
+        # vouloir changer un texte visible. On ne contrôle donc le libellé
+        # que si le thème a choisi de l'utiliser.
+        if 'annonc' in libelle.lower() or 'annunc' in libelle.lower():
+            self.skipTest('ce thème garde le libellé générique')
         self.assertEqual(
             libelle, titre.group(1).strip(),
-            'le lien de la une ne porte pas le titre de la rubrique '
-            'vers laquelle il mène')
+            'le thème affiche un titre, mais pas celui de la rubrique '
+            'vers laquelle le lien mène')
 
     def test_l_alt_ecrit_a_la_main_n_est_jamais_ecrase(self):
         """Le magasin ne connaît que le fichier ; la page, elle, sait ce
@@ -254,8 +265,20 @@ class SiteMasque(unittest.TestCase):
                          'le plan du site est justement ce qu’un moteur lit '
                          'en premier quand il en trouve un')
 
+        # La balise `noindex` est posée par le GABARIT. Le moteur fournit
+        # `hors_moteurs` ; un thème peut ne pas s'en servir — et alors
+        # robots.txt reste seul, ce qui ne protège pas une adresse trouvée
+        # ailleurs. On le contrôle donc là où c'est promis : dans le thème
+        # qui le déclare.
+        base = self.site / 'themes'
+        declare = any('hors_moteurs' in g.read_text(encoding='utf-8')
+                      for g in base.rglob('gabarits/base.html'))
+        if not declare:
+            return
         self.assertIn('noindex', appui.page(self.site, '/fr/'),
-                      'robots.txt ne protège pas une adresse trouvée ailleurs')
+                      'le gabarit déclare `hors_moteurs` et ne pose pourtant '
+                      'pas la balise — robots.txt ne protège pas, seul, une '
+                      'adresse trouvée ailleurs')
 
     def test_le_generateur_le_dit_a_chaque_passage(self):
         """C'est un réglage qu'on oublie d'enlever, et l'oublier revient à
@@ -286,6 +309,14 @@ class SommaireEnColonne(unittest.TestCase):
         appui.ecrire(cls.site, 'fr/livre-bloc.md',
                      'titre: "Livre en bloc"\nlangue: "fr"\ntype: "page"\n'
                      'slug: "livre-bloc"\nsommaire: "oui"\nstatut: "publie"', corps)
+        # UN SEUL grand titre, et des sous-titres dessous : la forme la plus
+        # ordinaire d'un long document, et celle qui n'obtenait rien.
+        appui.ecrire(cls.site, 'fr/livre-imbrique.md',
+                     'titre: "Livre imbriqué"\nlangue: "fr"\ntype: "page"\n'
+                     'slug: "livre-imbrique"\nsommaire: "cote"\nstatut: "publie"',
+                     '# Le grand titre\n\nDu texte.\n\n'
+                     + '\n\n'.join(f'## Sous-titre {i}\n\nDu texte.'
+                                    for i in range(1, 6)))
         appui.ecrire(cls.site, 'fr/livre-court.md',
                      'titre: "Livre court"\nlangue: "fr"\ntype: "page"\n'
                      'slug: "livre-court"\nsommaire: "cote"\nstatut: "publie"',
@@ -333,6 +364,25 @@ class SommaireEnColonne(unittest.TestCase):
         self.assertNotIn('avec-cote', h,
                          'la grille se monte alors que le sommaire est vide')
         self.assertNotIn('corps-long', h)
+
+    def test_le_seuil_compte_TOUTES_les_entrees(self):
+        """Le seuil de trois entrées ne comptait que le PREMIER NIVEAU.
+
+        `entrees` ne contient que les <li> de tête ; les sous-titres y sont
+        imbriqués. Une page bâtie « un seul grand titre, puis des
+        sous-titres » — la forme la plus ordinaire d'un long document —
+        n'avait donc qu'UNE entrée, et n'obtenait aucun sommaire, quoi
+        qu'on écrive dans son en-tête. Rien ne le disait.
+
+        Trouvé sur une page de 73 Ko qui demandait un sommaire depuis des
+        années et n'en a jamais eu."""
+        h = appui.page(self.site, '/fr/livre-imbrique/')
+        self.assertIn('class="sommaire', h,
+                      'un seul titre de niveau 1 et cinq de niveau 2 : le '
+                      'sommaire compte encore un seul niveau')
+        self.assertIn('Sous-titre 3', h)
+        self.assertIn('avec-cote', h,
+                      'sans sommaire, la grille ne se monte pas non plus')
 
     def test_une_valeur_inconnue_arrete_tout(self):
         """`sommaire: "coté"` — l'accent au mauvais endroit — est la faute

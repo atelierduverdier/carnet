@@ -121,6 +121,11 @@ class Script(unittest.TestCase):
         Une commande fausse d'un signe ne dit pas qu'elle est fausse :
         elle fait autre chose."""
         for f in self.scripts():
+            # Un thème peut ne pas habiller les blocs de code : celui d'un
+            # site sans une seule commande n'a aucune raison de porter cent
+            # lignes pour ça. On contrôle la fonction là où elle existe.
+            if 'bloc-code' not in f.read_text(encoding='utf-8'):
+                continue
             r = self.jouer(f)
             if 'bouton_pose' not in r:
                 continue

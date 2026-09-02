@@ -299,3 +299,31 @@ class ReglagesDeLEnTete(unittest.TestCase):
             oublies, [],
             f'ces réglages ne sont pas relus à l’ouverture : {oublies}\n'
             '  Rouvrir la page les remet à zéro, et enregistrer les efface.')
+
+
+class OutilsExecutables(unittest.TestCase):
+    """Un outil qui porte un shebang doit pouvoir se lancer.
+
+    Trois des six outils étaient exécutables, trois ne l'étaient pas — tous
+    portant `#!/usr/bin/env python3`, et rien ne distinguait les deux
+    groupes. Christophe a tapé `outils/publier.py --pour-de-vrai` au moment
+    de mettre un site en ligne et a reçu « Permission non accordée », ce qui
+    ne dit pas quoi faire.
+
+    `shutil.copy2` préserve les droits : le correctif se propage aux sites
+    à leur prochaine mise à jour du moteur.
+    """
+
+    def test_tout_outil_a_shebang_est_executable(self):
+        import os
+        racine = Path(__file__).resolve().parent.parent
+        muets = []
+        for f in sorted((racine / 'outils').glob('*.py')):
+            if not f.read_text(encoding='utf-8').startswith('#!'):
+                continue
+            if not os.access(f, os.X_OK):
+                muets.append(f.name)
+        self.assertEqual(
+            muets, [],
+            f'ces outils annoncent un interpréteur et ne se lancent pas : '
+            f'{muets}\n  chmod +x, sinon le shebang ment.')

@@ -87,14 +87,34 @@ def differents(source: Path, cible: Path):
     return changes
 
 
-def depot_propre() -> bool:
-    """Un dépôt sale rend la mise à jour irréversible : on refuse."""
-    r = subprocess.run(['git', 'status', '--porcelain'], cwd=str(RACINE),
-                       capture_output=True, text=True)
+def travail_en_peril() -> list:
+    """Les fichiers QUE LA MISE À JOUR VA REMPLACER et qui ont du travail
+    non versé. Liste vide = on peut y aller.
+
+    CE QUE CE GARDE-FOU PROTÈGE, exactement : la réversibilité. Écraser
+    `site/generer.py` alors qu'il porte une correction non committée perd
+    cette correction sans recours. Voilà le risque, et il n'y en a pas
+    d'autre.
+
+    IL ÉTAIT BEAUCOUP TROP LARGE. Il refusait sur TOUT dépôt sale — y
+    compris un fichier NON VERSIONNÉ, qui ne se « défait » de toute façon
+    pas par git, et qui n'a donc aucun rapport avec la réversibilité de la
+    mise à jour. Payé le 02/09/2026 : deux scripts d'une autre session en
+    cours de travail dans le même dossier bloquaient une mise à jour qui ne
+    les touchait pas, et le message disait « committez-le d'abord » — c'est-
+    à-dire : versez le travail en cours de quelqu'un d'autre. Cette machine
+    fait tourner plusieurs sessions dans le même dossier ; le cas n'a rien
+    d'exceptionnel.
+
+    On ne regarde donc que les fichiers du MOTEUR, et seulement leurs
+    modifications suivies. Un fichier non versionné ne bloque plus rien.
+    """
+    r = subprocess.run(['git', 'status', '--porcelain', '--', *MOTEUR],
+                       cwd=str(RACINE), capture_output=True, text=True)
     if r.returncode != 0:
-        return True          # pas un dépôt : rien à protéger, on laisse faire
-    en_cours = [l for l in r.stdout.splitlines() if l.strip()]
-    return not en_cours
+        return []            # pas un dépôt : rien à protéger, on laisse faire
+    return [l[3:] for l in r.stdout.splitlines()
+            if l.strip() and not l.startswith('??')]
 
 
 def main():
@@ -157,10 +177,13 @@ def main():
         print('\n  Essai à blanc. Pour remplacer réellement : --pour-de-vrai')
         return
 
-    if not depot_propre():
-        sys.exit('\nmettre-a-jour : le dossier contient du travail non versé.\n'
-                 '  Committez-le d’abord — sans quoi cette mise à jour ne se '
-                 'défait pas.')
+    en_peril = travail_en_peril()
+    if en_peril:
+        sys.exit('\nmettre-a-jour : ces fichiers DU MOTEUR portent du travail '
+                 'non versé,\n  et la mise à jour les remplacerait :\n'
+                 + ''.join(f'    {p}\n' for p in en_peril)
+                 + '\n  Committez-les d’abord — sans quoi ce travail est perdu '
+                 'sans recours.')
 
     for quoi in MOTEUR:
         s, c = source / quoi, RACINE / quoi

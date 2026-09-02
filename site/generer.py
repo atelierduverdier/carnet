@@ -617,7 +617,18 @@ def fabriquer_sommaire(jetons, intitule, limite=LIMITE_TITRE, cote=False):
         return morceaux
 
     entrees = niveau(jetons)
-    if len(entrees) < 3:
+    # ON COMPTE TOUTES LES ENTRÉES, pas seulement celles du premier niveau.
+    #
+    # `entrees` ne contient que les <li> de tête ; leurs sous-titres sont
+    # IMBRIQUÉS dedans. Compter cette liste revenait donc à compter les
+    # titres de niveau 1 — et une page bâtie « un seul grand titre, puis des
+    # sous-titres » n'en a qu'UN. Elle n'obtenait aucun sommaire, quoi qu'on
+    # écrive dans son en-tête, et rien ne le disait.
+    #
+    # Trouvé le 02/09/2026 sur « Messages de vie », 73 Ko, un `#` et cinq
+    # `##` : elle demandait un sommaire depuis toujours et n'en a jamais eu.
+    combien = sum(m.count('<li>') for m in entrees)
+    if combien < 3:
         return ''
     if not cote:
         return Markup(f'<nav class="sommaire" aria-label="{escape(intitule)}">'
