@@ -784,3 +784,17 @@ dialog menu { display: flex; gap: .5rem; justify-content: flex-end; padding: 0; 
   line-height: 1.6;
 }
 @media (max-width: 62rem) { .histo { grid-template-columns: 1fr; } }
+
+/* --- le choix d'une image (vignette) ---------------------------------
+   Un chemin qu'on ne tape pas : on le CHOISIT dans la médiathèque, qui
+   sait déjà montrer ce qu'elle contient. Le champ est en lecture seule —
+   une adresse tapée à la main serait fausse une fois sur deux, et le
+   générateur, lui, ne pose rien plutôt qu'une image cassée. */
+.choix-media { display: flex; align-items: center; gap: .35rem; }
+.choix-media input {
+  min-width: 0; flex: 1 1 10rem;
+  font-size: .82rem; color: var(--encre-douce);
+  background: var(--fond-doux); cursor: default;
+}
+.choix-media input:placeholder-shown { font-style: italic; }
+.choix-media .lien { white-space: nowrap; font-size: .82rem; }

@@ -793,6 +793,7 @@ function relireReglagesClairs() {
      « côté », « colonne » — se ramènent toutes au même choix, sinon
      rouvrir une page écrite à la main remettrait la liste sur « aucun »
      et le premier enregistrement effacerait le réglage. */
+  $('#r-vignette').value = valeurEntete(e, 'vignette') || '';
   const som = (valeurEntete(e, 'sommaire') || '').trim().toLowerCase();
   $('#r-sommaire').value = ['cote', 'côté', 'colonne'].includes(som) ? 'cote'
                          : ['oui', 'true', 'vrai'].includes(som) ? 'oui' : '';
@@ -1729,6 +1730,18 @@ function dessinerDetail() {
 function insererMedia(m) {
   const cible = etat.media.insertion;
   if (!cible) return;
+  /* Le même clic sert deux buts : insérer dans le texte, ou choisir la
+     vignette de la tuile. Un seul mode d'insertion, deux destinations —
+     plutôt qu'un second écran de sélection qui ferait double emploi. */
+  if (cible.but === 'vignette') {
+    if (m.famille !== 'image') return dire('Une vignette doit être une image.', true);
+    poserCle('vignette', m.chemin);
+    relireReglagesClairs();
+    quitterInsertion();
+    montrerEcran('editeur');
+    montrerVue('entete');
+    return dire('Vignette choisie — pensez à enregistrer.');
+  }
   inserer(marqueMedia(m.chemin, m.famille === 'image'));
   quitterInsertion();
   montrerEcran('editeur');
@@ -1742,6 +1755,21 @@ function insererLaSelection() {
   const choisis = ((etat.medias || {}).medias || []).filter(
     (m) => etat.media.selection.has(m.chemin) && m.existe);
   if (!choisis.length) return dire('Cochez d’abord un fichier.', true);
+  if (etat.media.insertion.but === 'vignette') {
+    /* Une tuile n'a qu'une bande : on prend la première image cochée et on
+       le DIT, plutôt que d'en poser une au hasard sans prévenir. */
+    const img = choisis.find((m) => m.famille === 'image');
+    if (!img) return dire('Une vignette doit être une image.', true);
+    poserCle('vignette', img.chemin);
+    relireReglagesClairs();
+    etat.media.selection.clear();
+    quitterInsertion();
+    montrerEcran('editeur');
+    montrerVue('entete');
+    return dire(choisis.length > 1
+      ? 'Vignette choisie : la première image cochée. Pensez à enregistrer.'
+      : 'Vignette choisie — pensez à enregistrer.');
+  }
   for (const m of choisis) inserer(marqueMedia(m.chemin, m.famille === 'image'));
   etat.media.selection.clear();
   quitterInsertion();
@@ -2180,6 +2208,23 @@ document.addEventListener('DOMContentLoaded', async () => {
      et une clé à « non » disent la même chose, et le générateur refuse
      toute valeur qu'il ne connaît pas — mieux vaut ne rien écrire. */
   $('#r-sommaire').addEventListener('change', (e) => poserCle('sommaire', e.target.value));
+  $('#b-vignette-choisir').addEventListener('click', () => {
+    if (!etat.courant) return dire('Ouvrez d’abord une page.', true);
+    const p = etat.pages.find((x) => x.fichier === etat.courant);
+    etat.media.insertion = { fichier: etat.courant, titre: p ? p.titre : etat.courant,
+                             but: 'vignette' };
+    $('#insertion-quoi').textContent =
+      'Choix d’une vignette — l’image cliquée coiffera la tuile de';
+    $('#insertion-page').textContent = etat.media.insertion.titre;
+    $('#bandeau-insertion').hidden = false;
+    majBarreSelection();
+    montrerEcran('medias');
+  });
+  $('#b-vignette-retirer').addEventListener('click', () => {
+    poserCle('vignette', '');
+    relireReglagesClairs();
+    dire('Vignette retirée — pensez à enregistrer.');
+  });
   /* Cocher écrit la ligne, décocher la RETIRE — plutôt que d'écrire
      « non » : une clé absente et une clé à « non » disent la même chose. */
   $('#r-auto').addEventListener('change', (e) =>
@@ -2313,7 +2358,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   $('#b-inserer-media').addEventListener('click', () => {
     if (!etat.courant) return dire('Ouvrez d’abord une page.', true);
     const p = etat.pages.find((x) => x.fichier === etat.courant);
-    etat.media.insertion = { fichier: etat.courant, titre: p ? p.titre : etat.courant };
+    etat.media.insertion = { fichier: etat.courant, titre: p ? p.titre : etat.courant,
+                             but: 'texte' };
+    $('#insertion-quoi').textContent =
+      'Mode insertion — le fichier cliqué sera inséré dans';
     $('#insertion-page').textContent = etat.media.insertion.titre;
     $('#bandeau-insertion').hidden = false;
     majBarreSelection();

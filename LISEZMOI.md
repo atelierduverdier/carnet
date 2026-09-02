@@ -9,7 +9,7 @@ le reste n'y est pas.
 
 **Bilingue français / anglais**, jumelé page à page. Fait avec le
 [squelette de site](https://github.com/atelierduverdier/squelette-site),
-moteur **1.14.4**. Un site de l'[Atelier du Verdier](https://atelierduverdier.fr).
+moteur **1.15.1**. Un site de l'[Atelier du Verdier](https://atelierduverdier.fr).
 
 ## ⚠ Le site est MASQUÉ AUX MOTEURS
 

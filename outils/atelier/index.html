@@ -226,6 +226,14 @@
                 <option value="cote">en colonne, à gauche</option>
               </select>
             </label>
+            <label title="Une bande d’image en tête de la tuile, dans les listes et sur l’accueil. Décorative : elle égaie une grille de tuiles qui, sans elle, est une colonne de blocs gris. Large et basse, recadrée toute seule — n’importe quelle photo convient.">Vignette
+              <span class="choix-media">
+                <input type="text" id="r-vignette" readonly placeholder="aucune"
+                       title="L’image choisie pour la tuile de cette fiche.">
+                <button type="button" class="lien" id="b-vignette-choisir">Choisir…</button>
+                <button type="button" class="lien" id="b-vignette-retirer">Retirer</button>
+              </span>
+            </label>
             <label class="a-cocher" title="Affiche au lecteur la mention « traduction automatique ». À décocher quand un humain a relu et corrigé la traduction.">
               <input type="checkbox" id="r-auto"> Traduction automatique
             </label>
@@ -247,7 +255,7 @@
       <!-- ── médiathèque ──────────────────────────────────────────────── -->
       <section class="ecran ecran-medias" id="ecran-medias" hidden>
         <p class="bandeau-insertion" id="bandeau-insertion" hidden>
-          <span>Mode insertion — le fichier cliqué sera inséré dans
+          <span><span id="insertion-quoi">Mode insertion — le fichier cliqué sera inséré dans</span>
             <strong id="insertion-page"></strong></span>
           <button class="lien" id="b-quitter-insertion">Quitter le mode insertion</button>
         </p>

@@ -117,6 +117,27 @@ def media(dossier: Path, rel: str, octets=b'\x89PNG\r\n\x1a\n' + b'0' * 64) -> s
     return '/medias/' + rel
 
 
+def image(dossier: Path, rel: str, largeur=1200, hauteur=800) -> str:
+    """Dépose une VRAIE image et rend son adresse publique.
+
+    `media()` écrit un faux PNG — suffisant pour éprouver la copie et les
+    refus, mais Pillow ne peut pas le lire : pas de dimensions, donc pas de
+    déclinaisons, donc rien à contrôler pour tout ce qui touche au `srcset`.
+    L'essai de la vignette y a buté.
+
+    Rend None si Pillow manque : l'essai qui en dépend se saute alors,
+    comme le générateur se passe des déclinaisons.
+    """
+    try:
+        from PIL import Image
+    except ImportError:
+        return None
+    f = dossier / 'site' / 'medias' / rel
+    f.parent.mkdir(parents=True, exist_ok=True)
+    Image.new('RGB', (largeur, hauteur), (200, 140, 60)).save(f)
+    return '/medias/' + rel
+
+
 def atelier_de(dossier: Path):
     """Le module atelier.py, repointé sur le site jetable.
 

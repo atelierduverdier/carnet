@@ -18,6 +18,7 @@
     {% for f in a_la_une %}
     <li><a class="fiche-carte" href="{{ f.cible or f.url }}"
            {% if f.cible and '//' in f.cible %}rel="noopener"{% endif %}>
+      {%- if f.vignette_html %}{{ f.vignette_html }}{% endif %}
       {%- if f.genre or f.date_lisible %}<span class="date-fiche">
         {% if f.genre %}<span class="genre">{{ f.genre }}</span>{% endif %}
         {%- if f.genre and f.date_lisible %} · {% endif %}{{ f.date_lisible }}

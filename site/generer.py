@@ -791,6 +791,56 @@ def adapter_images(html: str, sizes: str, differer=True) -> str:
     return BALISE_IMG.sub(refaire, html)
 
 
+# La vignette d'une tuile : sa largeur probable à l'écran. La grille des
+# tuiles fait `minmax(min(100%, 19rem), 1fr)` — donc 19 rem au plus serré,
+# et toute la largeur sur un téléphone.
+VIGNETTE_SIZES = '(min-width: 46rem) 20rem, 100vw'
+
+
+def vignette_de(fiche):
+    """La balise <img> de la vignette d'une tuile, ou '' s'il n'y en a pas.
+
+    On FABRIQUE du HTML pour le passer à `adapter_images()` plutôt que de
+    poser une adresse nue dans le gabarit : c'est ainsi que la vignette
+    hérite, sans une ligne de plus, des déclinaisons WebP, des dimensions
+    — sans lesquelles la grille des tuiles saute au chargement — et du
+    chargement différé.
+
+    `alt=""` : la vignette est DÉCORATIVE. Le titre de la fiche est juste
+    à côté, dans le même lien ; lui donner un texte alternatif ferait
+    annoncer deux fois la même chose à qui écoute la page.
+
+    UNE VIGNETTE ABSENTE NE PRODUIT RIEN. Poser quand même la balise
+    donnerait une image cassée sur chaque tuile ET une ligne rouge du
+    vérificateur par page de la rubrique — pour une décoration.
+    """
+    chemin = str(fiche.get('vignette', '')).strip()
+    if not chemin:
+        return ''
+    if not chemin.startswith('/'):
+        chemin = '/medias/' + chemin.lstrip('/')
+    if not chemin.startswith('/medias/'):
+        return ''
+    if not (MEDIAS / chemin[len('/medias/'):]).is_file():
+        return ''
+    balise = f'<img class="fiche-vignette" src="{escape(chemin)}" alt="">'
+    return Markup(adapter_images(balise, VIGNETTE_SIZES))
+
+
+def preparer_tuile(fiche, langue):
+    """Ce qu'une fiche doit porter pour s'afficher en tuile.
+
+    Les deux endroits qui bâtissent des tuiles — les fiches en vedette sur
+    l'accueil, et les pages d'une rubrique — posaient chacun leur date. Une
+    seule fonction, maintenant : la vignette est arrivée, et deux endroits
+    à tenir d'accord, c'est un endroit de trop.
+    """
+    fiche['date_lisible'] = (date_lisible(fiche['date'], langue,
+                                          precision_de(fiche))
+                             if fiche.get('date') else '')
+    fiche['vignette_html'] = vignette_de(fiche)
+
+
 def decline(chemin: str, largeur: int) -> str:
     """L'adresse d'une déclinaison : /medias/a/b.jpg → /medias/a/b-960.webp"""
     base = chemin.rsplit('.', 1)[0]
@@ -1369,9 +1419,7 @@ def main():
             if p.get('est_accueil') and col_une:
                 une = fiches_de.get(col_une, [])[:reglage.get('nombre', 3)]
                 for f in une:
-                    f['date_lisible'] = (date_lisible(f['date'], langue,
-                                                      precision_de(f))
-                                         if f.get('date') else '')
+                    preparer_tuile(f, langue)
             base = dict(commun, page=p, corps=corps, menu_html=menu_html,
                         titre_masque=titre_masque, titre_affiche=titre_affiche,
                         a_la_une=une, ouverture=ouverture,
@@ -1428,9 +1476,7 @@ def main():
                     # la dernière page ramasse tout ce qui reste
                     tranche = lot[debut:] if n == total_pages else lot[debut:debut + par_page]
                     for f in tranche:
-                        f['date_lisible'] = (date_lisible(f['date'], langue,
-                                              precision_de(f))
-                                 if f.get('date') else '')
+                        preparer_tuile(f, langue)
                     liens = [(num, None if num is None else
                               (p['url'] if num == 1 else f'{p["url"]}page-{num}/'))
                              for num, _ in bornes_pagination(n, total_pages)]

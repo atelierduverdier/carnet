@@ -270,21 +270,31 @@ class ReglagesDeLEnTete(unittest.TestCase):
         return ((self.ICI / 'index.html').read_text(encoding='utf-8'),
                 (self.ICI / 'atelier.js').read_text(encoding='utf-8'))
 
-    def test_chaque_reglage_est_ecoute(self):
-        """Un champ `r-*` sans écouteur est un réglage mort."""
+    def test_chaque_reglage_fait_quelque_chose(self):
+        """Un champ `r-*` doit soit RÉAGIR, soit REFLÉTER.
+
+        Réagir : un écouteur, qui écrit dans l'en-tête quand on le change.
+        Refléter : le script lui pose une valeur, et il montre l'état.
+
+        La première version n'admettait que la première forme. Elle a
+        refusé le champ de la vignette, qui est en LECTURE SEULE : on n'y
+        tape pas un chemin, on le choisit dans la médiathèque, et deux
+        boutons s'en chargent. Un champ d'affichage n'est pas un réglage
+        mort — c'est un réglage qui se remplit autrement."""
         html, js = self.fichiers()
         champs = sorted(set(re.findall(r'id="(r-[\w-]+)"', html)))
         self.assertTrue(champs, 'aucun réglage trouvé dans le formulaire')
-        # On cherche un ABONNEMENT, pas une simple mention : l'identifiant
-        # figure aussi dans la relecture à l'ouverture, si bien qu'une
-        # première version de cet essai trouvait « branché » un réglage
-        # dont l'écouteur venait d'être supprimé.
+        # On cherche un ABONNEMENT ou une ÉCRITURE, pas une simple mention :
+        # l'identifiant figure aussi dans la relecture à l'ouverture, si bien
+        # qu'une première version trouvait « branché » un réglage dont
+        # l'écouteur venait d'être supprimé.
         ecoutes = set(re.findall(r"\$\('#(r-[\w-]+)'\)\s*\.addEventListener", js))
-        muets = [c for c in champs if c not in ecoutes]
+        remplis = set(re.findall(r"\$\('#(r-[\w-]+)'\)\s*\.value\s*=", js))
+        muets = [c for c in champs if c not in ecoutes | remplis]
         self.assertEqual(
             muets, [],
-            f'ces réglages sont affichés mais jamais écoutés : {muets}\n'
-            '  Ils ont l’air de marcher et ne changent rien.')
+            f'ces réglages sont affichés et ne font RIEN : {muets}\n'
+            '  Ni écouteur, ni valeur posée : ils ont l’air de marcher.')
 
     def test_chaque_reglage_est_relu_a_l_ouverture(self):
         """Un réglage écouté mais jamais RELU repart à sa valeur par défaut

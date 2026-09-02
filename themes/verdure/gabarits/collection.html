@@ -15,6 +15,7 @@
     {%- for f in fiches %}
     <li><a class="fiche-carte" href="{{ f.cible or f.url }}"
            {% if f.cible and '//' in f.cible %}rel="noopener"{% endif %}>
+      {%- if f.vignette_html %}{{ f.vignette_html }}{% endif %}
       {#- la condition porte sur ce qui S'AFFICHE, pas sur ce qui existe :
           une fiche dont le titre porte déjà la date la masque (date_precision),
           et la balise restait ouverte et vide. #}

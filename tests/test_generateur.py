@@ -45,6 +45,20 @@ class Generateur(unittest.TestCase):
                      '## Premier point\n\nDu texte.\n\n'
                      '## Deuxième point\n\nDu texte.\n\n'
                      '## Troisième point\n\nDu texte.')
+        # Une fiche AVEC vignette, une AVEC UNE VIGNETTE ABSENTE.
+        cls.vignette = appui.image(cls.site, 'essai/vignette.png')
+        if cls.vignette:
+            appui.ecrire(cls.site, 'fr/actualites/004-avec-vignette.md',
+                         'titre: "Avec vignette"\nlangue: "fr"\ntype: "fiche"\n'
+                         'collection: "actualites"\ndate: "2026-04-01"\nrang: 4\n'
+                         f'vignette: "{cls.vignette[len("/medias/"):]}"\n'
+                         'statut: "publie"',
+                         'Une fiche dont la tuile porte une bande.')
+        appui.ecrire(cls.site, 'fr/actualites/005-vignette-absente.md',
+                     'titre: "Vignette absente"\nlangue: "fr"\ntype: "fiche"\n'
+                     'collection: "actualites"\ndate: "2026-04-02"\nrang: 5\n'
+                     'vignette: "nulle-part/inexistante.jpg"\nstatut: "publie"',
+                     'Une fiche dont la vignette ne mène nulle part.')
         cls.image = appui.media(cls.site, 'essai/image-essai.png')
         appui.ecrire(cls.site, 'fr/images.md',
                      'titre: "Images"\nlangue: "fr"\ntype: "page"\n'
@@ -85,6 +99,43 @@ class Generateur(unittest.TestCase):
         h = appui.page(self.site, '/fr/retours/')
         self.assertIn('<br', h, 'le retour simple a disparu : nl2br manque')
         self.assertEqual(h.count('<p>Première ligne<br'), 1)
+
+    def test_la_vignette_d_une_tuile_est_declinee(self):
+        """La vignette passe par `adapter_images()` : elle hérite donc des
+        déclinaisons, des dimensions — sans lesquelles la grille des tuiles
+        saute au chargement — et du chargement différé. La fabriquer à la
+        main dans le gabarit aurait donné une image nue, à recharger en
+        pleine taille sur un téléphone."""
+        if not self.vignette:
+            self.skipTest('sans Pillow, pas de dimensions ni de déclinaisons')
+        h = appui.page(self.site, '/fr/actualites/')
+        self.assertIn('class="fiche-vignette"', h, 'la tuile n’a pas sa bande')
+        balise = re.search(r'<img class="fiche-vignette"[^>]*>', h).group(0)
+        self.assertIn('width=', balise, 'sans dimensions, la grille saute')
+        self.assertIn('height=', balise)
+        self.assertIn('loading="lazy"', balise)
+        self.assertIn('alt=""', balise,
+                      'la vignette est décorative : le titre de la fiche est '
+                      'dans le même lien, un alt le ferait annoncer deux fois')
+
+    def test_une_vignette_absente_ne_produit_rien(self):
+        """Poser quand même la balise donnerait une image cassée sur chaque
+        tuile ET une ligne rouge du vérificateur par page de la rubrique —
+        pour une décoration."""
+        h = appui.page(self.site, '/fr/actualites/')
+        self.assertNotIn('inexistante.jpg', h,
+                         'une vignette qui ne mène nulle part est rendue quand '
+                         'même : image cassée, et le vérificateur bloque')
+        r = appui.verifier(self.site)
+        self.assertEqual(r.returncode, 0,
+                         'le vérificateur bloque à cause de la vignette :\n'
+                         + r.stdout + r.stderr)
+
+    def test_une_fiche_sans_vignette_n_en_a_pas(self):
+        """Le réglage est OPTIONNEL : les tuiles d'un site qui n'en veut pas
+        ne doivent pas changer d'un pixel."""
+        h = appui.page(self.site, '/fr/actualites/001-une-premiere-annonce/')
+        self.assertNotIn('fiche-vignette', h)
 
     def test_un_bloc_de_code_reste_un_bloc(self):
         """Markdown seul lit les trois accents graves comme du code EN

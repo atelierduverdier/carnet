@@ -736,7 +736,10 @@ article.colonne {
 
 .alaune .fiches > li:first-child { grid-column: 1 / -1; }
 .alaune .fiches > li:first-child .fiche-carte {
-  padding: 1.5rem 1.6rem; gap: .6rem; border-top-width: 6px;
+  --carte-marge-v: 1.5rem;
+  --carte-marge-h: 1.6rem;
+  padding: var(--carte-marge-v) var(--carte-marge-h); gap: .6rem;
+  border-top-width: 6px;
 }
 .alaune .fiches > li:first-child .fiche-carte :is(h2, h3) {
   font-size: 1.4rem; line-height: 1.25;
@@ -746,7 +749,9 @@ article.colonne {
   /* Sur un téléphone tout est déjà sur une colonne : la grossir la rendrait
      seulement plus longue à dépasser pour atteindre les suivantes. */
   .alaune .fiches > li:first-child .fiche-carte {
-    padding: 1.05rem 1.15rem; border-top-width: 4px;
+    --carte-marge-v: 1.05rem;
+    --carte-marge-h: 1.15rem;
+    padding: var(--carte-marge-v) var(--carte-marge-h); border-top-width: 4px;
   }
   .alaune .fiches > li:first-child .fiche-carte :is(h2, h3) { font-size: 1.15rem; }
 }
@@ -799,8 +804,18 @@ article.colonne {
 .fiches { list-style: none; padding: 0; margin: 0; display: grid; gap: .9rem;
           grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr)); }
 .fiche-carte {
+  /* LE REMPLISSAGE EST UNE VARIABLE, et ce n'est pas du zèle. La vignette
+     d'une tuile doit l'annuler exactement pour aller d'un bord à l'autre —
+     et il y a TROIS valeurs différentes selon la tuile et la largeur
+     d'écran. Recopiées à la main dans la règle de la vignette, elles
+     étaient fausses dès la grande tuile de la une, qui a son propre
+     remplissage : la bande flottait à 8 px du bord gauche et 45 du droit.
+     Vu à l'écran, quelques minutes après avoir écrit en commentaire que
+     ces valeurs « doivent bouger ensemble ». */
+  --carte-marge-v: 1.05rem;
+  --carte-marge-h: 1.15rem;
   display: flex; flex-direction: column; gap: .45rem; height: 100%;
-  padding: 1.05rem 1.15rem; background: var(--fond);
+  padding: var(--carte-marge-v) var(--carte-marge-h); background: var(--fond);
   border: 1px solid var(--filet); border-top: 4px solid var(--orange);
   border-radius: 10px;
   text-decoration: none; color: inherit;
@@ -1666,4 +1681,73 @@ pre > code {
 }
 @media (prefers-reduced-motion: no-preference) {
   .sommaire a { transition: color .15s ease; }
+}
+
+
+/* ---- la vignette d'une tuile ------------------------------------------
+   `vignette: "dossier/photo.jpg"` dans l'en-tête d'une fiche. Voir
+   vignette_de() dans site/generer.py.
+
+   POURQUOI ELLE EST LARGE ET BASSE. Une tuile est d'abord un TITRE et une
+   phrase : c'est ce qu'on lit pour décider si on ouvre. Une image carrée,
+   ou pire un portrait, repousse ce texte sous la ligne de flottaison de la
+   carte et la grille devient une planche-contact — jolie, illisible. Une
+   bande égaie sans prendre le pas : elle donne à l'œil de quoi distinguer
+   une tuile d'une autre du premier coup, ce qu'une colonne de blocs gris
+   ne fait pas.
+
+   `object-fit: cover` : la vignette prend n'importe quelle image, quelle
+   que soit sa forme, et la recadre. Sans quoi il faudrait préparer chaque
+   photo au bon rapport avant de la déposer — une contrainte que personne
+   ne tient six mois.
+
+   `aspect-ratio` PLUTÔT QU'UNE HAUTEUR FIXE : la carte fait 19 rem au plus
+   serré et toute la largeur sur un téléphone. Une hauteur en pixels
+   donnerait une bande fine sur l'un et un timbre-poste sur l'autre. */
+
+:root { --vignette-rapport: 16 / 7; }
+
+.fiche-vignette {
+  /* La bande va d'un bord à l'autre de la carte : on annule le remplissage
+     de la tuile — par ses VARIABLES, jamais par des valeurs recopiées.
+     Trois tuiles ont trois remplissages ; recopier, c'est se tromper à la
+     première exception. */
+  margin: calc(-1 * var(--carte-marge-v)) calc(-1 * var(--carte-marge-h)) .35rem;
+  width: calc(100% + 2 * var(--carte-marge-h));
+  /* `max-width: none` est INDISPENSABLE : la feuille pose `max-width: 100%`
+     sur toute image — la bonne règle partout ailleurs — et elle ramenait la
+     vignette à la largeur du CONTENU, donc en retrait des deux côtés. */
+  max-width: none;
+  aspect-ratio: var(--vignette-rapport);
+  /* LE PLAFOND, mesuré. La grande tuile de la une occupe toute la largeur :
+     à 1 120 px, le rapport 16/7 donnait une bande de 467 px de haut, une
+     affiche qui repoussait le titre hors de l'écran. Au-delà du plafond, la
+     bande s'aplatit au lieu de grandir — c'est ce qu'on veut d'un bandeau.
+     Sur une tuile ordinaire (19 rem), 16/7 fait 133 px : le plafond ne la
+     touche pas. */
+  max-height: 13rem;
+  height: auto;
+  object-fit: cover;
+  /* Le haut suit l'arrondi de la carte, moins l'épaisseur du cadre. Le bas
+     reste droit : la bande se pose SUR le texte, elle ne flotte pas. */
+  border-radius: 9px 9px 0 0;
+  /* Une photo claire sur fond clair se confond avec la carte : un liseré
+     très discret la pose, sans faire cadre. */
+  box-shadow: inset 0 -1px 0 var(--filet);
+  background: var(--fond-doux);      /* le temps du chargement */
+  display: block;
+}
+
+/* La carte monte au survol ; sa vignette respire un peu avec elle. Sous
+   « réduire les animations », rien ne bouge — c'est un ornement, il n'a
+   aucune information à porter. */
+@media (prefers-reduced-motion: no-preference) {
+  .fiche-vignette { transition: filter .25s ease; }
+  .fiche-carte:hover .fiche-vignette { filter: saturate(1.08); }
+}
+
+@media print {
+  /* Sur le papier, une bande décorative par tuile mange une page entière
+     pour ne rien dire. */
+  .fiche-vignette { display: none; }
 }
