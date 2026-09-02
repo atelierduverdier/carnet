@@ -165,158 +165,179 @@
   });
 
   /* --- recherche ------------------------------------------------------ */
-  var champ = document.getElementById('champ-recherche');
-  var liste = document.getElementById('resultats-recherche');
-  if (!champ || !liste) return;
+  /* Enfermée dans une fonction, et ce n'est pas une question de style.
 
-  var index = null, enCours = false;
+     Sa garde `if (!champ || !liste) return;` était écrite au PREMIER
+     NIVEAU de cette fonction anonyme : elle ne sortait donc pas de la
+     recherche, elle TERMINAIT LE SCRIPT ENTIER. Sur une page sans champ
+     de recherche, tout ce qui suit — la loupe, les apparitions, le fil
+     de lecture, les boutons « Copier », le sommaire en colonne — ne
+     s'exécutait jamais, et rien ne le disait.
 
-  /* Comparer sans accents ni casse : « éveil » doit répondre à « eveil ».
-     Les apostrophes, guillemets, tirets et espaces sont aussi ramenés à
-     leur forme clavier : le site mélange « l’espérance » (typographique,
-     venu de WordPress) et « l'espérance » (droite, tapée dans l'atelier),
-     et la même phrase se trouvait ou non selon l'apostrophe. Chaque
-     remplacement garde LA MÊME LONGUEUR : surligner() découpe le texte
-     affiché avec les indices trouvés dans le texte aplati. */
-  function aplatir(s) {
-    return s.normalize('NFD').replace(/[̀-ͯ]/g, '')
-      .replace(/[’‘]/g, "'").replace(/[«»“”„]/g, '"')
-      .replace(/[–—]/g, '-').replace(/[\u00A0\u202F\u2009\n\r\t]/g, ' ')
-      .toLowerCase();
-  }
+     Le champ vient du gabarit de base, donc il est là sur toutes les
+     pages du site livré : le défaut ne s'est jamais VU. Il attendait
+     qu'un thème retire la recherche, ou qu'une page se rende sans
+     bandeau. Trouvé le 02/09/2026 en exécutant le script hors du
+     navigateur — le premier essai monté pour ça l'a sorti du premier
+     coup, avant même de contrôler ce qu'il venait contrôler.
 
-  function charger() {
-    if (index || enCours) return Promise.resolve();
-    enCours = true;
-    return fetch(champ.dataset.index)
-      .then(function (r) { return r.json(); })
-      .then(function (d) {
-        index = d.map(function (e) {
-          return { t: e.t, u: e.u, e: e.e, c: e.c, _t: aplatir(e.t), _e: aplatir(e.e || '') };
-        });
-      })
-      .catch(function () { index = []; })
-      .finally(function () { enCours = false; });
-  }
+     Toutes les autres parties de ce fichier sont déjà des fonctions.
+     Celle-ci était la dernière à ne pas l'être. */
+  function recherche() {
+    var champ = document.getElementById('champ-recherche');
+    var liste = document.getElementById('resultats-recherche');
+    if (!champ || !liste) return;
 
-  function surligner(texte, terme) {
-    var i = aplatir(texte).indexOf(terme);
-    if (i < 0) return document.createTextNode(texte);
-    var frag = document.createDocumentFragment();
-    frag.appendChild(document.createTextNode(texte.slice(0, i)));
-    var m = document.createElement('mark');
-    m.textContent = texte.slice(i, i + terme.length);
-    frag.appendChild(m);
-    frag.appendChild(document.createTextNode(texte.slice(i + terme.length)));
-    return frag;
-  }
+    var index = null, enCours = false;
 
-  /* [début, fin] de la première suite des mots — dans l'ordre et presque
-     collés (12 caractères d'écart au plus) — ou null. « Seul les » doit
-     trouver « Seuls les personnes » : la phrase exacte échoue pour une
-     lettre, mais les mots sont là, dans l'ordre, à deux caractères près.
-     Exiger l'ordre ET la quasi-adjacence est ce qui évite le bruit — un
-     simple voisinage ramenait 32 pages, « seul » vivant dans
-     « seulement » et « les » traînant partout. */
-  function suiteDeMots(texte, mots) {
-    var i = texte.indexOf(mots[0]);
-    while (i >= 0) {
-      var pos = i + mots[0].length, ok = true;
-      for (var k = 1; k < mots.length; k++) {
-        var j = texte.indexOf(mots[k], pos);
-        if (j < 0 || j > pos + 12) { ok = false; break; }
-        pos = j + mots[k].length;
-      }
-      if (ok) return [i, pos];
-      i = texte.indexOf(mots[0], i + 1);
-    }
-    return null;
-  }
-
-  function chercher() {
-    var q = aplatir(champ.value.trim()).replace(/\s+/g, ' ');
-    liste.textContent = '';
-    if (q.length < 2 || !index) return;
-
-    var mots = q.split(' ').filter(function (m) { return m.length >= 2; });
-
-    var titres = [], corps = [], approchees = [];
-    for (var i = 0; i < index.length
-         && titres.length + corps.length + approchees.length < 60; i++) {
-      var e = index[i];
-      if (e._t.indexOf(q) >= 0) titres.push(e);
-      else if (e._e.indexOf(q) >= 0) corps.push(e);
-      else if (mots.length > 1 && suiteDeMots(e._e, mots)) approchees.push(e);
-    }
-    // la phrase exacte d'abord, la suite approchée ensuite
-    var trouves = titres.concat(corps, approchees).slice(0, 12);
-
-    if (!trouves.length) {
-      var vide = document.createElement('li');
-      vide.className = 'ou';
-      vide.style.padding = '.6em .7em';
-      vide.textContent = champ.dataset.rien || 'Aucun résultat';
-      liste.appendChild(vide);
-      return;
+    /* Comparer sans accents ni casse : « éveil » doit répondre à « eveil ».
+       Les apostrophes, guillemets, tirets et espaces sont aussi ramenés à
+       leur forme clavier : le site mélange « l’espérance » (typographique,
+       venu de WordPress) et « l'espérance » (droite, tapée dans l'atelier),
+       et la même phrase se trouvait ou non selon l'apostrophe. Chaque
+       remplacement garde LA MÊME LONGUEUR : surligner() découpe le texte
+       affiché avec les indices trouvés dans le texte aplati. */
+    function aplatir(s) {
+      return s.normalize('NFD').replace(/[̀-ͯ]/g, '')
+        .replace(/[’‘]/g, "'").replace(/[«»“”„]/g, '"')
+        .replace(/[–—]/g, '-').replace(/[\u00A0\u202F\u2009\n\r\t]/g, ' ')
+        .toLowerCase();
     }
 
-    trouves.forEach(function (e) {
-      var li = document.createElement('li');
-      var a = document.createElement('a');
-      a.href = e.u;
-      a.appendChild(surligner(e.t, q));
-      if (e.c) {
-        var ou = document.createElement('span');
-        ou.className = 'ou';
-        ou.textContent = e.c;
-        a.appendChild(ou);
+    function charger() {
+      if (index || enCours) return Promise.resolve();
+      enCours = true;
+      return fetch(champ.dataset.index)
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+          index = d.map(function (e) {
+            return { t: e.t, u: e.u, e: e.e, c: e.c, _t: aplatir(e.t), _e: aplatir(e.e || '') };
+          });
+        })
+        .catch(function () { index = []; })
+        .finally(function () { enCours = false; });
+    }
+
+    function surligner(texte, terme) {
+      var i = aplatir(texte).indexOf(terme);
+      if (i < 0) return document.createTextNode(texte);
+      var frag = document.createDocumentFragment();
+      frag.appendChild(document.createTextNode(texte.slice(0, i)));
+      var m = document.createElement('mark');
+      m.textContent = texte.slice(i, i + terme.length);
+      frag.appendChild(m);
+      frag.appendChild(document.createTextNode(texte.slice(i + terme.length)));
+      return frag;
+    }
+
+    /* [début, fin] de la première suite des mots — dans l'ordre et presque
+       collés (12 caractères d'écart au plus) — ou null. « Seul les » doit
+       trouver « Seuls les personnes » : la phrase exacte échoue pour une
+       lettre, mais les mots sont là, dans l'ordre, à deux caractères près.
+       Exiger l'ordre ET la quasi-adjacence est ce qui évite le bruit — un
+       simple voisinage ramenait 32 pages, « seul » vivant dans
+       « seulement » et « les » traînant partout. */
+    function suiteDeMots(texte, mots) {
+      var i = texte.indexOf(mots[0]);
+      while (i >= 0) {
+        var pos = i + mots[0].length, ok = true;
+        for (var k = 1; k < mots.length; k++) {
+          var j = texte.indexOf(mots[k], pos);
+          if (j < 0 || j > pos + 12) { ok = false; break; }
+          pos = j + mots[k].length;
+        }
+        if (ok) return [i, pos];
+        i = texte.indexOf(mots[0], i + 1);
       }
-      /* Trouvé dans le texte : montrer le bout de phrase autour du terme.
-         Sans lui, chercher une phrase renvoyait cinq « Témoignage du … »
-         identiques, sans rien pour choisir. Pour une suite approchée, la
-         tranche réellement trouvée (« Seuls les ») sert de terme : c'est
-         elle qui est surlignée, pas la saisie qui a échoué. */
-      var terme = q, j = e._e.indexOf(q);
-      if (j < 0 && mots.length > 1) {
-        var bornes = suiteDeMots(e._e, mots);
-        if (bornes) { j = bornes[0]; terme = e._e.slice(bornes[0], bornes[1]); }
+      return null;
+    }
+
+    function chercher() {
+      var q = aplatir(champ.value.trim()).replace(/\s+/g, ' ');
+      liste.textContent = '';
+      if (q.length < 2 || !index) return;
+
+      var mots = q.split(' ').filter(function (m) { return m.length >= 2; });
+
+      var titres = [], corps = [], approchees = [];
+      for (var i = 0; i < index.length
+           && titres.length + corps.length + approchees.length < 60; i++) {
+        var e = index[i];
+        if (e._t.indexOf(q) >= 0) titres.push(e);
+        else if (e._e.indexOf(q) >= 0) corps.push(e);
+        else if (mots.length > 1 && suiteDeMots(e._e, mots)) approchees.push(e);
       }
-      if (j >= 0 && e._t.indexOf(q) < 0) {
-        var d = Math.max(0, j - 45);
-        var morceau = (d ? '…' : '') + e.e.slice(d, j + terme.length + 70) + '…';
-        var ex = document.createElement('span');
-        ex.className = 'extrait';
-        ex.appendChild(surligner(morceau, terme));
-        a.appendChild(ex);
+      // la phrase exacte d'abord, la suite approchée ensuite
+      var trouves = titres.concat(corps, approchees).slice(0, 12);
+
+      if (!trouves.length) {
+        var vide = document.createElement('li');
+        vide.className = 'ou';
+        vide.style.padding = '.6em .7em';
+        vide.textContent = champ.dataset.rien || 'Aucun résultat';
+        liste.appendChild(vide);
+        return;
       }
-      li.appendChild(a);
-      liste.appendChild(li);
+
+      trouves.forEach(function (e) {
+        var li = document.createElement('li');
+        var a = document.createElement('a');
+        a.href = e.u;
+        a.appendChild(surligner(e.t, q));
+        if (e.c) {
+          var ou = document.createElement('span');
+          ou.className = 'ou';
+          ou.textContent = e.c;
+          a.appendChild(ou);
+        }
+        /* Trouvé dans le texte : montrer le bout de phrase autour du terme.
+           Sans lui, chercher une phrase renvoyait cinq « Témoignage du … »
+           identiques, sans rien pour choisir. Pour une suite approchée, la
+           tranche réellement trouvée (« Seuls les ») sert de terme : c'est
+           elle qui est surlignée, pas la saisie qui a échoué. */
+        var terme = q, j = e._e.indexOf(q);
+        if (j < 0 && mots.length > 1) {
+          var bornes = suiteDeMots(e._e, mots);
+          if (bornes) { j = bornes[0]; terme = e._e.slice(bornes[0], bornes[1]); }
+        }
+        if (j >= 0 && e._t.indexOf(q) < 0) {
+          var d = Math.max(0, j - 45);
+          var morceau = (d ? '…' : '') + e.e.slice(d, j + terme.length + 70) + '…';
+          var ex = document.createElement('span');
+          ex.className = 'extrait';
+          ex.appendChild(surligner(morceau, terme));
+          a.appendChild(ex);
+        }
+        li.appendChild(a);
+        liste.appendChild(li);
+      });
+    }
+
+    champ.addEventListener('focus', charger);
+    var minuteur;
+    champ.addEventListener('input', function () {
+      clearTimeout(minuteur);
+      minuteur = setTimeout(function () { charger().then(chercher); }, 120);
+    });
+    champ.addEventListener('keydown', function (ev) {
+      if (ev.key === 'Escape') { champ.value = ''; liste.textContent = ''; champ.blur(); }
+      if (ev.key === 'ArrowDown') {
+        var p = liste.querySelector('a');
+        if (p) { ev.preventDefault(); p.focus(); }
+      }
+    });
+    liste.addEventListener('keydown', function (ev) {
+      var liens = Array.prototype.slice.call(liste.querySelectorAll('a'));
+      var i = liens.indexOf(document.activeElement);
+      if (ev.key === 'ArrowDown' && i < liens.length - 1) { ev.preventDefault(); liens[i + 1].focus(); }
+      if (ev.key === 'ArrowUp') { ev.preventDefault(); (i > 0 ? liens[i - 1] : champ).focus(); }
+      if (ev.key === 'Escape') { liste.textContent = ''; champ.focus(); }
+    });
+    document.addEventListener('click', function (ev) {
+      if (!ev.target.closest('.recherche')) liste.textContent = '';
     });
   }
-
-  champ.addEventListener('focus', charger);
-  var minuteur;
-  champ.addEventListener('input', function () {
-    clearTimeout(minuteur);
-    minuteur = setTimeout(function () { charger().then(chercher); }, 120);
-  });
-  champ.addEventListener('keydown', function (ev) {
-    if (ev.key === 'Escape') { champ.value = ''; liste.textContent = ''; champ.blur(); }
-    if (ev.key === 'ArrowDown') {
-      var p = liste.querySelector('a');
-      if (p) { ev.preventDefault(); p.focus(); }
-    }
-  });
-  liste.addEventListener('keydown', function (ev) {
-    var liens = Array.prototype.slice.call(liste.querySelectorAll('a'));
-    var i = liens.indexOf(document.activeElement);
-    if (ev.key === 'ArrowDown' && i < liens.length - 1) { ev.preventDefault(); liens[i + 1].focus(); }
-    if (ev.key === 'ArrowUp') { ev.preventDefault(); (i > 0 ? liens[i - 1] : champ).focus(); }
-    if (ev.key === 'Escape') { liste.textContent = ''; champ.focus(); }
-  });
-  document.addEventListener('click', function (ev) {
-    if (!ev.target.closest('.recherche')) liste.textContent = '';
-  });
+  recherche();
 
   /* --- déroulants qui sortiraient de l'écran --------------------------
      Un déroulant s'ouvre sous sa rubrique, aligné à gauche sur elle, et
@@ -706,6 +727,24 @@
        mise en page soixante fois par seconde. On remesure quand la page
        change de forme — redimensionnement, et chargement complet, les
        images pouvant encore déplacer ce qui les suit. */
+    /* La table qui relie un titre de la page à son entrée du sommaire.
+       ELLE AVAIT DISPARU. Une réécriture de ce bloc a emporté sa
+       construction en laissant les deux noms utilisés plus bas : en mode
+       strict, `mesurer()` levait une ReferenceError au démarrage et la
+       fonction entière mourait — sommaire figé, aucun repère, aucune
+       erreur visible dans la page. Le filet Python ne pouvait pas le
+       voir : il ne contrôle que le HTML offert au script. */
+    var parAncre = {};
+    var titres = [];
+    liens.forEach(function (a) {
+      var id = decodeURIComponent(a.getAttribute('href').slice(1));
+      var cible = document.getElementById(id);
+      if (!cible) return;          // un titre a pu être renommé depuis
+      parAncre[id] = a;
+      titres.push(cible);
+    });
+    if (!titres.length) return;
+
     var reperes = [];
     function mesurer() {
       reperes = titres.map(function (h) {
