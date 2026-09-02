@@ -1536,9 +1536,43 @@ pre > code {
        vertical suffit à dire « ceci est en marge ». */
     background: none; border: 0; border-radius: 0;
     border-left: 2px solid var(--filet);
-    padding: 0 0 0 1.1rem; margin: 0;
+    /* Le remplissage de gauche est sur les LIENS, pas ici : c'est ce qui
+       permet au fond de l'entrée courante d'aller jusqu'au filet sans
+       marge négative, donc sans débordement. */
+    padding: 0; margin: 0;
     font-size: .93rem;
   }
+
+  /* --- AUCUN DÉBORDEMENT ICI, et voici pourquoi ----------------------
+     `overflow-y: auto` fait calculer `overflow-x` à `auto` aussi — c'est
+     la règle CSS : dès qu'un axe n'est plus `visible`, l'autre le devient.
+     Le moindre débordement horizontal fabrique donc une BARRE DE
+     DÉFILEMENT sous la liste.
+
+     Mesuré : 7 px, exactement la marge de -0,45 rem qui aérait le fond de
+     l'entrée courante. Sept pixels que personne ne voit, une barre que
+     tout le monde voit.
+
+     Le remplissage passe donc sur chaque LIEN, jamais en marge négative,
+     et le repère devient une ombre INTERNE — qui ne peut par construction
+     rien faire dépasser.
+
+     TOUS les liens sont en bloc, pas seulement l'entrée courante : sinon
+     la mise en page se réorganisait au moment même où le repère apparaît. */
+  .sommaire-cote a {
+    display: block;
+    margin: 0;
+    padding: .12em .5rem .12em 1.1rem;
+    border-radius: 0 4px 4px 0;
+  }
+  .sommaire-cote ul ul a { padding-left: 2rem; }
+  .sommaire-cote a[aria-current] { box-shadow: inset 3px 0 0 var(--orange-encre); }
+
+  /* LE TITRE PREND LE MÊME RETRAIT QUE LES ENTRÉES. Le remplissage ayant
+     quitté la colonne pour les liens, « SOMMAIRE » restait collé au filet
+     — vu à l'écran, pas dans la feuille. Il s'aligne sur les entrées, ce
+     qui est aussi ce que l'œil attend d'un titre de liste. */
+  .sommaire-cote summary { padding-left: 1.1rem; }
 
   /* Déplié en permanence sur écran large : le script pose l'attribut, et
      la flèche du <summary> n'a plus rien à ouvrir — on la retire. */
@@ -1605,15 +1639,30 @@ pre > code {
   background: var(--orange-pale);
   font-weight: 700;
   border-radius: 4px;
-  /* Le fond déborde légèrement pour ne pas serrer le texte. */
+}
+
+/* --- l'air autour du fond : deux apparences, séparées par le SEUIL -----
+   Le fond a besoin d'un peu d'air autour du texte. Dans un sommaire EN
+   BLOC, la boîte a son propre remplissage : une marge négative y tient
+   sans rien faire déborder. Dans la COLONNE, elle fabrique une barre de
+   défilement horizontale (voir plus haut, dans le bloc de média).
+
+   LES DEUX RÈGLES NE SE CROISENT JAMAIS, et c'est délibéré. Écrites
+   d'abord en règle générale + exception, elles avaient la MÊME spécificité
+   (0,2,1) : c'est donc l'ordre d'écriture qui tranchait, et la générale,
+   venant après, l'emportait — la marge négative revenait, la barre avec
+   elle. Corrigé deux fois avant de comprendre que le problème n'était pas
+   la valeur mais l'arbitrage.
+
+   Le seuil sépare donc les deux apparences en toutes lettres. Personne
+   n'a à se demander laquelle gagne : à une largeur donnée, une seule
+   existe. */
+.sommaire:not(.sommaire-cote) a[aria-current] {
   margin: 0 -.45rem; padding: .1em .45rem;
 }
-.sommaire-cote a[aria-current] {
-  display: block;
-  /* La barre se pose SUR le filet de la colonne. En encre : c'est le seul
-     des trois signaux à franchir un seuil de contraste dans les deux
-     livrées, donc le seul sur lequel on puisse compter. */
-  box-shadow: -1.35rem 0 0 -0.35rem var(--orange-encre);
+@media (max-width: 75.99rem) {
+  /* Sous le seuil, un sommaire « cote » EST un bloc : même apparence. */
+  .sommaire-cote a[aria-current] { margin: 0 -.45rem; padding: .1em .45rem; }
 }
 @media (prefers-reduced-motion: no-preference) {
   .sommaire a { transition: color .15s ease; }
