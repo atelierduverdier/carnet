@@ -37,28 +37,41 @@ class Generateur(unittest.TestCase):
                      'Et `une commande en ligne` au fil de la phrase.')
         # Une FICHE avec sommaire : la clé était honorée par le générateur
         # et jetée par le gabarit.
-        appui.ecrire(cls.site, 'fr/actualites/003-fiche-longue.md',
+        appui.ecrire(cls.site, 'fr/essai-tuiles/010-fiche-longue.md',
                      'titre: "Fiche longue"\nlangue: "fr"\ntype: "fiche"\n'
-                     'collection: "actualites"\ndate: "2026-03-01"\nrang: 3\n'
+                     'collection: "essai-tuiles"\ndate: "2026-03-01"\nrang: 10\n'
                      'sommaire: "oui"\nstatut: "publie"',
                      'Une fiche assez longue pour mériter un plan.\n\n'
                      '## Premier point\n\nDu texte.\n\n'
                      '## Deuxième point\n\nDu texte.\n\n'
                      '## Troisième point\n\nDu texte.')
-        # Une fiche AVEC vignette, une AVEC UNE VIGNETTE ABSENTE.
+        # UNE RUBRIQUE À NOUS, pas celle de la démonstration. `tests/`
+        # voyage : un site a les rubriques qu'il veut, et lire
+        # « /fr/actualites/ » revenait à exiger de tout site qu'il en ait
+        # une. Le carnet, qui range ses fiches sous « depannage », a fait
+        # rougir cet essai — encore une fois pour rien.
+        appui.ecrire(cls.site, 'fr/essai-tuiles/_index.md',
+                     'titre: "Essai des tuiles"\nlangue: "fr"\n'
+                     'type: "collection"\nslug: "essai-tuiles"\nstatut: "publie"',
+                     'La rubrique que cet essai se donne à lui-même.')
         cls.vignette = appui.image(cls.site, 'essai/vignette.png')
         if cls.vignette:
-            appui.ecrire(cls.site, 'fr/actualites/004-avec-vignette.md',
+            appui.ecrire(cls.site, 'fr/essai-tuiles/001-avec-vignette.md',
                          'titre: "Avec vignette"\nlangue: "fr"\ntype: "fiche"\n'
-                         'collection: "actualites"\ndate: "2026-04-01"\nrang: 4\n'
+                         'collection: "essai-tuiles"\ndate: "2026-04-01"\nrang: 1\n'
                          f'vignette: "{cls.vignette[len("/medias/"):]}"\n'
                          'statut: "publie"',
                          'Une fiche dont la tuile porte une bande.')
-        appui.ecrire(cls.site, 'fr/actualites/005-vignette-absente.md',
+        appui.ecrire(cls.site, 'fr/essai-tuiles/002-vignette-absente.md',
                      'titre: "Vignette absente"\nlangue: "fr"\ntype: "fiche"\n'
-                     'collection: "actualites"\ndate: "2026-04-02"\nrang: 5\n'
+                     'collection: "essai-tuiles"\ndate: "2026-04-02"\nrang: 2\n'
                      'vignette: "nulle-part/inexistante.jpg"\nstatut: "publie"',
                      'Une fiche dont la vignette ne mène nulle part.')
+        appui.ecrire(cls.site, 'fr/essai-tuiles/003-sans-vignette.md',
+                     'titre: "Sans vignette"\nlangue: "fr"\ntype: "fiche"\n'
+                     'collection: "essai-tuiles"\ndate: "2026-04-03"\nrang: 3\n'
+                     'statut: "publie"',
+                     'Une fiche qui n’en demande pas.')
         cls.image = appui.media(cls.site, 'essai/image-essai.png')
         appui.ecrire(cls.site, 'fr/images.md',
                      'titre: "Images"\nlangue: "fr"\ntype: "page"\n'
@@ -108,7 +121,7 @@ class Generateur(unittest.TestCase):
         pleine taille sur un téléphone."""
         if not self.vignette:
             self.skipTest('sans Pillow, pas de dimensions ni de déclinaisons')
-        h = appui.page(self.site, '/fr/actualites/')
+        h = appui.page(self.site, '/fr/essai-tuiles/')
         self.assertIn('class="fiche-vignette"', h, 'la tuile n’a pas sa bande')
         balise = re.search(r'<img class="fiche-vignette"[^>]*>', h).group(0)
         self.assertIn('width=', balise, 'sans dimensions, la grille saute')
@@ -122,7 +135,7 @@ class Generateur(unittest.TestCase):
         """Poser quand même la balise donnerait une image cassée sur chaque
         tuile ET une ligne rouge du vérificateur par page de la rubrique —
         pour une décoration."""
-        h = appui.page(self.site, '/fr/actualites/')
+        h = appui.page(self.site, '/fr/essai-tuiles/')
         self.assertNotIn('inexistante.jpg', h,
                          'une vignette qui ne mène nulle part est rendue quand '
                          'même : image cassée, et le vérificateur bloque')
@@ -134,8 +147,11 @@ class Generateur(unittest.TestCase):
     def test_une_fiche_sans_vignette_n_en_a_pas(self):
         """Le réglage est OPTIONNEL : les tuiles d'un site qui n'en veut pas
         ne doivent pas changer d'un pixel."""
-        h = appui.page(self.site, '/fr/actualites/001-une-premiere-annonce/')
-        self.assertNotIn('fiche-vignette', h)
+        h = appui.page(self.site, '/fr/essai-tuiles/')
+        # La rubrique porte trois fiches, dont UNE SEULE a une vignette
+        # valide : les deux autres ne doivent rien poser.
+        self.assertEqual(h.count('fiche-vignette'), 1 if self.vignette else 0,
+                         'une fiche sans vignette en reçoit une')
 
     def test_un_bloc_de_code_reste_un_bloc(self):
         """Markdown seul lit les trois accents graves comme du code EN
@@ -168,7 +184,7 @@ class Generateur(unittest.TestCase):
         on l'écrit dans l'en-tête, rien n'apparaît, et rien ne dit
         pourquoi. Une fiche technique de cinq sections en a autant besoin
         qu'une page."""
-        h = appui.page(self.site, '/fr/actualites/003-fiche-longue/')
+        h = appui.page(self.site, '/fr/essai-tuiles/010-fiche-longue/')
         self.assertIn('class="sommaire"', h,
                       'le sommaire d’une fiche est encore jeté par le gabarit')
         self.assertIn('Premier point', h)
