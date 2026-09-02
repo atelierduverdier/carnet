@@ -6,6 +6,7 @@ collection: "system"
 date: "2026-08-17"
 rang: 1
 traduction: "timer-systemd"
+vignette: "captures/timer-calendrier.png"
 statut: "publie"
 sommaire: "oui"
 extrait: "Why a scheduled task on a desktop machine belongs in a systemd user timer rather than a crontab line — and how to write one that shows a notification."

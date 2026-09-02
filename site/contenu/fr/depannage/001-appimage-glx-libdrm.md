@@ -6,6 +6,7 @@ collection: "depannage"
 date: "2026-08-24"
 rang: 1
 traduction: "glx-libdrm"
+vignette: "captures/glx-symbole.png"
 statut: "publie"
 sommaire: "oui"
 extrait: "Sur Arch avec une carte AMD, les AppImages Qt s'arrêtent net sans fenêtre ni message. La cause n'est pas Qt : c'est une libdrm embarquée trop vieille qui prend le pas sur celle du système."

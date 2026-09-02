@@ -6,6 +6,7 @@ collection: "troubleshooting"
 date: "2026-08-24"
 rang: 1
 traduction: "glx-libdrm"
+vignette: "captures/glx-symbole.png"
 statut: "publie"
 sommaire: "oui"
 extrait: "On Arch with an AMD card, Qt AppImages stop dead with no window and no message. The cause is not Qt: it is a bundled libdrm, too old, winning over the system one."

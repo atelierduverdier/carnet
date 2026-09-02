@@ -6,6 +6,7 @@ collection: "workshop"
 date: "2026-08-16"
 rang: 1
 traduction: "epingler-paquet"
+vignette: "captures/pacman-epingle.png"
 statut: "publie"
 sommaire: "oui"
 extrait: "A rolling distribution and a fabrication program do not want the same thing. IgnorePkg settles the conflict — provided you know what you are buying with it."

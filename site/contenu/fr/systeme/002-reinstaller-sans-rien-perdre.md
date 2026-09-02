@@ -6,6 +6,7 @@ collection: "systeme"
 date: "2026-08-15"
 rang: 2
 traduction: "reinstaller"
+vignette: "captures/chezmoi-gere.png"
 statut: "publie"
 sommaire: "oui"
 extrait: "Une réinstallation ne se prépare pas le jour où on la fait. Ce qui se perd n'est presque jamais les fichiers : c'est la phrase de passe du dépôt de sauvegarde, et l'état « activé » de ce qu'on a restauré."

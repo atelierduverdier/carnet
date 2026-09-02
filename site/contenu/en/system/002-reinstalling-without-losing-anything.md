@@ -6,6 +6,7 @@ collection: "system"
 date: "2026-08-15"
 rang: 2
 traduction: "reinstaller"
+vignette: "captures/chezmoi-gere.png"
 statut: "publie"
 sommaire: "oui"
 extrait: "A reinstall is not prepared on the day you do it. What gets lost is almost never the files: it is the backup repository passphrase, and the “enabled” state of everything you restored."

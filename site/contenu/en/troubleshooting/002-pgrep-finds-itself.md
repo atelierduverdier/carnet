@@ -6,6 +6,7 @@ collection: "troubleshooting"
 date: "2026-08-22"
 rang: 2
 traduction: "pgrep"
+vignette: "captures/pgrep-se-trouve.png"
 statut: "publie"
 sommaire: "oui"
 extrait: "A script that checks whether a service is running always finds it running — because it sees itself. Three ways out, one of which is not enough."
@@ -39,6 +40,28 @@ bash -c 'pgrep -af somepatternthatdoesnotexist'
 ```
 
 That command searches for a pattern that exists **nowhere** on the machine — and still prints a line: the shell carrying it, whose command line contains the pattern. Verified on the machine I am writing this on.
+
+### The trap inside the trap: the demo that proves nothing
+
+Trying to reproduce the fault in order to show it, you hit this:
+
+```bash
+bash -c 'pgrep -af somemissingpattern'
+```
+
+It returns **nothing**. You conclude all is well, and close the terminal.
+
+That is wrong, for a reason that has nothing to do with `pgrep`: when `bash -c` has **only one command** to run, it does not fork — it **replaces itself** with that command. There is no longer a shell carrying the pattern, and `pgrep`, which always excludes itself, finds nobody.
+
+Add anything after it and the shell survives — so it gets found:
+
+```bash
+bash -c 'pgrep -af somemissingpattern || echo no'
+```
+
+This time a line comes out: the shell itself. And that is exactly the shape of a real watchdog script, which always has something to do next.
+
+**Hence the illusion**, and it is an expensive one: the quick test looks clean, the real script fails. The fault is not intermittent — the test had removed it by simplifying it.
 
 ## The well-known cure: brackets
 

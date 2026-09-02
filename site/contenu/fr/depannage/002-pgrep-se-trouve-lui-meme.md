@@ -6,6 +6,7 @@ collection: "depannage"
 date: "2026-08-22"
 rang: 2
 traduction: "pgrep"
+vignette: "captures/pgrep-se-trouve.png"
 statut: "publie"
 sommaire: "oui"
 extrait: "Un script qui vérifie si un service tourne le trouve toujours en marche — parce qu'il se voit lui-même. Trois façons de s'en sortir, dont une qui ne suffit pas."
@@ -39,6 +40,28 @@ bash -c 'pgrep -af unmotifquinexistepas'
 ```
 
 Cette commande cherche un motif qui n'existe **nulle part** sur la machine — et pourtant elle affiche une ligne : celle du shell qui la porte, dont la ligne de commande contient le motif. Vérifié à l'instant sur la machine où j'écris.
+
+### Le piège dans le piège : la démonstration qui ne démontre rien
+
+En essayant de reproduire le défaut pour l'illustrer, on tombe sur ceci :
+
+```bash
+bash -c 'pgrep -af unmotifabsent'
+```
+
+Cette commande ne renvoie **rien**. On en conclut que tout va bien, et on referme.
+
+C'est faux, et pour une raison qui n'a rien à voir avec `pgrep` : quand `bash -c` n'a **qu'une seule commande** à exécuter, il ne crée pas de processus fils — il se **remplace** par elle. Il n'y a donc plus de shell portant le motif, et `pgrep`, qui s'exclut toujours lui-même, ne trouve personne.
+
+Ajoutez la moindre suite et le shell survit — donc se fait trouver :
+
+```bash
+bash -c 'pgrep -af unmotifabsent || echo non'
+```
+
+Cette fois, une ligne sort : le shell lui-même. Et c'est exactement la forme d'un script de surveillance réel, qui a toujours quelque chose à faire ensuite.
+
+**D'où l'illusion**, et elle est coûteuse : le test rapide semble sain, le vrai script échoue. Ce n'est pas que le défaut soit intermittent — c'est que le test l'avait supprimé en le simplifiant.
 
 ## Le remède le plus connu : les crochets
 
