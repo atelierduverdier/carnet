@@ -3,6 +3,7 @@ titre: "Accueil"
 langue: "fr"
 type: "page"
 slug: "accueil"
+traduction: "accueil"
 statut: "publie"
 extrait: "Pense-bêtes Linux d'un atelier : pannes résolues, réglages système, et Linux à l'établi — CNC, FreeCAD, impression 3D."
 ---

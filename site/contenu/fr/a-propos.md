@@ -3,6 +3,7 @@ titre: "À propos de ce carnet"
 langue: "fr"
 type: "page"
 slug: "a-propos"
+traduction: "a-propos"
 statut: "publie"
 extrait: "Pourquoi un carnet public plutôt qu'un fichier de notes, sur quelle machine c'est écrit, et ce qu'on n'y trouvera pas."
 ---

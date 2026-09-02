@@ -44,7 +44,26 @@ affirme que `libgallium` réclame `amdgpu_va_manager_init2` et que seule libdrm
 ≥ 2.4.134 le fournit. Les deux moitiés ont été lues avec `nm -D` avant d'être
 écrites.
 
-### 5. Le `CNAME` fait vivre le domaine
+### 5. Le site est MASQUÉ AUX MOTEURS, et ça se retire à la main
+
+`moteurs: "non"` dans `site/config.yaml`, posé le 02/09/2026 : le carnet est en
+ligne mais ne veut pas encore être trouvé, le temps d'être rempli. Ne pas le
+retirer sans que Christophe l'ait demandé — et quand il le demande, ne pas
+oublier les deux annonces préparées sur la branche `carnet-a-annoncer` des
+dépôts `site` (carte du portail) et `liens` (ligne de la page de liens).
+
+### 6. Le français fait foi, l'anglais suit
+
+Le site est bilingue, jumelé par la clé `traduction:` de l'en-tête — les deux
+versions d'une page portent la MÊME valeur. **Une fiche ajoutée en français
+sans sa jumelle anglaise est admise** : le sélecteur grise la langue absente.
+Mais une fiche MODIFIÉE d'un côté et pas de l'autre laisse deux textes qui se
+contredisent, sans que rien ne le signale. Corriger les deux, ou aucun.
+
+Les slugs sont dans la langue de la page (`depannage` / `troubleshooting`) :
+c'est l'adresse que lisent un moteur et un humain.
+
+### 7. Le `CNAME` fait vivre le domaine
 
 Le supprimer ou le modifier casse `carnet.atelierduverdier.fr`. Il n'a rien à
 faire dans un `.gitignore` ni dans un nettoyage de fichiers « inutiles ».

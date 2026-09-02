@@ -5,6 +5,7 @@ type: "fiche"
 collection: "systeme"
 date: "2026-08-17"
 rang: 1
+traduction: "timer-systemd"
 statut: "publie"
 sommaire: "oui"
 extrait: "Pourquoi une tâche planifiée sur un poste de bureau tient mieux en timer systemd utilisateur qu'en ligne de crontab — et comment en écrire un qui affiche une notification."

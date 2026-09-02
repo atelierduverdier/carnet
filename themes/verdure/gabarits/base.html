@@ -5,6 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{ titre_page }}{% if not titre_page.startswith(site.titre) %} — {{ site.titre }}{% endif %}</title>
 <meta name="description" content="{{ description|e }}">
+{%- if hors_moteurs %}
+{#- « moteurs: non » dans config.yaml. robots.txt refuse déjà tout, mais un
+    fichier refusé n'empêche pas une adresse trouvée AILLEURS d'être indexée —
+    les certificats TLS sont publics, et les barres d'adresse bavardent. Cette
+    balise-ci, elle, est lue sur la page même. Il faut les deux. #}
+<meta name="robots" content="noindex, nofollow">
+{%- endif %}
 {%- for lg, url in versions.items() %}
 <link rel="alternate" hreflang="{{ lg }}" href="{{ site.domaine }}{{ url }}">
 {%- endfor %}

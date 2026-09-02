@@ -5,6 +5,7 @@ type: "fiche"
 collection: "depannage"
 date: "2026-08-22"
 rang: 2
+traduction: "pgrep"
 statut: "publie"
 sommaire: "oui"
 extrait: "Un script qui vérifie si un service tourne le trouve toujours en marche — parce qu'il se voit lui-même. Trois façons de s'en sortir, dont une qui ne suffit pas."

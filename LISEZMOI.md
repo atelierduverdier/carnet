@@ -7,8 +7,23 @@ Pannes résolues, réglages système, et Linux du côté des machines — CNC,
 FreeCAD, impression 3D. Ce qui est écrit ici a tourné sur une vraie machine ;
 le reste n'y est pas.
 
-Fait avec le [squelette de site](https://github.com/atelierduverdier/squelette-site),
-moteur **1.10.1**. Un site de l'[Atelier du Verdier](https://atelierduverdier.fr).
+**Bilingue français / anglais**, jumelé page à page. Fait avec le
+[squelette de site](https://github.com/atelierduverdier/squelette-site),
+moteur **1.11.0**. Un site de l'[Atelier du Verdier](https://atelierduverdier.fr).
+
+## ⚠ Le site est MASQUÉ AUX MOTEURS
+
+`moteurs: "non"` dans `site/config.yaml`. Le carnet est en ligne mais ne veut
+pas encore être trouvé, le temps d'être rempli : `robots.txt` refuse tout,
+chaque page porte `noindex, nofollow`, le plan du site n'est pas écrit. Le
+générateur le rappelle à chaque passage.
+
+**Le retirer est un geste, pas un oubli.** Quand le carnet sera prêt :
+
+1. supprimer la ligne `moteurs: "non"` de `site/config.yaml` ;
+2. `python3 outils/publier-pages.py` ;
+3. publier la carte du portail et le lien, préparés sur la branche
+   `carnet-a-annoncer` des dépôts `site` et `liens`.
 
 ## Écrire
 
@@ -37,13 +52,25 @@ La partie « ce que j'ai cru » n'est pas de la modestie : c'est ce qui manque
 partout ailleurs, et c'est elle qui fait gagner du temps au lecteur qui est en
 train de suivre la même fausse piste.
 
-## Trois rubriques
+## Trois rubriques, deux langues
 
-| dossier | ce qu'on y met |
-|---|---|
-| `site/contenu/fr/depannage/` | **Pannes** — ça ne marche pas, et voilà pourquoi |
-| `site/contenu/fr/systeme/` | **Système** — installer, régler, entretenir |
-| `site/contenu/fr/atelier/` | **À l'établi** — CNC, FreeCAD, impression 3D |
+| français | anglais | ce qu'on y met |
+|---|---|---|
+| `fr/depannage/` | `en/troubleshooting/` | **Pannes** — ça ne marche pas, et voilà pourquoi |
+| `fr/systeme/` | `en/system/` | **Système** — installer, régler, entretenir |
+| `fr/atelier/` | `en/workshop/` | **À l'établi** — CNC, FreeCAD, impression 3D |
+
+Le jumelage se fait sur la clé **`traduction:`** de l'en-tête : les deux
+versions d'une même page portent la MÊME valeur (`glx-libdrm`, `pgrep`…). Les
+slugs, eux, sont dans la langue de la page — c'est l'adresse que lit un moteur
+et un humain.
+
+Une page sans jumelle voit sa langue **grisée** dans le sélecteur, plutôt que
+de renvoyer le lecteur à l'accueil sans prévenir. Écrire une fiche en français
+seulement est donc parfaitement admis.
+
+Le français fait foi : l'anglais en est la traduction, et la page d'accueil
+anglaise le dit.
 
 ## Les blocs de code
 

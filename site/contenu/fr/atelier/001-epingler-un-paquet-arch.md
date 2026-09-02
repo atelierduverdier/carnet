@@ -5,6 +5,7 @@ type: "fiche"
 collection: "atelier"
 date: "2026-08-16"
 rang: 1
+traduction: "epingler-paquet"
 statut: "publie"
 sommaire: "oui"
 extrait: "Une distribution en flux continu et un logiciel de fabrication ne veulent pas la même chose. IgnorePkg règle le conflit — à condition de savoir ce qu'on achète avec."

@@ -14,6 +14,20 @@ courriel: "leverdier@ik.me"
 # Le thème du site : un dossier dans themes/.
 theme: "carnet"
 
+# =====================================================================
+# LE SITE EST MASQUÉ AUX MOTEURS — réglage temporaire, à retirer
+# =====================================================================
+# En ligne, mais pas encore montrable : le carnet se remplit. robots.txt
+# refuse tout, chaque page porte « noindex, nofollow », et le plan du
+# site n'est pas écrit. Le générateur le rappelle à chaque passage.
+#
+# LE RETIRER EST UN GESTE, PAS UN OUBLI : tant que cette ligne est là,
+# le carnet ne sera trouvé par personne. Supprimer la ligne, régénérer,
+# republier — et penser à poser la carte du portail et le lien de la
+# page « liens », préparés sur la branche `carnet-a-annoncer` de leurs
+# dépôts respectifs.
+moteurs: "non"
+
 langue_par_defaut: fr
 
 # UNE langue suffit. Pour en ajouter une, ajouter son bloc ici et créer
@@ -28,6 +42,16 @@ langues:
     accueil: "accueil"
     titre: "Le Carnet du Verdier"
     devise: "Pense-bêtes Linux d'un atelier : ce qui a marché, et pourquoi."
+  en:
+    nom: "English"
+    accueil: "home"
+    titre: "The Verdier Notebook"
+    # La devise DOIT être traduite : tant que les deux langues portent la
+    # même, les deux accueils ont le même <title> et le vérificateur le
+    # signale — à juste titre.
+    devise: "Linux notes from a workshop: what worked, and why."
+    # Chaque langue nomme SA rubrique en vedette : les slugs diffèrent.
+    a_la_une: "troubleshooting"
 # La rubrique dont les fiches s'affichent en tuiles sur l'accueil, et
 # combien. Retirer ce bloc si le site n'a pas d'actualités.
 a_la_une:

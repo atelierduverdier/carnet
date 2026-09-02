@@ -1,0 +1,16 @@
+# Site menu — editable by hand or from the workshop interface.
+
+- titre: "Home"
+  lien: "/en/"
+
+- titre: "Troubleshooting"
+  lien: "/en/troubleshooting/"
+
+- titre: "System"
+  lien: "/en/system/"
+
+- titre: "At the bench"
+  lien: "/en/workshop/"
+
+- titre: "About"
+  lien: "/en/about/"

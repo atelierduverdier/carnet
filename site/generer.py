@@ -197,6 +197,29 @@ MOTS = {
 # Lecture du contenu
 # =========================================================================
 
+def hors_moteurs(config) -> bool:
+    """« moteurs: non » dans config.yaml — le site ne veut pas être indexé.
+
+    Il y a un moment, dans la vie d'un site, où il est EN LIGNE mais pas
+    encore montrable : on le remplit, on regarde le rendu sur un vrai
+    téléphone, on fait relire. Pendant ce temps il est parfaitement
+    visible d'un moteur, qui l'indexe dans l'état — et une page à moitié
+    écrite reste des semaines dans les résultats après avoir été finie.
+
+    Ne pas mettre de lien vers le site ne suffit pas : les moteurs
+    trouvent aussi par les certificats TLS, qui sont publics, et par les
+    barres d'adresse des navigateurs.
+
+    Trois choses d'un coup, parce qu'une seule laisse une porte ouverte :
+    `robots.txt` refuse tout, chaque page porte `noindex, nofollow`, et
+    le plan du site n'est pas écrit. Le générateur le DIT à chaque
+    passage — c'est un réglage qu'on oublie d'enlever, et l'oublier
+    revient à ne jamais être trouvé.
+    """
+    return str(config.get('moteurs', 'oui')).strip().lower() in (
+        'non', 'no', 'false', 'nein')
+
+
 def entier(v, defaut=0) -> int:
     """Un nombre lu dans un en-tête, sans faire tomber la régénération.
 
@@ -971,21 +994,35 @@ def ecrire_annexes(config, env, contextes, menus_langue):
     # moteurs la rangent en « page avec redirection » plutôt que de
     # l'indexer. L'annoncer dans le plan ne sert donc personne.
     adresses = [a for a in adresses if a != '/']
-    lignes = ['<?xml version="1.0" encoding="UTF-8"?>',
-              '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
-    for a in adresses:
-        lignes.append(f'  <url><loc>{domaine}{a}</loc></url>')
-    lignes.append('</urlset>')
-    ecrire(PUBLIC / 'sitemap.xml', '\n'.join(lignes) + '\n')
+    masque = hors_moteurs(config)
+    if not masque:
+        lignes = ['<?xml version="1.0" encoding="UTF-8"?>',
+                  '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
+        for a in adresses:
+            lignes.append(f'  <url><loc>{domaine}{a}</loc></url>')
+        lignes.append('</urlset>')
+        ecrire(PUBLIC / 'sitemap.xml', '\n'.join(lignes) + '\n')
+    else:
+        # Pas de plan du site. En laisser un pendant que robots.txt refuse
+        # tout serait se contredire — et un plan est justement ce qu'un
+        # moteur lit en premier quand il en trouve un.
+        (PUBLIC / 'sitemap.xml').unlink(missing_ok=True)
 
     # --- robots.txt ------------------------------------------------------
     # L'adresse du plan doit rester /sitemap.xml : c'est celle que l'ancien
     # robots.txt annonçait, donc celle que Google a en mémoire.
-    ecrire(PUBLIC / 'robots.txt',
-           'User-agent: *\n'
-           'Allow: /\n'
-           '\n'
-           f'Sitemap: {domaine}/sitemap.xml\n')
+    if masque:
+        ecrire(PUBLIC / 'robots.txt',
+               '# Ce site est en construction : « moteurs: non » dans\n'
+               '# site/config.yaml. Retirer le réglage pour être indexé.\n'
+               'User-agent: *\n'
+               'Disallow: /\n')
+    else:
+        ecrire(PUBLIC / 'robots.txt',
+               'User-agent: *\n'
+               'Allow: /\n'
+               '\n'
+               f'Sitemap: {domaine}/sitemap.xml\n')
 
     # --- .htaccess -------------------------------------------------------
     # RedirectMatch et non Redirect : « Redirect /livres/ » attraperait
@@ -1055,7 +1092,10 @@ def ecrire_annexes(config, env, contextes, menus_langue):
             type='page', fil='', image_partage='/assets/logo.png')
         ecrire(PUBLIC / '404.html', html)
 
-    print(f'  {"sitemap":<12} {len(adresses)} adresses')
+    if masque:
+        print(f'  {"sitemap":<12} non écrit (site masqué)')
+    else:
+        print(f'  {"sitemap":<12} {len(adresses)} adresses')
     print(f'  {"redirections":<12} {len(paires)}')
 
 
@@ -1131,7 +1171,8 @@ def main():
         site_langue['titre'] = config['langues'][langue].get(
             'titre', exige(config, 'titre'))
         commun = dict(site=site_langue, langue=langue, mots=mots,
-                      annee=date.today().year, empreintes=empreintes)
+                      annee=date.today().year, empreintes=empreintes,
+                      hors_moteurs=hors_moteurs(config))
         # Gardé pour la page 404, engendrée après la boucle : elle doit
         # porter le même bandeau et le même menu que les autres, sinon
         # l'erreur ressemble à une sortie du site.

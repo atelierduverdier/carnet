@@ -203,3 +203,66 @@ class VerificateurQuiCrie(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class SiteMasque(unittest.TestCase):
+    """« moteurs: non » — un site en ligne mais pas encore montrable.
+
+    Il y a un moment où un site EST en ligne et pas prêt : on le remplit,
+    on regarde le rendu sur un vrai téléphone. Un moteur qui passe là
+    l'indexe dans l'état, et une page à moitié écrite reste des semaines
+    dans les résultats après avoir été finie.
+
+    Ne pas mettre de lien ne suffit pas : les moteurs trouvent aussi par
+    les certificats TLS, qui sont publics. Il faut donc les trois volets
+    à la fois — et cet essai les contrôle un par un, parce qu'un seul qui
+    manque laisse la porte ouverte.
+    """
+
+    def setUp(self):
+        self.site = appui.site_jetable()
+
+    def tearDown(self):
+        shutil.rmtree(self.site, ignore_errors=True)
+
+    def masquer(self):
+        f = self.site / 'site/config.yaml'
+        f.write_text(f.read_text(encoding='utf-8') + '\nmoteurs: "non"\n',
+                     encoding='utf-8')
+
+    def test_un_site_ordinaire_reste_indexable(self):
+        """Le réglage est OPTIONNEL : sans lui, rien ne change."""
+        appui.engendrer(self.site)
+        public = self.site / 'site/public'
+        robots = (public / 'robots.txt').read_text(encoding='utf-8')
+        self.assertIn('Allow: /', robots)
+        self.assertNotIn('Disallow: /', robots)
+        self.assertTrue((public / 'sitemap.xml').is_file())
+        self.assertNotIn('noindex', appui.page(self.site, '/fr/'))
+
+    def test_les_trois_volets_du_masque(self):
+        self.masquer()
+        r = appui.engendrer(self.site)
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        public = self.site / 'site/public'
+
+        robots = (public / 'robots.txt').read_text(encoding='utf-8')
+        self.assertIn('Disallow: /', robots)
+        self.assertNotIn('Allow: /', robots)
+        self.assertNotIn('Sitemap:', robots,
+                         'robots.txt refuse tout et annonce quand même un plan')
+
+        self.assertFalse((public / 'sitemap.xml').exists(),
+                         'le plan du site est justement ce qu’un moteur lit '
+                         'en premier quand il en trouve un')
+
+        self.assertIn('noindex', appui.page(self.site, '/fr/'),
+                      'robots.txt ne protège pas une adresse trouvée ailleurs')
+
+    def test_le_generateur_le_dit_a_chaque_passage(self):
+        """C'est un réglage qu'on oublie d'enlever, et l'oublier revient à
+        ne jamais être trouvé. Il doit se voir dans la sortie."""
+        self.masquer()
+        r = appui.engendrer(self.site)
+        self.assertIn('masqué', r.stdout,
+                      'rien dans la sortie ne rappelle que le site est masqué')
