@@ -32,12 +32,50 @@ def site_jetable(avec_git=False) -> Path:
             shutil.copytree(source, cible)
         else:
             shutil.copy2(source, cible)
+    neutraliser(dossier)
     if avec_git:
         git(dossier, 'init', '-q')
         git(dossier, 'add', '-A')
         git(dossier, '-c', 'user.email=essai@exemple', '-c', 'user.name=Essai',
             'commit', '-qm', 'départ')
     return dossier
+
+
+# Les réglages du site source qu'un site JETABLE ne doit pas hériter.
+#
+# Le harnais copie `site/config.yaml` tel quel — c'est voulu, il faut bien
+# un site qui se tienne. Mais `tests/` fait partie du moteur : il voyage
+# dans chaque site né du squelette, et copie donc la configuration de CE
+# site-là. Un réglage ambiant devient alors une condition d'essai qu'on
+# n'a pas choisie.
+#
+# Payé le 02/09/2026 : un site passé en « moteurs: non » (masqué aux
+# moteurs, le temps d'être rempli) a fait rougir QUATRE essais d'un coup —
+# ils cherchaient un sitemap.xml que le générateur, à raison, n'écrivait
+# plus. Aucun ne parlait de moteurs ; tous supposaient un site ordinaire.
+#
+# Un site jetable part donc NEUTRE, et l'essai qui veut un réglage le pose
+# lui-même. C'est la même règle que partout ici : contrôler ce qu'on a mis,
+# pas ce qu'on a trouvé.
+REGLAGES_AMBIANTS = ('moteurs',)
+
+
+def neutraliser(dossier: Path) -> None:
+    """Retire du config.yaml copié les réglages qui ne regardent pas l'essai."""
+    f = dossier / 'site' / 'config.yaml'
+    if not f.is_file():
+        return
+    gardees = [l for l in f.read_text(encoding='utf-8').splitlines()
+               if not any(l.lstrip().startswith(c + ':')
+                          for c in REGLAGES_AMBIANTS)]
+    f.write_text('\n'.join(gardees) + '\n', encoding='utf-8')
+
+
+def regler(dossier: Path, cle: str, valeur: str) -> None:
+    """Pose un réglage de premier niveau dans le config.yaml du site jetable."""
+    f = dossier / 'site' / 'config.yaml'
+    f.write_text(f.read_text(encoding='utf-8').rstrip('\n')
+                 + f'\n{cle}: "{valeur}"\n', encoding='utf-8')
 
 
 def git(dossier: Path, *arguments):

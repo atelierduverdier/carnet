@@ -226,9 +226,7 @@ class SiteMasque(unittest.TestCase):
         shutil.rmtree(self.site, ignore_errors=True)
 
     def masquer(self):
-        f = self.site / 'site/config.yaml'
-        f.write_text(f.read_text(encoding='utf-8') + '\nmoteurs: "non"\n',
-                     encoding='utf-8')
+        appui.regler(self.site, 'moteurs', 'non')
 
     def test_un_site_ordinaire_reste_indexable(self):
         """Le réglage est OPTIONNEL : sans lui, rien ne change."""
