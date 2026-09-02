@@ -122,6 +122,21 @@ class Generateur(unittest.TestCase):
         self.assertIn('Premier point', h)
         self.assertIn('#deuxieme-point', h)
 
+    def test_la_une_nomme_sa_rubrique_plutot_que_des_annonces(self):
+        """Le lien « voir tout » de l'accueil portait « toutes les
+        annonces », en dur : le squelette supposait que la rubrique en
+        vedette est une rubrique d'actualités. Sur un site dont elle
+        s'appelle « Pannes » ou « Recettes », le mot était simplement
+        faux — et rien ne le signalait, puisqu'une phrase fausse est une
+        phrase valide.
+
+        Le titre NU, sans article : le genre ne se devine pas d'un nom,
+        et « toutes les témoignages » serait pire que le défaut."""
+        h = appui.page(self.site, '/fr/')
+        self.assertIn('Actualités ›', h,
+                      'le lien de la une ne reprend pas le titre de sa rubrique')
+        self.assertNotIn('toutes les annonces', h)
+
     def test_l_alt_ecrit_a_la_main_n_est_jamais_ecrase(self):
         """Le magasin ne connaît que le fichier ; la page, elle, sait ce
         qu'elle veut dire de l'image."""

@@ -1050,7 +1050,7 @@ def ecrire_annexes(config, env, contextes, menus_langue):
             menu_html=menus_langue.get(defaut, ''), titre_masque=False,
             titre_affiche=mots['erreur_titre'], a_la_une=[], ouverture='',
             mention_origine='', mention_machine='', sommaire='',
-            a_la_une_url='', versions={}, url_page='/404.html',
+            a_la_une_url='', a_la_une_titre='', versions={}, url_page='/404.html',
             titre_page=mots['erreur_titre'], description=mots['erreur_texte'],
             type='page', fil='', image_partage='/assets/logo.png')
         ecrire(PUBLIC / '404.html', html)
@@ -1247,7 +1247,21 @@ def main():
                         mention_origine=mention_origine,
                         mention_machine=mention_machine,
                         sommaire=sommaire,
-                        a_la_une_url=(collections.get(reglage.get('collection'), {}) or {}).get('url', ''),
+                        # `col_une`, PAS `reglage['collection']` : une langue
+                        # peut nommer SA rubrique en vedette, et le lien
+                        # « voir tout » pointait alors sur celle d'une autre
+                        # langue pendant que les tuiles venaient de la sienne.
+                        a_la_une_url=(collections.get(col_une, {}) or {}).get('url', ''),
+                        # Le libellé du lien portait « toutes les annonces »,
+                        # en dur : le squelette supposait que la rubrique en
+                        # vedette est une rubrique d'actualités. Sur un site
+                        # dont elle s'appelle « Pannes », le mot était faux.
+                        # On passe le TITRE de la rubrique, et le gabarit s'en
+                        # sert quand il l'a. Pourquoi le titre nu plutôt que
+                        # « toutes les <fiches> » : le genre ne se devine pas
+                        # d'un nom — « toutes les témoignages » serait faux, et
+                        # aucune règle ne le rattrape sans dictionnaire.
+                        a_la_une_titre=(collections.get(col_une, {}) or {}).get('titre', ''),
                         versions=v, url_page=p['url'], titre_page=titre_page,
                         description=desc, type=p['type'], fil='',
                         image_partage=(premiere_image(corps)

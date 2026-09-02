@@ -8,7 +8,7 @@ FreeCAD, impression 3D. Ce qui est écrit ici a tourné sur une vraie machine ;
 le reste n'y est pas.
 
 Fait avec le [squelette de site](https://github.com/atelierduverdier/squelette-site),
-moteur **1.10.0**. Un site de l'[Atelier du Verdier](https://atelierduverdier.fr).
+moteur **1.10.1**. Un site de l'[Atelier du Verdier](https://atelierduverdier.fr).
 
 ## Écrire
 
