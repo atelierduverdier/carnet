@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Ce que le générateur doit garantir — les fautes qui coûtent cher."""
 
+import re
 import shutil
 import unittest
 from pathlib import Path
@@ -131,11 +132,31 @@ class Generateur(unittest.TestCase):
         phrase valide.
 
         Le titre NU, sans article : le genre ne se devine pas d'un nom,
-        et « toutes les témoignages » serait pire que le défaut."""
+        et « toutes les témoignages » serait pire que le défaut.
+
+        L'ESSAI NE NOMME AUCUNE RUBRIQUE. Une première version attendait
+        « Actualités ›», le titre de la démonstration : elle rougissait
+        chez le premier site dont la rubrique en vedette s'appelle
+        autrement. Ce fichier VOYAGE — `tests/` fait partie du moteur et
+        se recopie dans chaque site. On contrôle donc la propriété, pas
+        la valeur : le lien porte le titre de la page vers laquelle il
+        mène, quelle qu'elle soit."""
         h = appui.page(self.site, '/fr/')
-        self.assertIn('Actualités ›', h,
-                      'le lien de la une ne reprend pas le titre de sa rubrique')
-        self.assertNotIn('toutes les annonces', h)
+        lien = re.search(r'<a class="alaune-toutes" href="([^"]+)"[^>]*>(.*?)</a>',
+                         h, re.S)
+        if not lien:
+            self.skipTest('ce site n’a pas de rubrique en vedette')
+        url, libelle = lien.group(1), lien.group(2).strip().rstrip('›').strip()
+        self.assertNotIn('toutes les annonces', h,
+                         'le lien porte encore le mot générique')
+        cible = appui.page(self.site, url)
+        self.assertTrue(cible, f'le lien de la une mène dans le vide : {url}')
+        titre = re.search(r'<h1[^>]*>(.*?)</h1>', cible, re.S)
+        self.assertTrue(titre, 'la rubrique visée n’a pas de <h1>')
+        self.assertEqual(
+            libelle, titre.group(1).strip(),
+            'le lien de la une ne porte pas le titre de la rubrique '
+            'vers laquelle il mène')
 
     def test_l_alt_ecrit_a_la_main_n_est_jamais_ecrase(self):
         """Le magasin ne connaît que le fichier ; la page, elle, sait ce
