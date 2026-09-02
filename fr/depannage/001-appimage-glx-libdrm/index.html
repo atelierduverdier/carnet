@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Un AppImage meurt au démarrage : « Could not initialize GLX » — Pannes — Le Carnet du Verdier</title>
+<meta name="description" content="Sur Arch avec une carte AMD, les AppImages Qt s&#39;arrêtent net sans fenêtre ni message. La cause n&#39;est pas Qt : c&#39;est une libdrm embarquée trop vieille qui prend le pas sur celle du système."><meta name="robots" content="noindex, nofollow"><link rel="alternate" hreflang="fr" href="https://carnet.atelierduverdier.fr/fr/depannage/001-appimage-glx-libdrm/"><link rel="alternate" hreflang="en" href="https://carnet.atelierduverdier.fr/en/troubleshooting/001-appimage-glx-libdrm/"><link rel="canonical" href="https://carnet.atelierduverdier.fr/fr/depannage/001-appimage-glx-libdrm/">
+<link rel="icon" href="/assets/favicon-32.png?v=262a95fa" sizes="32x32">
+<link rel="apple-touch-icon" href="/assets/favicon-180.png?v=262a95fa">
+<link rel="stylesheet" href="/assets/polices/dosis.css">
+<link rel="stylesheet" href="/assets/site.css?v=113f0245">
+<meta property="og:title" content="Un AppImage meurt au démarrage : « Could not initialize GLX » — Pannes">
+<meta property="og:description" content="Sur Arch avec une carte AMD, les AppImages Qt s&#39;arrêtent net sans fenêtre ni message. La cause n&#39;est pas Qt : c&#39;est une libdrm embarquée trop vieille qui prend le pas sur celle du système.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://carnet.atelierduverdier.fr/fr/depannage/001-appimage-glx-libdrm/">
+<meta property="og:locale" content="fr">
+<meta property="og:site_name" content="Le Carnet du Verdier">
+<meta property="og:image" content="https://carnet.atelierduverdier.fr/assets/logo.png">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<a class="saut-contenu" href="#contenu">Aller au contenu</a>
+
+
+<div class="bandeau">
+<header class="entete">
+  <div class="enveloppe entete-barre">
+    <a class="marque" href="/fr/">
+      <img class="marque-logo" src="/assets/logo.png?v=262a95fa"
+           width="216" height="119" alt="" decoding="async">
+      <span class="marque-texte">
+        <span class="marque-nom">Le Carnet du Verdier</span>
+        <span class="marque-devise">Pense-bêtes Linux d&#39;un atelier : ce qui a marché, et pourquoi.</span>
+      </span>
+    </a>
+
+    <div class="recherche" role="search">
+      <input type="search" id="champ-recherche" placeholder="Rechercher…"
+             aria-label="Rechercher…" autocomplete="off"
+             data-index="/recherche-fr.json">
+      <ul class="recherche-resultats" id="resultats-recherche" role="listbox"></ul>
+    </div>
+
+    <nav class="langues" aria-label="Langue">      <a href="/fr/depannage/001-appimage-glx-libdrm/" hreflang="fr"
+aria-current="true">fr</a>      <a href="/en/troubleshooting/001-appimage-glx-libdrm/" hreflang="en"
+>en</a>    </nav>
+
+    <button class="bouton-menu" aria-expanded="false" aria-controls="menu-principal">
+      <span aria-hidden="true">☰</span> Menu
+    </button>
+  </div>
+</header>
+
+<nav class="nav" id="menu-principal" aria-label="Menu principal">
+  <div class="enveloppe"><ul><li><a href="/fr/">Accueil</a></li><li><a href="/fr/depannage/">Pannes</a></li><li><a href="/fr/systeme/">Système</a></li><li><a href="/fr/atelier/">À l&#39;établi</a></li><li><a href="/fr/commandes/">Mémento</a></li><li><a href="/fr/a-propos/">À propos</a></li></ul></div>
+</nav>
+</div>
+
+<main class="contenu" id="contenu">
+<article class="colonne">
+  <header class="contenu-tete"><nav class="fil" aria-label="Fil d&#39;Ariane"><a href="/fr/depannage/">‹ Pannes</a></nav><p class="date-fiche">24 août 2026</p>    <h1>Un AppImage meurt au démarrage : « Could not initialize GLX »</h1>  </header><nav class="sommaire" aria-label="Sommaire"><h2>Sommaire</h2><ul><li><a href="#ce-que-jai-cru-pendant-huit-jours">Ce que j&#39;ai cru pendant huit jours</a></li><li><a href="#la-vraie-cause-en-un-nom-de-symbole">La vraie cause, en un nom de symbole</a></li><li><a href="#le-verifier-chez-vous-en-une-minute">Le vérifier chez vous, en une minute</a></li><li><a href="#le-remede">Le remède</a></li><li><a href="#ce-que-la-panne-apprend">Ce que la panne apprend</a></li></ul></nav>  <p>Sur une machine Arch à jour, carte AMD, pilote Mesa : un AppImage Qt — FreeCAD dans mon cas, mais la panne n'a rien de propre à lui — s'arrête au lancement. Pas de fenêtre, pas de boîte de dialogue. Dans le terminal, au mieux :</p>
+<pre><code class="language-text">Could not initialize GLX
+Abandon (core dumped)
+</code></pre>
+<p>Le processus meurt sur le signal 6. Rien d'autre. Le même AppImage tournait la semaine d'avant.</p>
+<h2 id="ce-que-jai-cru-pendant-huit-jours">Ce que j'ai cru pendant huit jours</h2>
+<p>Que le problème venait des <strong>bibliothèques Qt et GL gelées dans l'AppImage</strong>, construites en juillet, devenues incompatibles avec le Mesa 26.2 du système. C'est l'explication qui vient naturellement : un AppImage embarque son monde, le système avance, un jour ça craque.</p>
+<p>Je l'ai écrite dans un fichier de notes, avec assurance, et elle y est restée huit jours. Elle était fausse. Elle avait surtout le défaut d'être <strong>inactionnable</strong> : si le coupable est « l'AppImage est trop vieille », il n'y a rien à faire qu'attendre la suivante.</p>
+<p>Deux pistes classiques ne donnent rien non plus, et il vaut mieux le savoir avant d'y passer une heure :</p>
+<pre><code class="language-bash">LIBGL_DEBUG=verbose MESA_DEBUG=1 ./MonAppli.AppImage
+</code></pre>
+<p>Sur cette panne, ces deux variables <strong>n'impriment rien du tout</strong>. Zéro ligne. C'est déroutant — on croit s'être trompé de variable — mais c'est logique : le pilote échoue si tôt que le code qui produit ces traces n'est jamais atteint.</p>
+<h2 id="la-vraie-cause-en-un-nom-de-symbole">La vraie cause, en un nom de symbole</h2>
+<p>L'AppImage embarque <code>libdrm_amdgpu.so.1</code> en version <strong>2.4.125</strong> (novembre 2024). Le Mesa du système, lui, réclame le symbole <code>amdgpu_va_manager_init2</code>, <strong>apparu en libdrm 2.4.134</strong>.</p>
+<p>Or l'AppImage met son propre <code>usr/lib</code> en tête du chemin de recherche : <strong>la bibliothèque embarquée gagne</strong>. Le pilote Mesa du système essaie alors de se lier contre une libdrm qui ne connaît pas le symbole. La chaîne se déroule toute seule :</p>
+<ol>
+<li><code>libgallium-26.2.1-arch3.1.so</code> ne résout pas <code>amdgpu_va_manager_init2</code> ;</li>
+<li>il ne se charge pas — donc <strong>radeonsi disparaît</strong> ;</li>
+<li>sans pilote, <strong>GLX n'expose plus aucune FBConfig</strong> ;</li>
+<li>Qt demande un contexte GL, n'en obtient aucun, et abandonne.</li>
+</ol>
+<p>Le message « Could not initialize GLX » est donc le quatrième maillon. Il désigne l'endroit où ça s'est vu, pas l'endroit où ça s'est cassé — c'est pour ça qu'on cherche des heures du mauvais côté.</p>
+<h2 id="le-verifier-chez-vous-en-une-minute">Le vérifier chez vous, en une minute</h2>
+<p>Le diagnostic se reproduit <strong>hors de l'application</strong>, ce qui est tout l'intérêt : plus besoin de relancer un logiciel de 800 Mo pour tester une hypothèse.</p>
+<p>Montez l'AppImage sans l'exécuter :</p>
+<pre><code class="language-bash">./MonAppli.AppImage --appimage-mount
+</code></pre>
+<p>Elle affiche un point de montage (<code>/tmp/.mount_XXXXXX</code>) et reste ouverte. Dans <strong>un autre terminal</strong>, forcez son <code>usr/lib</code> et regardez ce que voit OpenGL :</p>
+<pre><code class="language-bash">LD_LIBRARY_PATH=/tmp/.mount_XXXXXX/usr/lib glxinfo -B
+</code></pre>
+<p>Si radeonsi a disparu, vous verrez <code>llvmpipe</code> (le rendu logiciel) ou une erreur, au lieu du nom de votre carte.</p>
+<p>La commande suivante <strong>nomme le symbole manquant</strong> — c'est elle qui a mis fin aux huit jours d'hypothèse :</p>
+<pre><code class="language-bash">LD_LIBRARY_PATH=/tmp/.mount_XXXXXX/usr/lib \
+  python3 -c &quot;import ctypes; ctypes.CDLL('/usr/lib/libGLX_mesa.so.0')&quot;
+</code></pre>
+<p>Le message d'erreur donne le nom exact. Rien à interpréter.</p>
+<p>Vous pouvez aussi confirmer les deux côtés sur votre système :</p>
+<pre><code class="language-bash">nm -D --undefined-only /usr/lib/libgallium-*.so | grep amdgpu_va_manager
+nm -D /usr/lib/libdrm_amdgpu.so.1 | grep amdgpu_va_manager
+</code></pre>
+<p>Le premier doit répondre <code>U</code> (le symbole est <em>réclamé</em>), le second <code>T</code> (il est <em>fourni</em>). Si le second ne répond rien, votre libdrm système est elle aussi trop vieille, et c'est une autre histoire.</p>
+<h2 id="le-remede">Le remède</h2>
+<p>Une variable. On force les libdrm du système à se charger <strong>avant</strong> celles de l'AppImage :</p>
+<pre><code class="language-bash">LD_PRELOAD=/usr/lib/libdrm_amdgpu.so.1:/usr/lib/libdrm.so.2 ./MonAppli.AppImage
+</code></pre>
+<p><strong>Précharger <code>libdrm.so.2</code> seule ne change rien</strong> — je l'ai essayé en premier, par réflexe, parce que c'est elle qu'on nomme quand on dit « libdrm ». Le symbole manquant vit dans <code>libdrm_amdgpu.so.1</code>, qui est une bibliothèque <em>séparée</em>. Il faut les deux : la seconde parce que la première en dépend, et mélanger une <code>libdrm_amdgpu</code> neuve avec une <code>libdrm</code> ancienne ne mène nulle part.</p>
+<p>Pour ne pas retaper ça à chaque lancement, un petit lanceur dans <code>~/.local/bin</code> :</p>
+<pre><code class="language-bash">#!/usr/bin/env bash
+set -euo pipefail
+export LD_PRELOAD=&quot;/usr/lib/libdrm_amdgpu.so.1:/usr/lib/libdrm.so.2${LD_PRELOAD:+:$LD_PRELOAD}&quot;
+exec &quot;$HOME/Applications/MonAppli.AppImage&quot; &quot;$@&quot;
+</code></pre>
+<p>La forme <code>${LD_PRELOAD:+:$LD_PRELOAD}</code> ajoute l'ancienne valeur <strong>seulement si elle existe</strong> : sans elle, un <code>LD_PRELOAD</code> vide laisserait un deux-points en trop, que l'éditeur de liens lit comme « précharger le répertoire courant ».</p>
+<h2 id="ce-que-la-panne-apprend">Ce que la panne apprend</h2>
+<p><strong>Un AppImage n'est pas étanche.</strong> On le présente comme « tout est dedans, rien ne peut casser » ; en réalité il partage avec le système tout ce qui touche au matériel — GPU, DRM, pilotes. Cette zone de contact est exactement l'endroit où les versions se croisent, et personne ne la teste.</p>
+<p><strong>Un message d'erreur nomme le symptôme, pas la cause.</strong> Chercher « Could not initialize GLX » ramène des milliers de pages sur Qt, sur X11, sur les pilotes propriétaires. Aucune sur libdrm. C'est en descendant d'un cran à chaque fois — Qt, puis GLX, puis le pilote, puis l'éditeur de liens — qu'on tombe sur le nom.</p>
+<p><strong>Une hypothèse invérifiable est un aveu.</strong> « Les bibliothèques sont trop vieilles » ne se teste pas, ne se réfute pas, et ne se répare pas. Ce genre d'explication devrait déclencher un signal d'alarme au moment où on l'écrit : si elle était vraie, que ferait-on ? Rien. Donc ce n'est pas encore une explication.</p>
+<p>À retirer le jour où l'AppImage sera reconstruite avec une libdrm récente. En attendant, le lanceur coûte huit lignes.</p>
+  <nav class="voisines" aria-label="Navigation"><a class="suivante" href="/fr/depannage/002-pgrep-se-trouve-lui-meme/">pgrep -f se trouve lui-même (et pkill tue votre script) →</a>  </nav>
+</article>
+</main>
+
+<footer class="pied">
+  <div class="enveloppe">
+    <div class="pied-grille">
+      <div>
+        <h2>Le Carnet du Verdier</h2>
+        <p>Pense-bêtes Linux d&#39;un atelier : ce qui a marché, et pourquoi.</p>
+      </div>
+      <div>
+        <h2>Contact</h2>
+        <ul><li><a href="mailto:leverdier@ik.me">leverdier@ik.me</a></li></ul>
+      </div>
+      <div>
+        <h2>Langue</h2>
+        <ul>          <li><a href="/fr/depannage/001-appimage-glx-libdrm/">Français</a></li>          <li><a href="/en/troubleshooting/001-appimage-glx-libdrm/">English</a></li>        </ul>
+      </div>
+    </div>
+    <div class="pied-bas">
+      <p>© 2026 Le Carnet du Verdier</p>
+      <p>Site statique engendré par un script Python.</p>
+    </div>
+  </div>
+</footer>
+
+<script src="/assets/site.js?v=88c63c3e" defer></script>
+</body>
+</html>

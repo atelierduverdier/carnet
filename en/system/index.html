@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>System — The Verdier Notebook</title>
+<meta name="description" content="Install, configure, maintain: the things you rarely redo, and therefore always forget."><meta name="robots" content="noindex, nofollow"><link rel="alternate" hreflang="fr" href="https://carnet.atelierduverdier.fr/fr/systeme/"><link rel="alternate" hreflang="en" href="https://carnet.atelierduverdier.fr/en/system/"><link rel="canonical" href="https://carnet.atelierduverdier.fr/en/system/">
+<link rel="icon" href="/assets/favicon-32.png?v=262a95fa" sizes="32x32">
+<link rel="apple-touch-icon" href="/assets/favicon-180.png?v=262a95fa">
+<link rel="stylesheet" href="/assets/polices/dosis.css">
+<link rel="stylesheet" href="/assets/site.css?v=113f0245">
+<meta property="og:title" content="System">
+<meta property="og:description" content="Install, configure, maintain: the things you rarely redo, and therefore always forget.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://carnet.atelierduverdier.fr/en/system/">
+<meta property="og:locale" content="en">
+<meta property="og:site_name" content="The Verdier Notebook">
+<meta property="og:image" content="https://carnet.atelierduverdier.fr/assets/logo.png">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<a class="saut-contenu" href="#contenu">Aller au contenu</a>
+
+
+<div class="bandeau">
+<header class="entete">
+  <div class="enveloppe entete-barre">
+    <a class="marque" href="/en/">
+      <img class="marque-logo" src="/assets/logo.png?v=262a95fa"
+           width="216" height="119" alt="" decoding="async">
+      <span class="marque-texte">
+        <span class="marque-nom">The Verdier Notebook</span>
+        <span class="marque-devise">Linux notes from a workshop: what worked, and why.</span>
+      </span>
+    </a>
+
+    <div class="recherche" role="search">
+      <input type="search" id="champ-recherche" placeholder="Search…"
+             aria-label="Search…" autocomplete="off"
+             data-index="/recherche-en.json">
+      <ul class="recherche-resultats" id="resultats-recherche" role="listbox"></ul>
+    </div>
+
+    <nav class="langues" aria-label="Language">      <a href="/fr/systeme/" hreflang="fr"
+>fr</a>      <a href="/en/system/" hreflang="en"
+aria-current="true">en</a>    </nav>
+
+    <button class="bouton-menu" aria-expanded="false" aria-controls="menu-principal">
+      <span aria-hidden="true">☰</span> Menu
+    </button>
+  </div>
+</header>
+
+<nav class="nav" id="menu-principal" aria-label="Main menu">
+  <div class="enveloppe"><ul><li><a href="/en/">Home</a></li><li><a href="/en/troubleshooting/">Troubleshooting</a></li><li><a href="/en/system/" aria-current="page">System</a></li><li><a href="/en/workshop/">At the bench</a></li><li><a href="/en/commands/">Commands</a></li><li><a href="/en/about/">About</a></li></ul></div>
+</nav>
+</div>
+
+<main class="contenu" id="contenu">
+<div class="enveloppe">
+  <header class="contenu-tete colonne">    <h1>System</h1>
+    <p>The gestures you perform once every couple of years — reinstalling, scheduling a task, pinning a package — and rediscover every time. Those are exactly the ones worth writing down: how often you do something and how useful it is to note it vary in opposite directions.</p>
+  </header>
+
+  <p class="compteur">
+    <span class="compteur-nombre">2</span>
+    <span class="compteur-mot">notes</span>
+  </p>
+  <ul class="fiches">    <li><a class="fiche-carte" href="/en/system/001-systemd-timer-not-cron/"
+><img class="fiche-vignette" src="/medias/captures/timer-calendrier.png" alt="" srcset="/medias/captures/timer-calendrier-480.webp 480w, /medias/captures/timer-calendrier-960.webp 960w, /medias/captures/timer-calendrier.png 1600w" sizes="(min-width: 46rem) 20rem, 100vw" width="1600" height="700" loading="lazy" decoding="async"><span class="date-fiche">17 August 2026</span>      <h2>Scheduling a task: a systemd timer, not cron</h2><p>Why a scheduled task on a desktop machine belongs in a systemd user timer rather than a crontab line — and how to write one that shows a notification.</p>    </a></li>    <li><a class="fiche-carte" href="/en/system/002-reinstalling-without-losing-anything/"
+><img class="fiche-vignette" src="/medias/captures/chezmoi-gere.png" alt="" srcset="/medias/captures/chezmoi-gere-480.webp 480w, /medias/captures/chezmoi-gere-960.webp 960w, /medias/captures/chezmoi-gere.png 1600w" sizes="(min-width: 46rem) 20rem, 100vw" width="1600" height="700" loading="lazy" decoding="async"><span class="date-fiche">15 August 2026</span>      <h2>Reinstalling without losing anything: the order of operations</h2><p>A reinstall is not prepared on the day you do it. What gets lost is almost never the files: it is the backup repository passphrase, and the “enabled” state of everything you restored.</p>    </a></li>  </ul></div>
+</main>
+
+<footer class="pied">
+  <div class="enveloppe">
+    <div class="pied-grille">
+      <div>
+        <h2>The Verdier Notebook</h2>
+        <p>Linux notes from a workshop: what worked, and why.</p>
+      </div>
+      <div>
+        <h2>Contact</h2>
+        <ul><li><a href="mailto:leverdier@ik.me">leverdier@ik.me</a></li></ul>
+      </div>
+      <div>
+        <h2>Language</h2>
+        <ul>          <li><a href="/fr/systeme/">Français</a></li>          <li><a href="/en/system/">English</a></li>        </ul>
+      </div>
+    </div>
+    <div class="pied-bas">
+      <p>© 2026 The Verdier Notebook</p>
+      <p>Static site generated by a Python script.</p>
+    </div>
+  </div>
+</footer>
+
+<script src="/assets/site.js?v=88c63c3e" defer></script>
+</body>
+</html>

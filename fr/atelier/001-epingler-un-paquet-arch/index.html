@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Épingler un paquet sous Arch, et pourquoi une machine-outil l&#39;exige — À l&#39;établi — Le Carnet du Verdier</title>
+<meta name="description" content="Une distribution en flux continu et un logiciel de fabrication ne veulent pas la même chose. IgnorePkg règle le conflit — à condition de savoir ce qu&#39;on achète avec."><meta name="robots" content="noindex, nofollow"><link rel="alternate" hreflang="fr" href="https://carnet.atelierduverdier.fr/fr/atelier/001-epingler-un-paquet-arch/"><link rel="alternate" hreflang="en" href="https://carnet.atelierduverdier.fr/en/workshop/001-pinning-a-package-on-arch/"><link rel="canonical" href="https://carnet.atelierduverdier.fr/fr/atelier/001-epingler-un-paquet-arch/">
+<link rel="icon" href="/assets/favicon-32.png?v=262a95fa" sizes="32x32">
+<link rel="apple-touch-icon" href="/assets/favicon-180.png?v=262a95fa">
+<link rel="stylesheet" href="/assets/polices/dosis.css">
+<link rel="stylesheet" href="/assets/site.css?v=113f0245">
+<meta property="og:title" content="Épingler un paquet sous Arch, et pourquoi une machine-outil l&#39;exige — À l&#39;établi">
+<meta property="og:description" content="Une distribution en flux continu et un logiciel de fabrication ne veulent pas la même chose. IgnorePkg règle le conflit — à condition de savoir ce qu&#39;on achète avec.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://carnet.atelierduverdier.fr/fr/atelier/001-epingler-un-paquet-arch/">
+<meta property="og:locale" content="fr">
+<meta property="og:site_name" content="Le Carnet du Verdier">
+<meta property="og:image" content="https://carnet.atelierduverdier.fr/assets/logo.png">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<a class="saut-contenu" href="#contenu">Aller au contenu</a>
+
+
+<div class="bandeau">
+<header class="entete">
+  <div class="enveloppe entete-barre">
+    <a class="marque" href="/fr/">
+      <img class="marque-logo" src="/assets/logo.png?v=262a95fa"
+           width="216" height="119" alt="" decoding="async">
+      <span class="marque-texte">
+        <span class="marque-nom">Le Carnet du Verdier</span>
+        <span class="marque-devise">Pense-bêtes Linux d&#39;un atelier : ce qui a marché, et pourquoi.</span>
+      </span>
+    </a>
+
+    <div class="recherche" role="search">
+      <input type="search" id="champ-recherche" placeholder="Rechercher…"
+             aria-label="Rechercher…" autocomplete="off"
+             data-index="/recherche-fr.json">
+      <ul class="recherche-resultats" id="resultats-recherche" role="listbox"></ul>
+    </div>
+
+    <nav class="langues" aria-label="Langue">      <a href="/fr/atelier/001-epingler-un-paquet-arch/" hreflang="fr"
+aria-current="true">fr</a>      <a href="/en/workshop/001-pinning-a-package-on-arch/" hreflang="en"
+>en</a>    </nav>
+
+    <button class="bouton-menu" aria-expanded="false" aria-controls="menu-principal">
+      <span aria-hidden="true">☰</span> Menu
+    </button>
+  </div>
+</header>
+
+<nav class="nav" id="menu-principal" aria-label="Menu principal">
+  <div class="enveloppe"><ul><li><a href="/fr/">Accueil</a></li><li><a href="/fr/depannage/">Pannes</a></li><li><a href="/fr/systeme/">Système</a></li><li><a href="/fr/atelier/">À l&#39;établi</a></li><li><a href="/fr/commandes/">Mémento</a></li><li><a href="/fr/a-propos/">À propos</a></li></ul></div>
+</nav>
+</div>
+
+<main class="contenu" id="contenu">
+<article class="colonne">
+  <header class="contenu-tete"><nav class="fil" aria-label="Fil d&#39;Ariane"><a href="/fr/atelier/">‹ À l'établi</a></nav><p class="date-fiche">16 août 2026</p>    <h1>Épingler un paquet sous Arch, et pourquoi une machine-outil l&#39;exige</h1>  </header><nav class="sommaire" aria-label="Sommaire"><h2>Sommaire</h2><ul><li><a href="#le-geste">Le geste</a></li><li><a href="#verifier-que-lepingle-tient">Vérifier que l&#39;épingle tient</a></li><li><a href="#ce-quon-achete-et-ce-quon-paie">Ce qu&#39;on achète, et ce qu&#39;on paie</a></li><li><a href="#la-suite-logique-deux-versions-cote-a-cote">La suite logique : deux versions côte à côte</a></li><li><a href="#quand-retirer-lepingle">Quand retirer l&#39;épingle</a></li></ul></nav>  <p>Arch met tout à jour, tout le temps, et c'est ce qu'on lui demande. Mais un <code>pacman -Syu</code> fait un jour passer un logiciel de conception d'une version majeure à la suivante — et le greffon qu'on a écrit pour lui cesse de fonctionner, généralement au pire moment.</p>
+<p>Ce n'est pas un désagrément d'informaticien. C'est une pièce de bois déjà bridée sur la table, une session de gravure prévue pour l'après-midi, et un atelier qui ne produit rien jusqu'à ce que le greffon soit porté.</p>
+<h2 id="le-geste">Le geste</h2>
+<p>Dans <code>/etc/pacman.conf</code>, section <code>[options]</code> :</p>
+<pre><code class="language-ini">IgnorePkg = freecad
+</code></pre>
+<p>Plusieurs paquets se séparent par des espaces, et le joker est accepté :</p>
+<pre><code class="language-ini">IgnorePkg = freecad linux linux-headers
+IgnoreGroup = kde-applications
+</code></pre>
+<p>À partir de là, <code>pacman -Syu</code> met tout à jour <strong>sauf</strong> ces paquets, et le dit à chaque passage :</p>
+<pre><code class="language-text">avertissement : freecad: ignorer la mise à jour du paquet (1.1.3-1 =&gt; 1.2.0-1)
+</code></pre>
+<p>Cet avertissement est utile : il rappelle qu'une dette s'accumule. Ne le faites pas taire.</p>
+<h2 id="verifier-que-lepingle-tient">Vérifier que l'épingle tient</h2>
+<p>Elle est facile à perdre — un <code>pacman.conf</code> remplacé par un <code>.pacnew</code> lors d'une mise à jour du gestionnaire de paquets, et l'épingle disparaît sans un mot.</p>
+<pre><code class="language-bash">grep -n &quot;^IgnorePkg\|^IgnoreGroup&quot; /etc/pacman.conf
+</code></pre>
+<p>Si la commande ne répond rien, l'épingle n'existe plus. À vérifier après chaque <code>.pacnew</code> traité — c'est-à-dire après chaque <code>pacdiff</code>.</p>
+<p>Et pour savoir ce qui serait monté sans elle :</p>
+<pre><code class="language-bash">pacman -Qu
+</code></pre>
+<h2 id="ce-quon-achete-et-ce-quon-paie">Ce qu'on achète, et ce qu'on paie</h2>
+<p><strong>Ce qu'on achète</strong> : la machine produit demain matin. C'est tout, et ça suffit.</p>
+<p><strong>Ce qu'on paie</strong>, et il faut le savoir avant :</p>
+<ul>
+<li><strong>une dette qui grossit.</strong> Épingler trois mois est un choix ; épingler deux ans est un problème qu'on s'est fabriqué. La version épinglée finira par ne plus se lier aux bibliothèques du système ;</li>
+<li><strong>les correctifs de sécurité passent aussi à la trappe.</strong> Pour un logiciel de conception hors ligne, le risque est faible. Pour un navigateur ou un service exposé, épingler est une mauvaise idée — s'il faut vraiment le faire, ce n'est pas la bonne solution au bon problème ;</li>
+<li><strong>les dépendances, elles, continuent d'avancer.</strong> C'est le vrai piège : le paquet épinglé reste, mais tout ce sur quoi il s'appuie bouge. Un jour la version gelée ne démarre plus, non pas parce qu'elle a changé, mais parce que le sol s'est déplacé sous elle.</li>
+</ul>
+<h2 id="la-suite-logique-deux-versions-cote-a-cote">La suite logique : deux versions côte à côte</h2>
+<p>Épingler n'est supportable que si l'on peut <strong>essayer la nouvelle version sans risquer celle qui travaille</strong>. C'est le vrai remède, et il transforme l'épingle en décision au lieu d'un report.</p>
+<p>La plupart des logiciels de fabrication existent en AppImage. Deux précautions suffisent à les faire cohabiter avec le paquet système :</p>
+<p><strong>1. Un dossier de configuration séparé.</strong> Sinon les deux versions écrivent dans le même endroit, et celle de développement migre silencieusement des réglages que l'ancienne ne saura plus relire. Beaucoup d'applications acceptent une variable d'environnement pour cela.</p>
+<p><strong>2. Un lanceur dédié</strong>, dans <code>~/.local/bin</code>, qui pose la variable et lance l'AppImage :</p>
+<pre><code class="language-bash">#!/usr/bin/env bash
+set -euo pipefail
+export MONAPPLI_USER_HOME=&quot;$HOME/.local/share/monappli-dev&quot;
+mkdir -p &quot;$MONAPPLI_USER_HOME&quot;
+exec &quot;$HOME/Applications/MonAppli-weekly.AppImage&quot; &quot;$@&quot;
+</code></pre>
+<p>On teste alors le greffon contre la version à venir quand on en a le temps, pas quand <code>pacman</code> en décide. Le jour où il passe, on retire l'épingle — et on l'a choisi.</p>
+<p>Une précision qui compte si vous faites cela : la version de développement écrit dans <strong>son</strong> dossier, donc <strong>les réglages que vous y changez ne reviennent pas</strong> dans la version qui travaille. C'est le but, mais on l'oublie et on refait deux fois le même réglage en se demandant pourquoi il ne tient pas.</p>
+<p>Sur cette machine, l'AppImage de développement demande en plus un <code>LD_PRELOAD</code> pour démarrer du tout — c'est une autre histoire, racontée dans <a href="/fr/depannage/001-appimage-glx-libdrm/">la fiche sur « Could not initialize GLX »</a>.</p>
+<h2 id="quand-retirer-lepingle">Quand retirer l'épingle</h2>
+<p>Quand les trois cases sont cochées, et pas avant :</p>
+<ol>
+<li>le greffon ou le flux de travail fonctionne sur la nouvelle version, <strong>essayé sur un vrai fichier</strong>, pas sur un cube ;</li>
+<li>il n'y a pas de pièce en cours sur la machine ;</li>
+<li>la version qui travaille est encore installable en cas de retour en arrière — le cache de pacman (<code>/var/cache/pacman/pkg/</code>) la garde, à condition de ne pas l'avoir vidé.</li>
+</ol>
+<p>Cette troisième case est celle qu'on découvre trop tard. Avant d'ôter une épingle :</p>
+<pre><code class="language-bash">ls /var/cache/pacman/pkg/ | grep '^freecad-'
+</code></pre>
+<p>Si le paquet de la version en cours n'y est plus, mettez-le de côté ailleurs avant de mettre à jour. Un retour en arrière sans le paquet, c'est une compilation, et une compilation c'est la journée.</p>
+  <nav class="voisines" aria-label="Navigation">  </nav>
+</article>
+</main>
+
+<footer class="pied">
+  <div class="enveloppe">
+    <div class="pied-grille">
+      <div>
+        <h2>Le Carnet du Verdier</h2>
+        <p>Pense-bêtes Linux d&#39;un atelier : ce qui a marché, et pourquoi.</p>
+      </div>
+      <div>
+        <h2>Contact</h2>
+        <ul><li><a href="mailto:leverdier@ik.me">leverdier@ik.me</a></li></ul>
+      </div>
+      <div>
+        <h2>Langue</h2>
+        <ul>          <li><a href="/fr/atelier/001-epingler-un-paquet-arch/">Français</a></li>          <li><a href="/en/workshop/001-pinning-a-package-on-arch/">English</a></li>        </ul>
+      </div>
+    </div>
+    <div class="pied-bas">
+      <p>© 2026 Le Carnet du Verdier</p>
+      <p>Site statique engendré par un script Python.</p>
+    </div>
+  </div>
+</footer>
+
+<script src="/assets/site.js?v=88c63c3e" defer></script>
+</body>
+</html>

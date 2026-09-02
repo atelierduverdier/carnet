@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scheduling a task: a systemd timer, not cron — System — The Verdier Notebook</title>
+<meta name="description" content="Why a scheduled task on a desktop machine belongs in a systemd user timer rather than a crontab line — and how to write one that shows a notification."><meta name="robots" content="noindex, nofollow"><link rel="alternate" hreflang="fr" href="https://carnet.atelierduverdier.fr/fr/systeme/001-timer-systemd-plutot-que-cron/"><link rel="alternate" hreflang="en" href="https://carnet.atelierduverdier.fr/en/system/001-systemd-timer-not-cron/"><link rel="canonical" href="https://carnet.atelierduverdier.fr/en/system/001-systemd-timer-not-cron/">
+<link rel="icon" href="/assets/favicon-32.png?v=262a95fa" sizes="32x32">
+<link rel="apple-touch-icon" href="/assets/favicon-180.png?v=262a95fa">
+<link rel="stylesheet" href="/assets/polices/dosis.css">
+<link rel="stylesheet" href="/assets/site.css?v=113f0245">
+<meta property="og:title" content="Scheduling a task: a systemd timer, not cron — System">
+<meta property="og:description" content="Why a scheduled task on a desktop machine belongs in a systemd user timer rather than a crontab line — and how to write one that shows a notification.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://carnet.atelierduverdier.fr/en/system/001-systemd-timer-not-cron/">
+<meta property="og:locale" content="en">
+<meta property="og:site_name" content="The Verdier Notebook">
+<meta property="og:image" content="https://carnet.atelierduverdier.fr/assets/logo.png">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<a class="saut-contenu" href="#contenu">Aller au contenu</a>
+
+
+<div class="bandeau">
+<header class="entete">
+  <div class="enveloppe entete-barre">
+    <a class="marque" href="/en/">
+      <img class="marque-logo" src="/assets/logo.png?v=262a95fa"
+           width="216" height="119" alt="" decoding="async">
+      <span class="marque-texte">
+        <span class="marque-nom">The Verdier Notebook</span>
+        <span class="marque-devise">Linux notes from a workshop: what worked, and why.</span>
+      </span>
+    </a>
+
+    <div class="recherche" role="search">
+      <input type="search" id="champ-recherche" placeholder="Search…"
+             aria-label="Search…" autocomplete="off"
+             data-index="/recherche-en.json">
+      <ul class="recherche-resultats" id="resultats-recherche" role="listbox"></ul>
+    </div>
+
+    <nav class="langues" aria-label="Language">      <a href="/fr/systeme/001-timer-systemd-plutot-que-cron/" hreflang="fr"
+>fr</a>      <a href="/en/system/001-systemd-timer-not-cron/" hreflang="en"
+aria-current="true">en</a>    </nav>
+
+    <button class="bouton-menu" aria-expanded="false" aria-controls="menu-principal">
+      <span aria-hidden="true">☰</span> Menu
+    </button>
+  </div>
+</header>
+
+<nav class="nav" id="menu-principal" aria-label="Main menu">
+  <div class="enveloppe"><ul><li><a href="/en/">Home</a></li><li><a href="/en/troubleshooting/">Troubleshooting</a></li><li><a href="/en/system/">System</a></li><li><a href="/en/workshop/">At the bench</a></li><li><a href="/en/commands/">Commands</a></li><li><a href="/en/about/">About</a></li></ul></div>
+</nav>
+</div>
+
+<main class="contenu" id="contenu">
+<article class="colonne">
+  <header class="contenu-tete"><nav class="fil" aria-label="Breadcrumb"><a href="/en/system/">‹ System</a></nav><p class="date-fiche">17 August 2026</p>    <h1>Scheduling a task: a systemd timer, not cron</h1>  </header><nav class="sommaire" aria-label="Contents"><h2>Contents</h2><ul><li><a href="#the-three-reasons">The three reasons</a></li><li><a href="#a-complete-example">A complete example</a></li><li><a href="#the-pattern-a-dumb-timer-a-script-that-decides">The pattern: a dumb timer, a script that decides</a></li><li><a href="#enabling-it-and-checking">Enabling it, and checking</a></li><li><a href="#two-traps">Two traps</a></li><li><a href="#do-not-enable-it-on-someone-elses-behalf">Do not enable it on someone else&#39;s behalf</a></li></ul></nav>  <p>On a server that runs around the clock, cron does the job perfectly well. On a <strong>desktop machine</strong> it has three defects that you pay for sooner or later, and a systemd timer fixes all three.</p>
+<h2 id="the-three-reasons">The three reasons</h2>
+<p><strong>1. The machine is off at night.</strong> A crontab line set for 3 a.m. does not catch up: the machine was off, the slot is gone, try again tomorrow. A systemd timer with <code>Persistent=true</code> <strong>catches up</strong> the missed appointment at the next boot. For a weekly reminder the difference is not cosmetic: it is the difference between a reminder that arrives and one that never does.</p>
+<p><strong>2. Cron's output goes nowhere.</strong> It lands in a local mail nobody reads. A systemd service's output goes to the journal, and reads back with a command you already know.</p>
+<p><strong>3. Cron does not have your session.</strong> A task that wants to show a desktop notification needs to know which session bus to talk to. In a crontab you have to guess it and hard-code it. In a <strong>user</strong> timer (<code>systemctl --user</code>), you are already inside it.</p>
+<h2 id="a-complete-example">A complete example</h2>
+<p>A reminder the evening before bin collection — exactly the kind of thing you forget <em>because</em> it comes round every week.</p>
+<p>Three files. First the script, in <code>~/.local/bin/bin-reminder</code>:</p>
+<pre><code class="language-bash">#!/usr/bin/env bash
+# Decides whether anything needs putting out tonight, and says so.
+set -euo pipefail
+
+day=$(date +%u)             # 1 = Monday … 7 = Sunday
+[ &quot;$day&quot; -eq 2 ] || exit 0  # collection on Wednesday: we warn on Tuesday
+
+notify-send --icon=user-trash-full \
+            --urgency=normal \
+            &quot;Bins&quot; &quot;Collection tomorrow morning: put the bin out.&quot;
+</code></pre>
+<p>Make it executable:</p>
+<pre><code class="language-bash">chmod +x ~/.local/bin/bin-reminder
+</code></pre>
+<p>Then the service, <code>~/.config/systemd/user/bin-reminder.service</code>:</p>
+<pre><code class="language-ini">[Unit]
+Description=Bin collection reminder
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/bin-reminder
+</code></pre>
+<p>And the timer, <code>~/.config/systemd/user/bin-reminder.timer</code>:</p>
+<pre><code class="language-ini">[Unit]
+Description=Bin collection reminder, every evening
+
+[Timer]
+OnCalendar=*-*-* 19:00:00
+Persistent=true
+AccuracySec=1m
+
+[Install]
+WantedBy=timers.target
+</code></pre>
+<p>The service and the timer share <strong>the same name</strong> before the extension: that is how systemd pairs them, without you having to say so.</p>
+<h2 id="the-pattern-a-dumb-timer-a-script-that-decides">The pattern: a dumb timer, a script that decides</h2>
+<p>Notice that the timer fires <strong>every evening</strong>, and that it is the <em>script</em> that decides whether there is anything to say. We could have written <code>OnCalendar=Tue *-*-* 19:00:00</code> and dropped the test.</p>
+<p>The choice is not neutral. A timer that fires daily is <strong>checked daily</strong>: if the script is broken, you know within twenty-four hours. A weekly timer keeps its defect for a week — and since you never see it go past, you do not even know it should have spoken.</p>
+<p>The general rule: <strong>the schedule says <em>when to look</em>, the script says <em>whether to act</em>.</strong> It is also easier to try out, since you can run the script by hand at any time.</p>
+<h2 id="enabling-it-and-checking">Enabling it, and checking</h2>
+<pre><code class="language-bash">systemctl --user daemon-reload
+systemctl --user enable --now bin-reminder.timer
+</code></pre>
+<p>The two commands you will use afterwards:</p>
+<pre><code class="language-bash">systemctl --user list-timers --all
+</code></pre>
+<p>It shows, for each timer, the next firing, the previous one, and the unit attached. That is the dashboard — if it is empty, nothing is armed.</p>
+<pre><code class="language-bash">journalctl --user -u bin-reminder.service -n 20
+</code></pre>
+<p>The output of the last twenty runs. That is where the errors you never saw go past are waiting.</p>
+<p>To try it without waiting for 7 p.m.:</p>
+<pre><code class="language-bash">systemctl --user start bin-reminder.service
+</code></pre>
+<h2 id="two-traps">Two traps</h2>
+<p><strong>The silent notification.</strong> If <code>notify-send</code> does nothing from the service while working fine in a terminal, it is almost always the session environment that is missing. In a <em>user</em> timer the problem is rare; if it happens, <code>systemctl --user import-environment DISPLAY WAYLAND_DISPLAY DBUS_SESSION_BUS_ADDRESS</code> at session start settles it.</p>
+<p><strong>A restored file is not an armed timer.</strong> If you version <code>~/.config/systemd/user/</code> (with chezmoi or anything else), restoring copies the files back — but <strong>not</strong> the "enabled" state, which lives in symlinks elsewhere. After a reinstall you have to redo the <code>enable --now</code>. That is the box everyone forgets, and you conclude the timer is lost when it is merely asleep.</p>
+<h2 id="do-not-enable-it-on-someone-elses-behalf">Do not enable it on someone else's behalf</h2>
+<p>One last thing, which is not technical. A timer is something that <strong>will speak on its own</strong>, later, when nobody expects it. Writing the three files for someone is a favour; enabling them in their place is a decision that is not yours to make. Leave them the last command.</p>
+  <nav class="voisines" aria-label="Navigation"><a class="suivante" href="/en/system/002-reinstalling-without-losing-anything/">Reinstalling without losing anything: the order of operations →</a>  </nav>
+</article>
+</main>
+
+<footer class="pied">
+  <div class="enveloppe">
+    <div class="pied-grille">
+      <div>
+        <h2>The Verdier Notebook</h2>
+        <p>Linux notes from a workshop: what worked, and why.</p>
+      </div>
+      <div>
+        <h2>Contact</h2>
+        <ul><li><a href="mailto:leverdier@ik.me">leverdier@ik.me</a></li></ul>
+      </div>
+      <div>
+        <h2>Language</h2>
+        <ul>          <li><a href="/fr/systeme/001-timer-systemd-plutot-que-cron/">Français</a></li>          <li><a href="/en/system/001-systemd-timer-not-cron/">English</a></li>        </ul>
+      </div>
+    </div>
+    <div class="pied-bas">
+      <p>© 2026 The Verdier Notebook</p>
+      <p>Static site generated by a Python script.</p>
+    </div>
+  </div>
+</footer>
+
+<script src="/assets/site.js?v=88c63c3e" defer></script>
+</body>
+</html>

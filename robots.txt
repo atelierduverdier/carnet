@@ -1,0 +1,4 @@
+# Ce site est en construction : « moteurs: non » dans
+# site/config.yaml. Retirer le réglage pour être indexé.
+User-agent: *
+Disallow: /

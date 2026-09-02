@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Troubleshooting — The Verdier Notebook</title>
+<meta name="description" content="It does not work, and here is why: the symptom, the wrong turn, the cause, the cure."><meta name="robots" content="noindex, nofollow"><link rel="alternate" hreflang="fr" href="https://carnet.atelierduverdier.fr/fr/depannage/"><link rel="alternate" hreflang="en" href="https://carnet.atelierduverdier.fr/en/troubleshooting/"><link rel="canonical" href="https://carnet.atelierduverdier.fr/en/troubleshooting/">
+<link rel="icon" href="/assets/favicon-32.png?v=262a95fa" sizes="32x32">
+<link rel="apple-touch-icon" href="/assets/favicon-180.png?v=262a95fa">
+<link rel="stylesheet" href="/assets/polices/dosis.css">
+<link rel="stylesheet" href="/assets/site.css?v=113f0245">
+<meta property="og:title" content="Troubleshooting">
+<meta property="og:description" content="It does not work, and here is why: the symptom, the wrong turn, the cause, the cure.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://carnet.atelierduverdier.fr/en/troubleshooting/">
+<meta property="og:locale" content="en">
+<meta property="og:site_name" content="The Verdier Notebook">
+<meta property="og:image" content="https://carnet.atelierduverdier.fr/assets/logo.png">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<a class="saut-contenu" href="#contenu">Aller au contenu</a>
+
+
+<div class="bandeau">
+<header class="entete">
+  <div class="enveloppe entete-barre">
+    <a class="marque" href="/en/">
+      <img class="marque-logo" src="/assets/logo.png?v=262a95fa"
+           width="216" height="119" alt="" decoding="async">
+      <span class="marque-texte">
+        <span class="marque-nom">The Verdier Notebook</span>
+        <span class="marque-devise">Linux notes from a workshop: what worked, and why.</span>
+      </span>
+    </a>
+
+    <div class="recherche" role="search">
+      <input type="search" id="champ-recherche" placeholder="Search…"
+             aria-label="Search…" autocomplete="off"
+             data-index="/recherche-en.json">
+      <ul class="recherche-resultats" id="resultats-recherche" role="listbox"></ul>
+    </div>
+
+    <nav class="langues" aria-label="Language">      <a href="/fr/depannage/" hreflang="fr"
+>fr</a>      <a href="/en/troubleshooting/" hreflang="en"
+aria-current="true">en</a>    </nav>
+
+    <button class="bouton-menu" aria-expanded="false" aria-controls="menu-principal">
+      <span aria-hidden="true">☰</span> Menu
+    </button>
+  </div>
+</header>
+
+<nav class="nav" id="menu-principal" aria-label="Main menu">
+  <div class="enveloppe"><ul><li><a href="/en/">Home</a></li><li><a href="/en/troubleshooting/" aria-current="page">Troubleshooting</a></li><li><a href="/en/system/">System</a></li><li><a href="/en/workshop/">At the bench</a></li><li><a href="/en/commands/">Commands</a></li><li><a href="/en/about/">About</a></li></ul></div>
+</nav>
+</div>
+
+<main class="contenu" id="contenu">
+<div class="enveloppe">
+  <header class="contenu-tete colonne">    <h1>Troubleshooting</h1>
+    <p>The symptom first — that is how you get here, an error message pasted into a search engine. Then <strong>what I believed</strong>, because a page that shows only the solution makes it look obvious. Then the cause, with a way to check it on your own machine. The cure comes last: it is often the shortest line.</p>
+  </header>
+
+  <p class="compteur">
+    <span class="compteur-nombre">2</span>
+    <span class="compteur-mot">faults</span>
+  </p>
+  <ul class="fiches">    <li><a class="fiche-carte" href="/en/troubleshooting/001-appimage-glx-libdrm/"
+><img class="fiche-vignette" src="/medias/captures/glx-symbole.png" alt="" srcset="/medias/captures/glx-symbole-480.webp 480w, /medias/captures/glx-symbole-960.webp 960w, /medias/captures/glx-symbole.png 1600w" sizes="(min-width: 46rem) 20rem, 100vw" width="1600" height="700" loading="lazy" decoding="async"><span class="date-fiche">24 August 2026</span>      <h2>An AppImage dies at startup: “Could not initialize GLX”</h2><p>On Arch with an AMD card, Qt AppImages stop dead with no window and no message. The cause is not Qt: it is a bundled libdrm, too old, winning over the system one.</p>    </a></li>    <li><a class="fiche-carte" href="/en/troubleshooting/002-pgrep-finds-itself/"
+><img class="fiche-vignette" src="/medias/captures/pgrep-se-trouve.png" alt="" srcset="/medias/captures/pgrep-se-trouve-480.webp 480w, /medias/captures/pgrep-se-trouve-960.webp 960w, /medias/captures/pgrep-se-trouve.png 1600w" sizes="(min-width: 46rem) 20rem, 100vw" width="1600" height="700" loading="lazy" decoding="async"><span class="date-fiche">22 August 2026</span>      <h2>pgrep -f finds itself (and pkill kills your script)</h2><p>A script that checks whether a service is running always finds it running — because it sees itself. Three ways out, one of which is not enough.</p>    </a></li>  </ul></div>
+</main>
+
+<footer class="pied">
+  <div class="enveloppe">
+    <div class="pied-grille">
+      <div>
+        <h2>The Verdier Notebook</h2>
+        <p>Linux notes from a workshop: what worked, and why.</p>
+      </div>
+      <div>
+        <h2>Contact</h2>
+        <ul><li><a href="mailto:leverdier@ik.me">leverdier@ik.me</a></li></ul>
+      </div>
+      <div>
+        <h2>Language</h2>
+        <ul>          <li><a href="/fr/depannage/">Français</a></li>          <li><a href="/en/troubleshooting/">English</a></li>        </ul>
+      </div>
+    </div>
+    <div class="pied-bas">
+      <p>© 2026 The Verdier Notebook</p>
+      <p>Static site generated by a Python script.</p>
+    </div>
+  </div>
+</footer>
+
+<script src="/assets/site.js?v=88c63c3e" defer></script>
+</body>
+</html>

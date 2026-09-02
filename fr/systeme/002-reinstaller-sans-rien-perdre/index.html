@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Réinstaller sans rien perdre : l&#39;ordre des gestes — Système — Le Carnet du Verdier</title>
+<meta name="description" content="Une réinstallation ne se prépare pas le jour où on la fait. Ce qui se perd n&#39;est presque jamais les fichiers : c&#39;est la phrase de passe du dépôt de sauvegarde, et l&#39;état « activé » de ce qu&#39;on a restauré."><meta name="robots" content="noindex, nofollow"><link rel="alternate" hreflang="fr" href="https://carnet.atelierduverdier.fr/fr/systeme/002-reinstaller-sans-rien-perdre/"><link rel="alternate" hreflang="en" href="https://carnet.atelierduverdier.fr/en/system/002-reinstalling-without-losing-anything/"><link rel="canonical" href="https://carnet.atelierduverdier.fr/fr/systeme/002-reinstaller-sans-rien-perdre/">
+<link rel="icon" href="/assets/favicon-32.png?v=262a95fa" sizes="32x32">
+<link rel="apple-touch-icon" href="/assets/favicon-180.png?v=262a95fa">
+<link rel="stylesheet" href="/assets/polices/dosis.css">
+<link rel="stylesheet" href="/assets/site.css?v=113f0245">
+<meta property="og:title" content="Réinstaller sans rien perdre : l&#39;ordre des gestes — Système">
+<meta property="og:description" content="Une réinstallation ne se prépare pas le jour où on la fait. Ce qui se perd n&#39;est presque jamais les fichiers : c&#39;est la phrase de passe du dépôt de sauvegarde, et l&#39;état « activé » de ce qu&#39;on a restauré.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://carnet.atelierduverdier.fr/fr/systeme/002-reinstaller-sans-rien-perdre/">
+<meta property="og:locale" content="fr">
+<meta property="og:site_name" content="Le Carnet du Verdier">
+<meta property="og:image" content="https://carnet.atelierduverdier.fr/assets/logo.png">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<a class="saut-contenu" href="#contenu">Aller au contenu</a>
+
+
+<div class="bandeau">
+<header class="entete">
+  <div class="enveloppe entete-barre">
+    <a class="marque" href="/fr/">
+      <img class="marque-logo" src="/assets/logo.png?v=262a95fa"
+           width="216" height="119" alt="" decoding="async">
+      <span class="marque-texte">
+        <span class="marque-nom">Le Carnet du Verdier</span>
+        <span class="marque-devise">Pense-bêtes Linux d&#39;un atelier : ce qui a marché, et pourquoi.</span>
+      </span>
+    </a>
+
+    <div class="recherche" role="search">
+      <input type="search" id="champ-recherche" placeholder="Rechercher…"
+             aria-label="Rechercher…" autocomplete="off"
+             data-index="/recherche-fr.json">
+      <ul class="recherche-resultats" id="resultats-recherche" role="listbox"></ul>
+    </div>
+
+    <nav class="langues" aria-label="Langue">      <a href="/fr/systeme/002-reinstaller-sans-rien-perdre/" hreflang="fr"
+aria-current="true">fr</a>      <a href="/en/system/002-reinstalling-without-losing-anything/" hreflang="en"
+>en</a>    </nav>
+
+    <button class="bouton-menu" aria-expanded="false" aria-controls="menu-principal">
+      <span aria-hidden="true">☰</span> Menu
+    </button>
+  </div>
+</header>
+
+<nav class="nav" id="menu-principal" aria-label="Menu principal">
+  <div class="enveloppe"><ul><li><a href="/fr/">Accueil</a></li><li><a href="/fr/depannage/">Pannes</a></li><li><a href="/fr/systeme/">Système</a></li><li><a href="/fr/atelier/">À l&#39;établi</a></li><li><a href="/fr/commandes/">Mémento</a></li><li><a href="/fr/a-propos/">À propos</a></li></ul></div>
+</nav>
+</div>
+
+<main class="contenu" id="contenu">
+<article class="colonne">
+  <header class="contenu-tete"><nav class="fil" aria-label="Fil d&#39;Ariane"><a href="/fr/systeme/">‹ Système</a></nav><p class="date-fiche">15 août 2026</p>    <h1>Réinstaller sans rien perdre : l&#39;ordre des gestes</h1>  </header><nav class="sommaire" aria-label="Sommaire"><h2>Sommaire</h2><ul><li><a href="#a-faire-maintenant-pas-le-jour-j">À faire maintenant, pas le jour J</a></li><li><a href="#lordre-qui-marche">L&#39;ordre qui marche</a></li><li><a href="#un-fichier-restaure-nest-pas-un-service-actif">Un fichier restauré n&#39;est pas un service actif</a></li><li><a href="#deux-categories-dapplications-a-ne-pas-restaurer-betement">Deux catégories d&#39;applications à ne pas restaurer bêtement</a></li><li><a href="#le-controle-final">Le contrôle final</a></li><li><a href="#ce-que-jai-appris-a-la-dure">Ce que j&#39;ai appris à la dure</a></li></ul></nav>  <p>Écrit après une panne de SSD, et relu après la réinstallation qui a suivi. Ce n'est pas un guide d'installation d'Arch — il y en a de très bons — mais la liste de ce qui <strong>se perd</strong> quand on réinstalle, et qui n'est pas dans les fichiers.</p>
+<h2 id="a-faire-maintenant-pas-le-jour-j">À faire maintenant, pas le jour J</h2>
+<p>Une seule chose est vraiment urgente, et elle doit être faite <strong>pendant que la machine actuelle fonctionne encore</strong>.</p>
+<p><strong>Sortir la phrase de passe du dépôt de sauvegarde du trousseau du bureau.</strong></p>
+<p>Si vous sauvegardez avec Borg (ou restic, c'est pareil) et que la phrase de passe est mémorisée dans KWallet, GNOME Keyring ou le trousseau de votre gestionnaire de sauvegarde, alors elle n'existe <strong>qu'à cet endroit</strong>. Les outils de dotfiles ne versionnent pas les trousseaux — volontairement, pour ne pas mettre de secrets dans un dépôt git. C'est le bon choix, et c'est exactement ce qui rend la phrase de passe invisible le jour où on l'oublie.</p>
+<p>Sans elle, l'intégralité de l'historique de sauvegarde devient <strong>définitivement illisible</strong>. Borg ne propose aucune récupération : c'est du chiffrement, il fait son travail.</p>
+<p>La sortir prend deux minutes :</p>
+<ol>
+<li>ouvrir le gestionnaire de trousseau et chercher l'entrée du dépôt ;</li>
+<li>copier la phrase de passe dans un gestionnaire de mots de passe — ou sur du papier, dans un endroit sûr ;</li>
+<li><strong>surtout pas</strong> dans un fichier en clair sur la machine qu'on va effacer.</li>
+</ol>
+<p>Tant que la phrase de passe ne change pas, c'est fait une fois pour toutes.</p>
+<h2 id="lordre-qui-marche">L'ordre qui marche</h2>
+<p><strong>1. Le système, puis les trois outils qui comptent.</strong></p>
+<pre><code class="language-bash">sudo pacman -Syu
+sudo pacman -S git chezmoi borgbackup
+</code></pre>
+<p>Rien d'autre pour l'instant : tout le reste va venir des dotfiles.</p>
+<p><strong>2. Les dotfiles.</strong></p>
+<pre><code class="language-bash">chezmoi init --apply &lt;votre-compte&gt;/dotfiles
+</code></pre>
+<p>Une commande, et reviennent d'un coup les shells, la configuration du bureau, les raccourcis clavier, les terminaux, les éditeurs, les applications. C'est le geste qui rend une réinstallation supportable — à condition d'avoir versionné les dotfiles <em>avant</em>, ce qui est le vrai travail et se fait un jour de calme.</p>
+<p><strong>3. Le dépôt de sauvegarde, avec la phrase de passe qu'on vient de retrouver.</strong></p>
+<p>Rebrancher le disque, rattacher le dépôt dans l'outil, et <strong>vérifier que l'historique remonte avant la réinstallation</strong>. Ne pas se contenter de voir la liste : lancer une sauvegarde manuelle, une fois, pour confirmer que l'écriture fonctionne aussi. Un dépôt qu'on lit n'est pas un dépôt dans lequel on écrit.</p>
+<p><strong>4. Réactiver ce qui a été restauré.</strong></p>
+<p>C'est la case oubliée, et elle mérite son paragraphe.</p>
+<h2 id="un-fichier-restaure-nest-pas-un-service-actif">Un fichier restauré n'est pas un service actif</h2>
+<p>Les dotfiles restaurent les <strong>fichiers</strong> des timers et services systemd utilisateur, puisqu'ils vivent dans <code>~/.config/systemd/user/</code>. Ils ne restaurent <strong>pas</strong> leur état « activé », qui tient dans des liens symboliques créés par <code>systemctl enable</code>.</p>
+<p>Résultat : tout est là, rien ne tourne, et on ne s'en aperçoit qu'en constatant l'absence d'un rappel qu'on attendait la semaine suivante.</p>
+<pre><code class="language-bash">systemctl --user daemon-reload
+systemctl --user enable --now mon-timer.timer
+systemctl --user list-timers --all
+</code></pre>
+<p>La dernière commande est le contrôle : chaque timer attendu doit y figurer, avec une date de prochain déclenchement. Un timer absent de cette liste ne se déclenchera jamais.</p>
+<p>Le même principe vaut ailleurs. Une <strong>règle udev</strong> restaurée demande un <code>udevadm control --reload</code> et le rebranchement du matériel. Un <strong>pare-feu</strong> dont on a restauré la configuration reste souvent désactivé. La règle générale : <em>ce qui a un interrupteur revient éteint</em>.</p>
+<h2 id="deux-categories-dapplications-a-ne-pas-restaurer-betement">Deux catégories d'applications à ne pas restaurer bêtement</h2>
+<p><strong>Les clients de synchronisation cloud.</strong> Configurez le dossier local <strong>dans l'application, avant que le dossier existe ou soit rempli</strong>. Si vous restaurez d'abord les fichiers puis pointez l'application dessus, beaucoup de clients ne reconnaissent pas le contenu et retéléchargent tout — plusieurs dizaines de gigaoctets, et parfois une pagaille de doublons.</p>
+<p><strong>Les applications à bibliothèque</strong> — gestionnaire de livres, de polices, de notes, de modèles 3D. Ouvrez l'application <em>en premier</em> et pointez-la vers l'emplacement voulu. Recopier le dossier de configuration à la main marche parfois, échoue silencieusement souvent, et laisse une base d'index qui parle d'anciens chemins.</p>
+<p>Dans les deux cas, c'est le même principe : <strong>l'application doit apprendre le chemin, pas le découvrir</strong>.</p>
+<h2 id="le-controle-final">Le contrôle final</h2>
+<p>Trois commandes, et un coup d'œil :</p>
+<pre><code class="language-bash">systemctl --user list-timers --all
+git -C ~/Projets/un-depot-important status
+</code></pre>
+<ul>
+<li>les timers attendus sont là et « enabled » ;</li>
+<li>les dépôts git sont propres et sur la bonne branche ;</li>
+<li>l'historique de sauvegarde remonte avant la réinstallation ;</li>
+<li>une sauvegarde manuelle passe.</li>
+</ul>
+<p>Cette dernière ligne est celle qu'on saute parce qu'on est fatigué, et c'est la seule qui prouve que la chaîne complète fonctionne. Le reste prouve qu'elle a l'air de fonctionner.</p>
+<h2 id="ce-que-jai-appris-a-la-dure">Ce que j'ai appris à la dure</h2>
+<p>Une archive dont on <strong>croit</strong> qu'elle existe n'existe pas. Après la panne, j'étais persuadé d'avoir fait une sauvegarde la veille — il n'y avait aucune trace, aucun commit, rien. La certitude ne compte pas ; ce qui compte est ce que la commande de vérification répond.</p>
+<p>Depuis, un petit script de contrôle passe sur le dépôt et <strong>dit</strong> ce qu'il y trouve, plutôt que de me laisser supposer. C'est trois lignes, et ça remplace une conviction par un fait.</p>
+  <nav class="voisines" aria-label="Navigation"><a class="precedente" href="/fr/systeme/001-timer-systemd-plutot-que-cron/">← Planifier une tâche : un timer systemd, pas cron</a>  </nav>
+</article>
+</main>
+
+<footer class="pied">
+  <div class="enveloppe">
+    <div class="pied-grille">
+      <div>
+        <h2>Le Carnet du Verdier</h2>
+        <p>Pense-bêtes Linux d&#39;un atelier : ce qui a marché, et pourquoi.</p>
+      </div>
+      <div>
+        <h2>Contact</h2>
+        <ul><li><a href="mailto:leverdier@ik.me">leverdier@ik.me</a></li></ul>
+      </div>
+      <div>
+        <h2>Langue</h2>
+        <ul>          <li><a href="/fr/systeme/002-reinstaller-sans-rien-perdre/">Français</a></li>          <li><a href="/en/system/002-reinstalling-without-losing-anything/">English</a></li>        </ul>
+      </div>
+    </div>
+    <div class="pied-bas">
+      <p>© 2026 Le Carnet du Verdier</p>
+      <p>Site statique engendré par un script Python.</p>
+    </div>
+  </div>
+</footer>
+
+<script src="/assets/site.js?v=88c63c3e" defer></script>
+</body>
+</html>

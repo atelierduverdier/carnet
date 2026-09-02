@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>pgrep -f se trouve lui-même (et pkill tue votre script) — Pannes — Le Carnet du Verdier</title>
+<meta name="description" content="Un script qui vérifie si un service tourne le trouve toujours en marche — parce qu&#39;il se voit lui-même. Trois façons de s&#39;en sortir, dont une qui ne suffit pas."><meta name="robots" content="noindex, nofollow"><link rel="alternate" hreflang="fr" href="https://carnet.atelierduverdier.fr/fr/depannage/002-pgrep-se-trouve-lui-meme/"><link rel="alternate" hreflang="en" href="https://carnet.atelierduverdier.fr/en/troubleshooting/002-pgrep-finds-itself/"><link rel="canonical" href="https://carnet.atelierduverdier.fr/fr/depannage/002-pgrep-se-trouve-lui-meme/">
+<link rel="icon" href="/assets/favicon-32.png?v=262a95fa" sizes="32x32">
+<link rel="apple-touch-icon" href="/assets/favicon-180.png?v=262a95fa">
+<link rel="stylesheet" href="/assets/polices/dosis.css">
+<link rel="stylesheet" href="/assets/site.css?v=113f0245">
+<meta property="og:title" content="pgrep -f se trouve lui-même (et pkill tue votre script) — Pannes">
+<meta property="og:description" content="Un script qui vérifie si un service tourne le trouve toujours en marche — parce qu&#39;il se voit lui-même. Trois façons de s&#39;en sortir, dont une qui ne suffit pas.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://carnet.atelierduverdier.fr/fr/depannage/002-pgrep-se-trouve-lui-meme/">
+<meta property="og:locale" content="fr">
+<meta property="og:site_name" content="Le Carnet du Verdier">
+<meta property="og:image" content="https://carnet.atelierduverdier.fr/assets/logo.png">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<a class="saut-contenu" href="#contenu">Aller au contenu</a>
+
+
+<div class="bandeau">
+<header class="entete">
+  <div class="enveloppe entete-barre">
+    <a class="marque" href="/fr/">
+      <img class="marque-logo" src="/assets/logo.png?v=262a95fa"
+           width="216" height="119" alt="" decoding="async">
+      <span class="marque-texte">
+        <span class="marque-nom">Le Carnet du Verdier</span>
+        <span class="marque-devise">Pense-bêtes Linux d&#39;un atelier : ce qui a marché, et pourquoi.</span>
+      </span>
+    </a>
+
+    <div class="recherche" role="search">
+      <input type="search" id="champ-recherche" placeholder="Rechercher…"
+             aria-label="Rechercher…" autocomplete="off"
+             data-index="/recherche-fr.json">
+      <ul class="recherche-resultats" id="resultats-recherche" role="listbox"></ul>
+    </div>
+
+    <nav class="langues" aria-label="Langue">      <a href="/fr/depannage/002-pgrep-se-trouve-lui-meme/" hreflang="fr"
+aria-current="true">fr</a>      <a href="/en/troubleshooting/002-pgrep-finds-itself/" hreflang="en"
+>en</a>    </nav>
+
+    <button class="bouton-menu" aria-expanded="false" aria-controls="menu-principal">
+      <span aria-hidden="true">☰</span> Menu
+    </button>
+  </div>
+</header>
+
+<nav class="nav" id="menu-principal" aria-label="Menu principal">
+  <div class="enveloppe"><ul><li><a href="/fr/">Accueil</a></li><li><a href="/fr/depannage/">Pannes</a></li><li><a href="/fr/systeme/">Système</a></li><li><a href="/fr/atelier/">À l&#39;établi</a></li><li><a href="/fr/commandes/">Mémento</a></li><li><a href="/fr/a-propos/">À propos</a></li></ul></div>
+</nav>
+</div>
+
+<main class="contenu" id="contenu">
+<article class="colonne">
+  <header class="contenu-tete"><nav class="fil" aria-label="Fil d&#39;Ariane"><a href="/fr/depannage/">‹ Pannes</a></nav><p class="date-fiche">22 août 2026</p>    <h1>pgrep -f se trouve lui-même (et pkill tue votre script)</h1>  </header><nav class="sommaire" aria-label="Sommaire"><h2>Sommaire</h2><ul><li><a href="#pourquoi">Pourquoi</a></li><li><a href="#le-remede-le-plus-connu-les-crochets">Le remède le plus connu : les crochets</a></li><li><a href="#le-cas-que-les-crochets-ne-couvrent-pas">Le cas que les crochets ne couvrent pas</a></li><li><a href="#le-remede-qui-vaut-mieux-que-tout-ca">Le remède qui vaut mieux que tout ça</a></li><li><a href="#un-dernier-reflexe">Un dernier réflexe</a></li></ul></nav>  <p>Un script de surveillance tout simple :</p>
+<pre><code class="language-bash">if pgrep -f cloudflared &gt; /dev/null; then
+    echo &quot;le tunnel tourne&quot;
+else
+    echo &quot;le tunnel est arrêté ; on le relance&quot;
+    cloudflared tunnel run mon-tunnel &amp;
+fi
+</code></pre>
+<p>Il annonce toujours que le tunnel tourne. Toujours. Même tunnel arrêté, même service masqué, même après un <code>reboot</code>.</p>
+<h2 id="pourquoi">Pourquoi</h2>
+<p><code>pgrep -f</code> cherche le motif dans la <strong>ligne de commande complète</strong> de chaque processus. Or votre script <em>est</em> un processus, et sa ligne de commande contient le mot <code>cloudflared</code> — puisqu'il est écrit dedans.</p>
+<p>Le script se trouve lui-même. Le test est vrai avant même d'avoir regardé quoi que ce soit.</p>
+<p>Avec <code>pkill</code>, c'est pire : le script <strong>se tue lui-même</strong>, et souvent au milieu d'une boucle, ce qui donne un comportement à moitié exécuté, difficile à relire.</p>
+<p>Pour le voir de vos yeux :</p>
+<pre><code class="language-bash">bash -c 'pgrep -af unmotifquinexistepas'
+</code></pre>
+<p>Cette commande cherche un motif qui n'existe <strong>nulle part</strong> sur la machine — et pourtant elle affiche une ligne : celle du shell qui la porte, dont la ligne de commande contient le motif. Vérifié à l'instant sur la machine où j'écris.</p>
+<h3 id="le-piege-dans-le-piege-la-demonstration-qui-ne-demontre-rien">Le piège dans le piège : la démonstration qui ne démontre rien</h3>
+<p>En essayant de reproduire le défaut pour l'illustrer, on tombe sur ceci :</p>
+<pre><code class="language-bash">bash -c 'pgrep -af unmotifabsent'
+</code></pre>
+<p>Cette commande ne renvoie <strong>rien</strong>. On en conclut que tout va bien, et on referme.</p>
+<p>C'est faux, et pour une raison qui n'a rien à voir avec <code>pgrep</code> : quand <code>bash -c</code> n'a <strong>qu'une seule commande</strong> à exécuter, il ne crée pas de processus fils — il se <strong>remplace</strong> par elle. Il n'y a donc plus de shell portant le motif, et <code>pgrep</code>, qui s'exclut toujours lui-même, ne trouve personne.</p>
+<p>Ajoutez la moindre suite et le shell survit — donc se fait trouver :</p>
+<pre><code class="language-bash">bash -c 'pgrep -af unmotifabsent || echo non'
+</code></pre>
+<p>Cette fois, une ligne sort : le shell lui-même. Et c'est exactement la forme d'un script de surveillance réel, qui a toujours quelque chose à faire ensuite.</p>
+<p><strong>D'où l'illusion</strong>, et elle est coûteuse : le test rapide semble sain, le vrai script échoue. Ce n'est pas que le défaut soit intermittent — c'est que le test l'avait supprimé en le simplifiant.</p>
+<h2 id="le-remede-le-plus-connu-les-crochets">Le remède le plus connu : les crochets</h2>
+<pre><code class="language-bash">pgrep -f '[c]loudflared'
+</code></pre>
+<p><code>[c]loudflared</code> est une expression régulière qui <strong>correspond à</strong> <code>cloudflared</code> mais <strong>ne s'écrit pas</strong> <code>cloudflared</code>. La ligne de commande du script contient donc les crochets, pas le mot — et le motif ne se reconnaît plus lui-même.</p>
+<p>C'est élégant, ça tient en deux caractères, et c'est ce qu'on trouve partout. Mais ça ne couvre qu'un cas sur deux.</p>
+<h2 id="le-cas-que-les-crochets-ne-couvrent-pas">Le cas que les crochets ne couvrent pas</h2>
+<p>L'astuce protège <strong>le motif</strong>. Elle ne protège pas le reste de la ligne de commande.</p>
+<pre><code class="language-bash">bash -c &quot;pgrep -f '[c]loudflared' || cloudflared tunnel run mon-tunnel&quot;
+</code></pre>
+<p>Ici le mot <code>cloudflared</code> apparaît <strong>une seconde fois</strong>, en clair, dans la partie « sinon ». La ligne de commande complète du shell le contient donc, et <code>pgrep</code> la trouve — crochets ou pas. Le test redevient toujours vrai.</p>
+<p>Le piège est vicieux parce que la protection <em>a l'air</em> d'être là. On a écrit les crochets, on se croit couvert, et la panne revient. Je l'ai payé trois fois en deux jours avant de voir ce qui se passait.</p>
+<p><strong>La parade : mettre la recherche dans un appel séparé</strong>, dont la ligne de commande ne mentionne la cible qu'une seule fois — celle avec les crochets.</p>
+<pre><code class="language-bash">if pgrep -f '[c]loudflared' &gt; /dev/null; then
+    echo &quot;le tunnel tourne&quot;
+else
+    demarrer_le_tunnel        # le nom de la cible n'apparaît pas ici
+fi
+</code></pre>
+<p>Ou, plus simplement : ne jamais écrire le test et la relance sur la <strong>même ligne</strong>.</p>
+<h2 id="le-remede-qui-vaut-mieux-que-tout-ca">Le remède qui vaut mieux que tout ça</h2>
+<p>Si le processus est un service systemd — et c'est souvent le cas — n'interrogez pas la table des processus. Demandez à systemd :</p>
+<pre><code class="language-bash">systemctl --user is-active --quiet mon-service &amp;&amp; echo &quot;en marche&quot;
+</code></pre>
+<p>Aucun motif, aucune ligne de commande, aucune auto-détection possible. <code>is-active</code> répond sur l'état réel de l'unité, pas sur ce qui ressemble à un nom dans un <code>ps</code>.</p>
+<p>Pour un processus qui n'est pas un service, un <strong>fichier de verrou</strong> avec le PID dedans est plus sûr qu'un <code>pgrep</code>, et se relit dans six mois sans se demander pourquoi il y a des crochets.</p>
+<h2 id="un-dernier-reflexe">Un dernier réflexe</h2>
+<p>Quand un <code>pgrep</code>/<code>pkill</code> se comporte bizarrement, regardez ce qu'il voit <strong>vraiment</strong> — l'option <code>-a</code> affiche la ligne de commande complète de chaque correspondance :</p>
+<pre><code class="language-bash">pgrep -af mon-motif
+</code></pre>
+<p>Si votre propre script apparaît dans la liste, vous y êtes. C'est un contrôle de deux secondes, et il évite d'accuser le service.</p>
+  <nav class="voisines" aria-label="Navigation"><a class="precedente" href="/fr/depannage/001-appimage-glx-libdrm/">← Un AppImage meurt au démarrage : « Could not initialize GLX »</a>  </nav>
+</article>
+</main>
+
+<footer class="pied">
+  <div class="enveloppe">
+    <div class="pied-grille">
+      <div>
+        <h2>Le Carnet du Verdier</h2>
+        <p>Pense-bêtes Linux d&#39;un atelier : ce qui a marché, et pourquoi.</p>
+      </div>
+      <div>
+        <h2>Contact</h2>
+        <ul><li><a href="mailto:leverdier@ik.me">leverdier@ik.me</a></li></ul>
+      </div>
+      <div>
+        <h2>Langue</h2>
+        <ul>          <li><a href="/fr/depannage/002-pgrep-se-trouve-lui-meme/">Français</a></li>          <li><a href="/en/troubleshooting/002-pgrep-finds-itself/">English</a></li>        </ul>
+      </div>
+    </div>
+    <div class="pied-bas">
+      <p>© 2026 Le Carnet du Verdier</p>
+      <p>Site statique engendré par un script Python.</p>
+    </div>
+  </div>
+</footer>
+
+<script src="/assets/site.js?v=88c63c3e" defer></script>
+</body>
+</html>

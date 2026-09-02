@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Command notebook — The Verdier Notebook</title>
+<meta name="description" content="The commands that went into writing this notebook: what they do, when they help, and the trap that comes with each."><meta name="robots" content="noindex, nofollow"><link rel="alternate" hreflang="fr" href="https://carnet.atelierduverdier.fr/fr/commandes/"><link rel="alternate" hreflang="en" href="https://carnet.atelierduverdier.fr/en/commands/"><link rel="canonical" href="https://carnet.atelierduverdier.fr/en/commands/">
+<link rel="icon" href="/assets/favicon-32.png?v=262a95fa" sizes="32x32">
+<link rel="apple-touch-icon" href="/assets/favicon-180.png?v=262a95fa">
+<link rel="stylesheet" href="/assets/polices/dosis.css">
+<link rel="stylesheet" href="/assets/site.css?v=113f0245">
+<meta property="og:title" content="Command notebook">
+<meta property="og:description" content="The commands that went into writing this notebook: what they do, when they help, and the trap that comes with each.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://carnet.atelierduverdier.fr/en/commands/">
+<meta property="og:locale" content="en">
+<meta property="og:site_name" content="The Verdier Notebook">
+<meta property="og:image" content="https://carnet.atelierduverdier.fr/assets/logo.png">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<a class="saut-contenu" href="#contenu">Aller au contenu</a>
+
+
+<div class="bandeau">
+<header class="entete">
+  <div class="enveloppe entete-barre">
+    <a class="marque" href="/en/">
+      <img class="marque-logo" src="/assets/logo.png?v=262a95fa"
+           width="216" height="119" alt="" decoding="async">
+      <span class="marque-texte">
+        <span class="marque-nom">The Verdier Notebook</span>
+        <span class="marque-devise">Linux notes from a workshop: what worked, and why.</span>
+      </span>
+    </a>
+
+    <div class="recherche" role="search">
+      <input type="search" id="champ-recherche" placeholder="Search…"
+             aria-label="Search…" autocomplete="off"
+             data-index="/recherche-en.json">
+      <ul class="recherche-resultats" id="resultats-recherche" role="listbox"></ul>
+    </div>
+
+    <nav class="langues" aria-label="Language">      <a href="/fr/commandes/" hreflang="fr"
+>fr</a>      <a href="/en/commands/" hreflang="en"
+aria-current="true">en</a>    </nav>
+
+    <button class="bouton-menu" aria-expanded="false" aria-controls="menu-principal">
+      <span aria-hidden="true">☰</span> Menu
+    </button>
+  </div>
+</header>
+
+<nav class="nav" id="menu-principal" aria-label="Main menu">
+  <div class="enveloppe"><ul><li><a href="/en/">Home</a></li><li><a href="/en/troubleshooting/">Troubleshooting</a></li><li><a href="/en/system/">System</a></li><li><a href="/en/workshop/">At the bench</a></li><li><a href="/en/commands/" aria-current="page">Commands</a></li><li><a href="/en/about/">About</a></li></ul></div>
+</nav>
+</div>
+
+<main class="contenu" id="contenu">
+<article class="colonne avec-cote">
+  <header class="contenu-tete">    <h1>Command notebook</h1>
+  </header>  <nav class="sommaire sommaire-cote" aria-label="Contents"><details class="sommaire-tiroir" open><summary><h2>Contents</h2></summary><ul><li><a href="#what-a-library-provides-and-what-it-wants">What a library provides, and what it wants</a></li><li><a href="#is-a-process-really-running">Is a process really running</a></li><li><a href="#systemd-schedule-check-read">systemd: schedule, check, read</a></li><li><a href="#packages-on-arch">Packages, on Arch</a></li><li><a href="#where-the-disk-space-went">Where the disk space went</a></li><li><a href="#checking-that-a-site-answers">Checking that a site answers</a></li><li><a href="#images-and-fonts-from-the-command-line">Images and fonts, from the command line</a></li><li><a href="#git-when-the-folder-is-shared">Git, when the folder is shared</a></li></ul></details></nav>
+  <div class="corps-long"><p>These are not <em>the</em> Linux commands: they are <strong>the ones that were needed here</strong>, in the order the problems turn up. Each takes three lines — what it does, when you want it, and the trap attached.</p>
+<h2 id="what-a-library-provides-and-what-it-wants">What a library provides, and what it wants</h2>
+<pre><code class="language-bash">nm -D /usr/lib/libdrm_amdgpu.so.1 | grep mysymbol
+nm -Du /usr/lib/libgallium-*.so | grep mysymbol
+</code></pre>
+<p><code>T</code> = the symbol is <strong>provided</strong>. <code>U</code> = it is <strong>wanted</strong>. A library that wants what nobody provides fails to load — and the program dies much later, on a message that says nothing about it.</p>
+<p>The <code>-D</code> is not optional on a shared library: without it, <code>nm</code> answers "no symbols".</p>
+<pre><code class="language-bash">python3 -c &quot;import ctypes; ctypes.CDLL('/usr/lib/mylib.so.0')&quot;
+</code></pre>
+<p><strong>This one names the missing symbol.</strong> It is often the command that ends a hypothesis: it says what is missing instead of leaving you to guess.</p>
+<pre><code class="language-bash">LD_PRELOAD=/usr/lib/a.so:/usr/lib/b.so ./my-program
+LD_LIBRARY_PATH=/some/dir/lib glxinfo -B
+</code></pre>
+<p><code>LD_PRELOAD</code> forces a library <strong>ahead</strong> of all others — the cure when an AppImage bundles a version that is too old. <code>LD_LIBRARY_PATH</code> does the opposite: it shows a program somebody else's libraries, which <strong>reproduces</strong> the fault outside the program.</p>
+<h2 id="is-a-process-really-running">Is a process really running</h2>
+<pre><code class="language-bash">pgrep -af '[m]yservice'
+</code></pre>
+<p><code>-a</code> prints the full command line: that is what shows why the answer is wrong. The brackets stop the pattern from recognising itself — <a href="/en/troubleshooting/002-pgrep-finds-itself/">the detail is here</a>.</p>
+<pre><code class="language-bash">systemctl --user is-active --quiet my-service &amp;&amp; echo &quot;running&quot;
+</code></pre>
+<p><strong>When it is a service, always prefer this.</strong> No pattern, no command line, no way to match yourself: the answer is about the unit's real state.</p>
+<h2 id="systemd-schedule-check-read">systemd: schedule, check, read</h2>
+<pre><code class="language-bash">systemctl --user daemon-reload
+systemctl --user enable --now my-timer.timer
+</code></pre>
+<p><code>daemon-reload</code> after writing any unit file. <code>enable --now</code> arms <strong>and</strong> starts: without <code>--now</code>, you wait for the next session start.</p>
+<pre><code class="language-bash">systemctl --user list-timers --all
+</code></pre>
+<p>The dashboard: next firing, previous one, unit attached. <strong>A timer missing from this list will never fire</strong> — the first place to look when a reminder did not arrive.</p>
+<pre><code class="language-bash">journalctl --user -u my-service.service -n 20
+</code></pre>
+<p>The output of the last twenty runs. That is where the errors you never saw go past are sleeping.</p>
+<pre><code class="language-bash">systemd-analyze calendar 'Tue *-*-* 19:00:00'
+</code></pre>
+<p>Answers "when exactly does this fire?" without waiting. Useful before arming, not after.</p>
+<h2 id="packages-on-arch">Packages, on Arch</h2>
+<pre><code class="language-bash">grep -n &quot;^IgnorePkg\|^IgnoreGroup&quot; /etc/pacman.conf
+</code></pre>
+<p>The pin that holds a package at its version. It is easily lost — a <code>pacman.conf</code> replaced by a <code>.pacnew</code>, and it vanishes without a word. Check again after every <code>pacdiff</code>.</p>
+<pre><code class="language-bash">pacman -Qu          # what would go up
+pacman -Q freecad   # the version being held
+</code></pre>
+<pre><code class="language-bash">ls /var/cache/pacman/pkg/ | grep '^freecad-'
+</code></pre>
+<p><strong>The safety net for going back.</strong> The cache keeps installed packages; if the one for your current version is gone, rolling back means compiling. Check <strong>before</strong> pulling a pin, not after.</p>
+<p><code>pacman -S somepackage</code> without <code>-Syu</code> on a stale database is a partial upgrade: the classic trap. <code>pacman -Syu somepackage</code> does both.</p>
+<h2 id="where-the-disk-space-went">Where the disk space went</h2>
+<pre><code class="language-bash">df -h /tmp
+du -sh /tmp/* | sort -h | tail -12
+</code></pre>
+<p><code>sort -h</code> understands "M" and "G": it is what puts the culprit last. Without it, <code>du</code> sorts by name and you see nothing.</p>
+<pre><code class="language-bash">find /tmp -maxdepth 1 -name 'pattern-*' -type d -exec rm -rf {} +
+</code></pre>
+<p><code>-maxdepth 1</code> so it does not descend, <code>-type d</code> so it only targets directories, and <code>+</code> rather than <code>\;</code> to pass them all at once. <strong>Read the pattern again before pressing return</strong>: <code>rm -rf</code> asks nothing.</p>
+<h2 id="checking-that-a-site-answers">Checking that a site answers</h2>
+<pre><code class="language-bash">curl -sS -o /dev/null -w &quot;%{http_code}\n&quot; https://example.com/a/page/
+</code></pre>
+<p>The status code alone, without the page. Ideal in a loop over a list of addresses: you see at once what is a 404.</p>
+<pre><code class="language-bash">getent hosts mysite.example.com
+</code></pre>
+<p>Resolves a name the way the system does — so with its <code>hosts</code> files and its cache, which an online lookup service will not tell you.</p>
+<h2 id="images-and-fonts-from-the-command-line">Images and fonts, from the command line</h2>
+<pre><code class="language-bash">rsvg-convert -h 128 drawing.svg -o drawing.png
+</code></pre>
+<p>Renders an SVG at a given <strong>height</strong>, the width following. Handy for preparing an icon or a logo without opening an editor.</p>
+<pre><code class="language-bash">xmllint --noout --html page.html
+</code></pre>
+<p>Says whether the file is well formed, and nothing else. An invalid SVG renders <strong>not at all</strong> in some applications, without a single message: this check costs one second.</p>
+<pre><code class="language-bash">fc-list | grep -i mono
+</code></pre>
+<p>The installed fonts, with their paths — the path you have to hand a script that draws text.</p>
+<h2 id="git-when-the-folder-is-shared">Git, when the folder is shared</h2>
+<pre><code class="language-bash">git status --short
+</code></pre>
+<p><strong>The first command to type</strong>, before anything else, when several sessions work in the same place. It tells you what is not yours.</p>
+<pre><code class="language-bash">git add -A -- ':!some/file' ':!another'
+</code></pre>
+<p>Stages everything <strong>except</strong> what is named. That is how you commit your work without carrying off someone else's.</p>
+<pre><code class="language-bash">git log --oneline -5
+git ls-tree --name-only origin/some-branch -- some/dir/
+</code></pre>
+<p>The second looks at what a <strong>remote</strong> branch contains, without switching to it or downloading it — useful to check that a publication actually went out.</p></div></article>
+</main>
+
+<footer class="pied">
+  <div class="enveloppe">
+    <div class="pied-grille">
+      <div>
+        <h2>The Verdier Notebook</h2>
+        <p>Linux notes from a workshop: what worked, and why.</p>
+      </div>
+      <div>
+        <h2>Contact</h2>
+        <ul><li><a href="mailto:leverdier@ik.me">leverdier@ik.me</a></li></ul>
+      </div>
+      <div>
+        <h2>Language</h2>
+        <ul>          <li><a href="/fr/commandes/">Français</a></li>          <li><a href="/en/commands/">English</a></li>        </ul>
+      </div>
+    </div>
+    <div class="pied-bas">
+      <p>© 2026 The Verdier Notebook</p>
+      <p>Static site generated by a Python script.</p>
+    </div>
+  </div>
+</footer>
+
+<script src="/assets/site.js?v=88c63c3e" defer></script>
+</body>
+</html>

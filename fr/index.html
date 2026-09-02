@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Le Carnet du Verdier — Pense-bêtes Linux d&#39;un atelier : ce qui a marché, et pourquoi.</title>
+<meta name="description" content="Pense-bêtes Linux d&#39;un atelier : pannes résolues, réglages système, et Linux à l&#39;établi — CNC, FreeCAD, impression 3D."><meta name="robots" content="noindex, nofollow"><link rel="alternate" hreflang="fr" href="https://carnet.atelierduverdier.fr/fr/"><link rel="alternate" hreflang="en" href="https://carnet.atelierduverdier.fr/en/"><link rel="canonical" href="https://carnet.atelierduverdier.fr/fr/">
+<link rel="icon" href="/assets/favicon-32.png?v=262a95fa" sizes="32x32">
+<link rel="apple-touch-icon" href="/assets/favicon-180.png?v=262a95fa">
+<link rel="stylesheet" href="/assets/polices/dosis.css">
+<link rel="stylesheet" href="/assets/site.css?v=113f0245">
+<meta property="og:title" content="Le Carnet du Verdier — Pense-bêtes Linux d&#39;un atelier : ce qui a marché, et pourquoi.">
+<meta property="og:description" content="Pense-bêtes Linux d&#39;un atelier : pannes résolues, réglages système, et Linux à l&#39;établi — CNC, FreeCAD, impression 3D.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://carnet.atelierduverdier.fr/fr/">
+<meta property="og:locale" content="fr">
+<meta property="og:site_name" content="Le Carnet du Verdier">
+<meta property="og:image" content="https://carnet.atelierduverdier.fr/assets/logo.png">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<a class="saut-contenu" href="#contenu">Aller au contenu</a>
+
+
+<div class="bandeau">
+<header class="entete">
+  <div class="enveloppe entete-barre">
+    <a class="marque" href="/fr/">
+      <img class="marque-logo" src="/assets/logo.png?v=262a95fa"
+           width="216" height="119" alt="" decoding="async">
+      <span class="marque-texte">
+        <span class="marque-nom">Le Carnet du Verdier</span>
+        <span class="marque-devise">Pense-bêtes Linux d&#39;un atelier : ce qui a marché, et pourquoi.</span>
+      </span>
+    </a>
+
+    <div class="recherche" role="search">
+      <input type="search" id="champ-recherche" placeholder="Rechercher…"
+             aria-label="Rechercher…" autocomplete="off"
+             data-index="/recherche-fr.json">
+      <ul class="recherche-resultats" id="resultats-recherche" role="listbox"></ul>
+    </div>
+
+    <nav class="langues" aria-label="Langue">      <a href="/fr/" hreflang="fr"
+aria-current="true">fr</a>      <a href="/en/" hreflang="en"
+>en</a>    </nav>
+
+    <button class="bouton-menu" aria-expanded="false" aria-controls="menu-principal">
+      <span aria-hidden="true">☰</span> Menu
+    </button>
+  </div>
+</header>
+
+<nav class="nav" id="menu-principal" aria-label="Menu principal">
+  <div class="enveloppe"><ul><li><a href="/fr/" aria-current="page">Accueil</a></li><li><a href="/fr/depannage/">Pannes</a></li><li><a href="/fr/systeme/">Système</a></li><li><a href="/fr/atelier/">À l&#39;établi</a></li><li><a href="/fr/commandes/">Mémento</a></li><li><a href="/fr/a-propos/">À propos</a></li></ul></div>
+</nav>
+</div>
+
+<main class="contenu" id="contenu">
+<section class="alaune enveloppe" aria-labelledby="titre-alaune">
+  <div class="alaune-tete">
+    <h2 id="titre-alaune">À la une</h2>
+    <a class="alaune-toutes" href="/fr/depannage/">Pannes ›</a>
+  </div>
+  <ul class="fiches">
+    <li><a class="fiche-carte" href="/fr/depannage/001-appimage-glx-libdrm/"
+><img class="fiche-vignette" src="/medias/captures/glx-symbole.png" alt="" srcset="/medias/captures/glx-symbole-480.webp 480w, /medias/captures/glx-symbole-960.webp 960w, /medias/captures/glx-symbole.png 1600w" sizes="(min-width: 46rem) 20rem, 100vw" width="1600" height="700" loading="lazy" decoding="async"><span class="date-fiche">
+24 août 2026
+      </span>      <h3>Un AppImage meurt au démarrage : « Could not initialize GLX »</h3><p>Sur Arch avec une carte AMD, les AppImages Qt s&#39;arrêtent net sans fenêtre ni message. La cause n&#39;est pas Qt : c&#39;est une libdrm embarquée trop vieille qui prend le pas sur celle du système.</p>    </a></li>
+    <li><a class="fiche-carte" href="/fr/depannage/002-pgrep-se-trouve-lui-meme/"
+><img class="fiche-vignette" src="/medias/captures/pgrep-se-trouve.png" alt="" srcset="/medias/captures/pgrep-se-trouve-480.webp 480w, /medias/captures/pgrep-se-trouve-960.webp 960w, /medias/captures/pgrep-se-trouve.png 1600w" sizes="(min-width: 46rem) 20rem, 100vw" width="1600" height="700" loading="lazy" decoding="async"><span class="date-fiche">
+22 août 2026
+      </span>      <h3>pgrep -f se trouve lui-même (et pkill tue votre script)</h3><p>Un script qui vérifie si un service tourne le trouve toujours en marche — parce qu&#39;il se voit lui-même. Trois façons de s&#39;en sortir, dont une qui ne suffit pas.</p>    </a></li>
+  </ul>
+</section>
+<article class="colonne">
+  <header class="contenu-tete">    <h1 class="hors-ecran">Le Carnet du Verdier — Pense-bêtes Linux d&#39;un atelier : ce qui a marché, et pourquoi.</h1>
+  </header>  <h2 id="ce-que-vous-etes-en-train-de-lire">Ce que vous êtes en train de lire</h2>
+<p>Un carnet. Pas un blog, pas un tutoriel : les notes qu'on prend pour soi quand une chose a fini par marcher, et qu'on sait très bien qu'on aura tout oublié dans six mois.</p>
+<p>Ce qui est écrit ici a été <strong>fait sur une machine réelle</strong>, sous Arch (CachyOS), avec un bureau Plasma, une fraiseuse CNC dans la pièce d'à côté et un laser au bout du portique. Rien n'est recopié d'ailleurs. Quand une commande est là, elle a tourné ; quand une explication est là, c'est celle qui a fini par tenir — et je dis laquelle avait tenu avant, quand elle était fausse.</p>
+<p>C'est la partie qui manque le plus souvent dans les pages qu'on trouve en cherchant une panne : <strong>les fausses pistes</strong>. Une page qui ne montre que la solution laisse croire qu'elle allait de soi. Le « Could not initialize GLX » ci-dessous a été mal expliqué pendant huit jours, par écrit, avec assurance. La bonne explication tenait en un nom de symbole.</p>
+<h2 id="trois-rubriques">Trois rubriques</h2>
+<ul>
+<li><strong><a href="/fr/depannage/">Pannes</a></strong> — ça ne marche pas, et voilà pourquoi. Le symptôme d'abord, la cause ensuite, le remède en dernier.</li>
+<li><strong><a href="/fr/systeme/">Système</a></strong> — installer, régler, entretenir. Ce qu'on refait rarement, donc ce qu'on oublie toujours.</li>
+<li><strong><a href="/fr/atelier/">À l'établi</a></strong> — Linux du côté des machines : CNC, FreeCAD, impression 3D, électronique.</li>
+</ul>
+<h2 id="comment-cest-ecrit">Comment c'est écrit</h2>
+<p>Chaque fiche essaie de tenir la même forme, parce que c'est celle qu'on veut quand on arrive en panne, à 23 h, avec un terminal ouvert :</p>
+<ol>
+<li><strong>le symptôme</strong>, tel qu'il s'affiche — pour que la recherche vous amène ici ;</li>
+<li><strong>ce que j'ai cru</strong>, et pourquoi c'était faux ;</li>
+<li><strong>la cause</strong>, avec de quoi la vérifier chez vous en une commande ;</li>
+<li><strong>le remède</strong>, copiable.</li>
+</ol>
+<p>Les commandes se copient d'un clic. Rien n'est raccourci en « il suffit de » : si une étape demande dix minutes, c'est écrit.</p>
+<h2 id="a-qui-cest-utile">À qui c'est utile</h2>
+<p>À moi dans six mois, d'abord. Puis à quiconque tombe sur le même message d'erreur — c'est pour ça que le site est public plutôt que dans un fichier de notes. Une panne résolue et non écrite est une panne qu'on repaiera.</p>
+<p>Si une fiche vous a servi, ou si elle est fausse chez vous, écrivez : l'adresse est en bas de page. Une correction vaut mieux qu'une fiche qui a l'air juste.</p></article>
+</main>
+
+<footer class="pied">
+  <div class="enveloppe">
+    <div class="pied-grille">
+      <div>
+        <h2>Le Carnet du Verdier</h2>
+        <p>Pense-bêtes Linux d&#39;un atelier : ce qui a marché, et pourquoi.</p>
+      </div>
+      <div>
+        <h2>Contact</h2>
+        <ul><li><a href="mailto:leverdier@ik.me">leverdier@ik.me</a></li></ul>
+      </div>
+      <div>
+        <h2>Langue</h2>
+        <ul>          <li><a href="/fr/">Français</a></li>          <li><a href="/en/">English</a></li>        </ul>
+      </div>
+    </div>
+    <div class="pied-bas">
+      <p>© 2026 Le Carnet du Verdier</p>
+      <p>Site statique engendré par un script Python.</p>
+    </div>
+  </div>
+</footer>
+
+<script src="/assets/site.js?v=88c63c3e" defer></script>
+</body>
+</html>

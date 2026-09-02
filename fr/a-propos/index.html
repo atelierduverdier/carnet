@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>À propos de ce carnet — Le Carnet du Verdier</title>
+<meta name="description" content="Pourquoi un carnet public plutôt qu&#39;un fichier de notes, sur quelle machine c&#39;est écrit, et ce qu&#39;on n&#39;y trouvera pas."><meta name="robots" content="noindex, nofollow"><link rel="alternate" hreflang="fr" href="https://carnet.atelierduverdier.fr/fr/a-propos/"><link rel="alternate" hreflang="en" href="https://carnet.atelierduverdier.fr/en/about/"><link rel="canonical" href="https://carnet.atelierduverdier.fr/fr/a-propos/">
+<link rel="icon" href="/assets/favicon-32.png?v=262a95fa" sizes="32x32">
+<link rel="apple-touch-icon" href="/assets/favicon-180.png?v=262a95fa">
+<link rel="stylesheet" href="/assets/polices/dosis.css">
+<link rel="stylesheet" href="/assets/site.css?v=113f0245">
+<meta property="og:title" content="À propos de ce carnet">
+<meta property="og:description" content="Pourquoi un carnet public plutôt qu&#39;un fichier de notes, sur quelle machine c&#39;est écrit, et ce qu&#39;on n&#39;y trouvera pas.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://carnet.atelierduverdier.fr/fr/a-propos/">
+<meta property="og:locale" content="fr">
+<meta property="og:site_name" content="Le Carnet du Verdier">
+<meta property="og:image" content="https://carnet.atelierduverdier.fr/assets/logo.png">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<a class="saut-contenu" href="#contenu">Aller au contenu</a>
+
+
+<div class="bandeau">
+<header class="entete">
+  <div class="enveloppe entete-barre">
+    <a class="marque" href="/fr/">
+      <img class="marque-logo" src="/assets/logo.png?v=262a95fa"
+           width="216" height="119" alt="" decoding="async">
+      <span class="marque-texte">
+        <span class="marque-nom">Le Carnet du Verdier</span>
+        <span class="marque-devise">Pense-bêtes Linux d&#39;un atelier : ce qui a marché, et pourquoi.</span>
+      </span>
+    </a>
+
+    <div class="recherche" role="search">
+      <input type="search" id="champ-recherche" placeholder="Rechercher…"
+             aria-label="Rechercher…" autocomplete="off"
+             data-index="/recherche-fr.json">
+      <ul class="recherche-resultats" id="resultats-recherche" role="listbox"></ul>
+    </div>
+
+    <nav class="langues" aria-label="Langue">      <a href="/fr/a-propos/" hreflang="fr"
+aria-current="true">fr</a>      <a href="/en/about/" hreflang="en"
+>en</a>    </nav>
+
+    <button class="bouton-menu" aria-expanded="false" aria-controls="menu-principal">
+      <span aria-hidden="true">☰</span> Menu
+    </button>
+  </div>
+</header>
+
+<nav class="nav" id="menu-principal" aria-label="Menu principal">
+  <div class="enveloppe"><ul><li><a href="/fr/">Accueil</a></li><li><a href="/fr/depannage/">Pannes</a></li><li><a href="/fr/systeme/">Système</a></li><li><a href="/fr/atelier/">À l&#39;établi</a></li><li><a href="/fr/commandes/">Mémento</a></li><li><a href="/fr/a-propos/" aria-current="page">À propos</a></li></ul></div>
+</nav>
+</div>
+
+<main class="contenu" id="contenu">
+<article class="colonne">
+  <header class="contenu-tete">    <h1>À propos de ce carnet</h1>
+  </header>  <h2 id="pourquoi-public">Pourquoi public</h2>
+<p>Ces notes existaient déjà, en vrac, dans des fichiers que je suis seul à retrouver. Les publier ne coûte presque rien de plus et change une chose : ce qu'on écrit pour quelqu'un d'autre, on l'écrit mieux. On ne peut plus se contenter de « le truc de libdrm » — il faut nommer la bibliothèque, la version, et le symbole qui manquait.</p>
+<p>L'autre raison est plus égoïste. Une panne résolue et non écrite est une panne qu'on repaiera. J'ai déjà repayé deux fois la même — un mois d'écart, la seconde fois avec la certitude de l'avoir corrigée.</p>
+<h2 id="sur-quoi-cest-ecrit">Sur quoi c'est écrit</h2>
+<ul>
+<li><strong>Arch Linux</strong>, distribution CachyOS, mise à jour en continu ;</li>
+<li><strong>Plasma</strong> (KDE) sur Wayland, écran unique, fond sombre ;</li>
+<li>carte graphique <strong>AMD</strong>, pilote Mesa/radeonsi — plusieurs fiches y font référence, et la panne en question n'existe pas sur NVIDIA ;</li>
+<li>une <strong>fraiseuse CNC</strong> pilotée par LinuxCNC sur une seconde machine, un module laser sur la tête, une imprimante 3D grand format.</li>
+</ul>
+<p>Un détail qui a son importance : cette machine sert à <strong>fabriquer</strong>. Quand un choix se joue entre l'élégance et le fait que la broche tourne demain matin, c'est la broche qui gagne. Certaines fiches s'en ressentent.</p>
+<h2 id="ce-quon-ny-trouvera-pas">Ce qu'on n'y trouvera pas</h2>
+<ul>
+<li><strong>Pas de comparatifs de distributions.</strong> Il y en a assez ailleurs, et le mien serait le récit d'une habitude, pas d'une mesure.</li>
+<li><strong>Pas de « top 10 des commandes ».</strong> Une commande sans le problème qu'elle résout ne se retient pas.</li>
+<li><strong>Pas de solutions non essayées.</strong> Si je n'ai pas fait tourner la chose, ce n'est pas ici. Quand je rapporte une piste sans l'avoir vérifiée, c'est écrit noir sur blanc.</li>
+<li><strong>Pas de configuration personnelle recopiée telle quelle.</strong> Les chemins, les noms de machines et les identifiants sont remplacés par des exemples. Ce qui compte est la méthode.</li>
+</ul>
+<h2 id="les-erreurs">Les erreurs</h2>
+<p>Une fiche fausse est pire qu'une fiche absente : elle fait perdre du temps avec autorité. Si vous en trouvez une, écrivez — l'adresse est en bas de chaque page. Je corrige la fiche plutôt que d'ajouter un commentaire, et je dis ce qui a changé.</p>
+<p>Ce carnet fait partie de l'<a href="https://atelierduverdier.fr">Atelier du Verdier</a>.</p></article>
+</main>
+
+<footer class="pied">
+  <div class="enveloppe">
+    <div class="pied-grille">
+      <div>
+        <h2>Le Carnet du Verdier</h2>
+        <p>Pense-bêtes Linux d&#39;un atelier : ce qui a marché, et pourquoi.</p>
+      </div>
+      <div>
+        <h2>Contact</h2>
+        <ul><li><a href="mailto:leverdier@ik.me">leverdier@ik.me</a></li></ul>
+      </div>
+      <div>
+        <h2>Langue</h2>
+        <ul>          <li><a href="/fr/a-propos/">Français</a></li>          <li><a href="/en/about/">English</a></li>        </ul>
+      </div>
+    </div>
+    <div class="pied-bas">
+      <p>© 2026 Le Carnet du Verdier</p>
+      <p>Site statique engendré par un script Python.</p>
+    </div>
+  </div>
+</footer>
+
+<script src="/assets/site.js?v=88c63c3e" defer></script>
+</body>
+</html>

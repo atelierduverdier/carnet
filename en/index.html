@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Verdier Notebook — Linux notes from a workshop: what worked, and why.</title>
+<meta name="description" content="Linux notes from a workshop: troubleshooting, system setup, and Linux next to the machines — CNC, FreeCAD, 3D printing."><meta name="robots" content="noindex, nofollow"><link rel="alternate" hreflang="fr" href="https://carnet.atelierduverdier.fr/fr/"><link rel="alternate" hreflang="en" href="https://carnet.atelierduverdier.fr/en/"><link rel="canonical" href="https://carnet.atelierduverdier.fr/en/">
+<link rel="icon" href="/assets/favicon-32.png?v=262a95fa" sizes="32x32">
+<link rel="apple-touch-icon" href="/assets/favicon-180.png?v=262a95fa">
+<link rel="stylesheet" href="/assets/polices/dosis.css">
+<link rel="stylesheet" href="/assets/site.css?v=113f0245">
+<meta property="og:title" content="The Verdier Notebook — Linux notes from a workshop: what worked, and why.">
+<meta property="og:description" content="Linux notes from a workshop: troubleshooting, system setup, and Linux next to the machines — CNC, FreeCAD, 3D printing.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://carnet.atelierduverdier.fr/en/">
+<meta property="og:locale" content="en">
+<meta property="og:site_name" content="The Verdier Notebook">
+<meta property="og:image" content="https://carnet.atelierduverdier.fr/assets/logo.png">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<a class="saut-contenu" href="#contenu">Aller au contenu</a>
+
+
+<div class="bandeau">
+<header class="entete">
+  <div class="enveloppe entete-barre">
+    <a class="marque" href="/en/">
+      <img class="marque-logo" src="/assets/logo.png?v=262a95fa"
+           width="216" height="119" alt="" decoding="async">
+      <span class="marque-texte">
+        <span class="marque-nom">The Verdier Notebook</span>
+        <span class="marque-devise">Linux notes from a workshop: what worked, and why.</span>
+      </span>
+    </a>
+
+    <div class="recherche" role="search">
+      <input type="search" id="champ-recherche" placeholder="Search…"
+             aria-label="Search…" autocomplete="off"
+             data-index="/recherche-en.json">
+      <ul class="recherche-resultats" id="resultats-recherche" role="listbox"></ul>
+    </div>
+
+    <nav class="langues" aria-label="Language">      <a href="/fr/" hreflang="fr"
+>fr</a>      <a href="/en/" hreflang="en"
+aria-current="true">en</a>    </nav>
+
+    <button class="bouton-menu" aria-expanded="false" aria-controls="menu-principal">
+      <span aria-hidden="true">☰</span> Menu
+    </button>
+  </div>
+</header>
+
+<nav class="nav" id="menu-principal" aria-label="Main menu">
+  <div class="enveloppe"><ul><li><a href="/en/" aria-current="page">Home</a></li><li><a href="/en/troubleshooting/">Troubleshooting</a></li><li><a href="/en/system/">System</a></li><li><a href="/en/workshop/">At the bench</a></li><li><a href="/en/commands/">Commands</a></li><li><a href="/en/about/">About</a></li></ul></div>
+</nav>
+</div>
+
+<main class="contenu" id="contenu">
+<section class="alaune enveloppe" aria-labelledby="titre-alaune">
+  <div class="alaune-tete">
+    <h2 id="titre-alaune">Latest</h2>
+    <a class="alaune-toutes" href="/en/troubleshooting/">Troubleshooting ›</a>
+  </div>
+  <ul class="fiches">
+    <li><a class="fiche-carte" href="/en/troubleshooting/001-appimage-glx-libdrm/"
+><img class="fiche-vignette" src="/medias/captures/glx-symbole.png" alt="" srcset="/medias/captures/glx-symbole-480.webp 480w, /medias/captures/glx-symbole-960.webp 960w, /medias/captures/glx-symbole.png 1600w" sizes="(min-width: 46rem) 20rem, 100vw" width="1600" height="700" loading="lazy" decoding="async"><span class="date-fiche">
+24 August 2026
+      </span>      <h3>An AppImage dies at startup: “Could not initialize GLX”</h3><p>On Arch with an AMD card, Qt AppImages stop dead with no window and no message. The cause is not Qt: it is a bundled libdrm, too old, winning over the system one.</p>    </a></li>
+    <li><a class="fiche-carte" href="/en/troubleshooting/002-pgrep-finds-itself/"
+><img class="fiche-vignette" src="/medias/captures/pgrep-se-trouve.png" alt="" srcset="/medias/captures/pgrep-se-trouve-480.webp 480w, /medias/captures/pgrep-se-trouve-960.webp 960w, /medias/captures/pgrep-se-trouve.png 1600w" sizes="(min-width: 46rem) 20rem, 100vw" width="1600" height="700" loading="lazy" decoding="async"><span class="date-fiche">
+22 August 2026
+      </span>      <h3>pgrep -f finds itself (and pkill kills your script)</h3><p>A script that checks whether a service is running always finds it running — because it sees itself. Three ways out, one of which is not enough.</p>    </a></li>
+  </ul>
+</section>
+<article class="colonne">
+  <header class="contenu-tete">    <h1 class="hors-ecran">The Verdier Notebook — Linux notes from a workshop: what worked, and why.</h1>
+  </header>  <h2 id="what-you-are-reading">What you are reading</h2>
+<p>A notebook. Not a blog, not a tutorial site: these are the notes you write for yourself once something finally works, knowing perfectly well you will have forgotten all of it in six months.</p>
+<p>Everything here was <strong>done on a real machine</strong> — Arch (CachyOS), a Plasma desktop, a CNC router in the next room and a laser module on the gantry. Nothing is copied from somewhere else. When there is a command, it ran; when there is an explanation, it is the one that survived — and I say which one I believed before that, back when it was wrong.</p>
+<p>That last part is what is usually missing from the pages you land on while hunting a fault: <strong>the wrong turns</strong>. A page that shows only the solution makes it look obvious. The "Could not initialize GLX" note below was explained wrongly for eight days, in writing, with confidence. The right explanation came down to the name of one symbol.</p>
+<h2 id="three-sections">Three sections</h2>
+<ul>
+<li><strong><a href="/en/troubleshooting/">Troubleshooting</a></strong> — it does not work, and here is why. Symptom first, cause next, cure last.</li>
+<li><strong><a href="/en/system/">System</a></strong> — install, configure, maintain. The things you rarely redo, and therefore always forget.</li>
+<li><strong><a href="/en/workshop/">At the bench</a></strong> — Linux on the machine side: CNC, FreeCAD, 3D printing, electronics.</li>
+</ul>
+<h2 id="how-each-note-is-written">How each note is written</h2>
+<p>Every note tries to keep the same shape, because it is the shape you want when you arrive broken at 11 p.m. with a terminal open:</p>
+<ol>
+<li><strong>the symptom</strong>, exactly as it appears — so that a search brings you here;</li>
+<li><strong>what I believed</strong>, and why it was wrong;</li>
+<li><strong>the cause</strong>, with a one-command way to check it on your own machine;</li>
+<li><strong>the cure</strong>, ready to copy.</li>
+</ol>
+<p>Commands copy with one click. Nothing is shortened into "you just need to": if a step takes ten minutes, it says so.</p>
+<h2 id="who-this-is-for">Who this is for</h2>
+<p>Me, six months from now, first. Then anyone who hits the same error message — which is why this is a public site rather than a notes file. A fault you solve and do not write down is a fault you will pay for twice.</p>
+<p>If a note helped, or if it is wrong on your machine, write: the address is at the foot of every page. A correction is worth more than a note that merely looks right.</p>
+<p><em>Written in French first; this English version is a translation. <a href="/fr/">Version française</a>.</em></p></article>
+</main>
+
+<footer class="pied">
+  <div class="enveloppe">
+    <div class="pied-grille">
+      <div>
+        <h2>The Verdier Notebook</h2>
+        <p>Linux notes from a workshop: what worked, and why.</p>
+      </div>
+      <div>
+        <h2>Contact</h2>
+        <ul><li><a href="mailto:leverdier@ik.me">leverdier@ik.me</a></li></ul>
+      </div>
+      <div>
+        <h2>Language</h2>
+        <ul>          <li><a href="/fr/">Français</a></li>          <li><a href="/en/">English</a></li>        </ul>
+      </div>
+    </div>
+    <div class="pied-bas">
+      <p>© 2026 The Verdier Notebook</p>
+      <p>Static site generated by a Python script.</p>
+    </div>
+  </div>
+</footer>
+
+<script src="/assets/site.js?v=88c63c3e" defer></script>
+</body>
+</html>

@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mémento des commandes — Le Carnet du Verdier</title>
+<meta name="description" content="Les commandes qui ont servi à écrire ce carnet : ce qu&#39;elles font, quand elles servent, et le piège de chacune."><meta name="robots" content="noindex, nofollow"><link rel="alternate" hreflang="fr" href="https://carnet.atelierduverdier.fr/fr/commandes/"><link rel="alternate" hreflang="en" href="https://carnet.atelierduverdier.fr/en/commands/"><link rel="canonical" href="https://carnet.atelierduverdier.fr/fr/commandes/">
+<link rel="icon" href="/assets/favicon-32.png?v=262a95fa" sizes="32x32">
+<link rel="apple-touch-icon" href="/assets/favicon-180.png?v=262a95fa">
+<link rel="stylesheet" href="/assets/polices/dosis.css">
+<link rel="stylesheet" href="/assets/site.css?v=113f0245">
+<meta property="og:title" content="Mémento des commandes">
+<meta property="og:description" content="Les commandes qui ont servi à écrire ce carnet : ce qu&#39;elles font, quand elles servent, et le piège de chacune.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://carnet.atelierduverdier.fr/fr/commandes/">
+<meta property="og:locale" content="fr">
+<meta property="og:site_name" content="Le Carnet du Verdier">
+<meta property="og:image" content="https://carnet.atelierduverdier.fr/assets/logo.png">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<a class="saut-contenu" href="#contenu">Aller au contenu</a>
+
+
+<div class="bandeau">
+<header class="entete">
+  <div class="enveloppe entete-barre">
+    <a class="marque" href="/fr/">
+      <img class="marque-logo" src="/assets/logo.png?v=262a95fa"
+           width="216" height="119" alt="" decoding="async">
+      <span class="marque-texte">
+        <span class="marque-nom">Le Carnet du Verdier</span>
+        <span class="marque-devise">Pense-bêtes Linux d&#39;un atelier : ce qui a marché, et pourquoi.</span>
+      </span>
+    </a>
+
+    <div class="recherche" role="search">
+      <input type="search" id="champ-recherche" placeholder="Rechercher…"
+             aria-label="Rechercher…" autocomplete="off"
+             data-index="/recherche-fr.json">
+      <ul class="recherche-resultats" id="resultats-recherche" role="listbox"></ul>
+    </div>
+
+    <nav class="langues" aria-label="Langue">      <a href="/fr/commandes/" hreflang="fr"
+aria-current="true">fr</a>      <a href="/en/commands/" hreflang="en"
+>en</a>    </nav>
+
+    <button class="bouton-menu" aria-expanded="false" aria-controls="menu-principal">
+      <span aria-hidden="true">☰</span> Menu
+    </button>
+  </div>
+</header>
+
+<nav class="nav" id="menu-principal" aria-label="Menu principal">
+  <div class="enveloppe"><ul><li><a href="/fr/">Accueil</a></li><li><a href="/fr/depannage/">Pannes</a></li><li><a href="/fr/systeme/">Système</a></li><li><a href="/fr/atelier/">À l&#39;établi</a></li><li><a href="/fr/commandes/" aria-current="page">Mémento</a></li><li><a href="/fr/a-propos/">À propos</a></li></ul></div>
+</nav>
+</div>
+
+<main class="contenu" id="contenu">
+<article class="colonne avec-cote">
+  <header class="contenu-tete">    <h1>Mémento des commandes</h1>
+  </header>  <nav class="sommaire sommaire-cote" aria-label="Sommaire"><details class="sommaire-tiroir" open><summary><h2>Sommaire</h2></summary><ul><li><a href="#ce-quune-bibliotheque-fournit-et-ce-quelle-reclame">Ce qu&#39;une bibliothèque fournit, et ce qu&#39;elle réclame</a></li><li><a href="#un-processus-tourne-t-il-vraiment">Un processus tourne-t-il vraiment</a></li><li><a href="#systemd-planifier-verifier-lire">systemd : planifier, vérifier, lire</a></li><li><a href="#les-paquets-sous-arch">Les paquets, sous Arch</a></li><li><a href="#ou-passe-la-place-disque">Où passe la place disque</a></li><li><a href="#verifier-quun-site-repond">Vérifier qu&#39;un site répond</a></li><li><a href="#images-et-polices-en-ligne-de-commande">Images et polices, en ligne de commande</a></li><li><a href="#git-quand-on-partage-le-dossier">Git, quand on partage le dossier</a></li></ul></details></nav>
+  <div class="corps-long"><p>Ce ne sont pas <em>les</em> commandes Linux : ce sont <strong>celles qui ont servi ici</strong>, dans l'ordre où les problèmes se posent. Chacune tient en trois lignes — ce qu'elle fait, quand on en a besoin, et le piège qui va avec.</p>
+<h2 id="ce-quune-bibliotheque-fournit-et-ce-quelle-reclame">Ce qu'une bibliothèque fournit, et ce qu'elle réclame</h2>
+<pre><code class="language-bash">nm -D /usr/lib/libdrm_amdgpu.so.1 | grep monsymbole
+nm -Du /usr/lib/libgallium-*.so | grep monsymbole
+</code></pre>
+<p><code>T</code> = le symbole est <strong>fourni</strong>. <code>U</code> = il est <strong>réclamé</strong>. Une bibliothèque qui réclame ce que personne ne fournit ne se charge pas — et le programme meurt bien plus loin, sur un message qui ne parle pas d'elle.</p>
+<p>Le <code>-D</code> n'est pas optionnel sur une bibliothèque partagée : sans lui, <code>nm</code> répond « aucun symbole ».</p>
+<pre><code class="language-bash">python3 -c &quot;import ctypes; ctypes.CDLL('/usr/lib/malib.so.0')&quot;
+</code></pre>
+<p><strong>Celle-ci nomme le symbole manquant.</strong> C'est souvent la commande qui met fin à une hypothèse : elle dit ce qui manque au lieu de laisser deviner.</p>
+<pre><code class="language-bash">LD_PRELOAD=/usr/lib/a.so:/usr/lib/b.so ./mon-programme
+LD_LIBRARY_PATH=/un/dossier/lib glxinfo -B
+</code></pre>
+<p><code>LD_PRELOAD</code> force une bibliothèque <strong>avant</strong> toutes les autres — le remède quand un AppImage embarque une version trop vieille. <code>LD_LIBRARY_PATH</code> fait l'inverse : il fait voir à un programme les bibliothèques de quelqu'un d'autre, ce qui <strong>reproduit</strong> la panne hors du programme.</p>
+<h2 id="un-processus-tourne-t-il-vraiment">Un processus tourne-t-il vraiment</h2>
+<pre><code class="language-bash">pgrep -af '[m]onservice'
+</code></pre>
+<p><code>-a</code> affiche la ligne de commande complète : c'est elle qui montre pourquoi la réponse est fausse. Les crochets empêchent le motif de se reconnaître lui-même — <a href="/fr/depannage/002-pgrep-se-trouve-lui-meme/">le détail est ici</a>.</p>
+<pre><code class="language-bash">systemctl --user is-active --quiet mon-service &amp;&amp; echo &quot;en marche&quot;
+</code></pre>
+<p><strong>Quand c'est un service, préférez toujours ceci.</strong> Aucun motif, aucune ligne de commande, aucune auto-détection possible : la réponse porte sur l'état réel de l'unité.</p>
+<h2 id="systemd-planifier-verifier-lire">systemd : planifier, vérifier, lire</h2>
+<pre><code class="language-bash">systemctl --user daemon-reload
+systemctl --user enable --now mon-timer.timer
+</code></pre>
+<p><code>daemon-reload</code> après toute écriture de fichier d'unité. <code>enable --now</code> arme <strong>et</strong> démarre : sans <code>--now</code>, il faudra attendre le prochain démarrage de session.</p>
+<pre><code class="language-bash">systemctl --user list-timers --all
+</code></pre>
+<p>Le tableau de bord : prochain déclenchement, précédent, unité associée. <strong>Un timer absent de cette liste ne se déclenchera jamais</strong> — c'est le premier endroit à regarder quand un rappel n'est pas venu.</p>
+<pre><code class="language-bash">journalctl --user -u mon-service.service -n 20
+</code></pre>
+<p>La sortie des vingt derniers passages. C'est là que dorment les erreurs qu'on n'a pas vues passer.</p>
+<pre><code class="language-bash">systemd-analyze calendar 'Tue *-*-* 19:00:00'
+</code></pre>
+<p>Répond à « ça se déclenche quand, au juste ? » sans attendre. Utile avant d'armer, pas après.</p>
+<h2 id="les-paquets-sous-arch">Les paquets, sous Arch</h2>
+<pre><code class="language-bash">grep -n &quot;^IgnorePkg\|^IgnoreGroup&quot; /etc/pacman.conf
+</code></pre>
+<p>L'épingle qui retient un paquet à sa version. Elle se perd facilement — un <code>pacman.conf</code> remplacé par un <code>.pacnew</code>, et elle disparaît sans un mot. À revérifier après chaque <code>pacdiff</code>.</p>
+<pre><code class="language-bash">pacman -Qu          # ce qui monterait
+pacman -Q freecad   # la version tenue
+</code></pre>
+<pre><code class="language-bash">ls /var/cache/pacman/pkg/ | grep '^freecad-'
+</code></pre>
+<p><strong>Le filet du retour en arrière.</strong> Le cache garde les paquets installés ; si celui de la version en cours n'y est plus, revenir en arrière demande une compilation. À vérifier <strong>avant</strong> d'ôter une épingle, pas après.</p>
+<p><code>pacman -S unpaquet</code> sans <code>-Syu</code> sur une base de données périmée est une mise à jour partielle : le piège classique. <code>pacman -Syu unpaquet</code> fait les deux.</p>
+<h2 id="ou-passe-la-place-disque">Où passe la place disque</h2>
+<pre><code class="language-bash">df -h /tmp
+du -sh /tmp/* | sort -h | tail -12
+</code></pre>
+<p><code>sort -h</code> comprend les « M » et les « G » : c'est lui qui met le coupable en dernier. Sans lui, <code>du</code> trie par nom et on ne voit rien.</p>
+<pre><code class="language-bash">find /tmp -maxdepth 1 -name 'motif-*' -type d -exec rm -rf {} +
+</code></pre>
+<p><code>-maxdepth 1</code> pour ne pas descendre, <code>-type d</code> pour ne viser que des dossiers, et <code>+</code> plutôt que <code>\;</code> pour tout passer en une fois. <strong>Relisez le motif avant d'appuyer</strong> : <code>rm -rf</code> ne demande rien.</p>
+<h2 id="verifier-quun-site-repond">Vérifier qu'un site répond</h2>
+<pre><code class="language-bash">curl -sS -o /dev/null -w &quot;%{http_code}\n&quot; https://exemple.fr/une/page/
+</code></pre>
+<p>Le code de retour seul, sans la page. Idéal en boucle sur une liste d'adresses : on voit d'un coup ce qui est en 404.</p>
+<pre><code class="language-bash">getent hosts monsite.exemple.fr
+</code></pre>
+<p>Résout un nom comme le fait le système — donc avec ses fichiers <code>hosts</code> et son cache, ce qu'un service en ligne ne vous dira pas.</p>
+<h2 id="images-et-polices-en-ligne-de-commande">Images et polices, en ligne de commande</h2>
+<pre><code class="language-bash">rsvg-convert -h 128 dessin.svg -o dessin.png
+</code></pre>
+<p>Rend un SVG à une <strong>hauteur</strong> donnée, la largeur suivant. Pratique pour préparer une icône ou un logo sans ouvrir d'éditeur.</p>
+<pre><code class="language-bash">xmllint --noout --html page.html
+</code></pre>
+<p>Dit si le fichier est bien formé, et rien d'autre. Un SVG invalide ne s'affiche <strong>pas du tout</strong> dans certaines applications, sans le moindre message : ce contrôle coûte une seconde.</p>
+<pre><code class="language-bash">fc-list | grep -i mono
+</code></pre>
+<p>Les polices installées, avec leur chemin — celui qu'il faut donner à un script qui dessine du texte.</p>
+<h2 id="git-quand-on-partage-le-dossier">Git, quand on partage le dossier</h2>
+<pre><code class="language-bash">git status --short
+</code></pre>
+<p><strong>La première commande à taper</strong>, avant toute chose, quand plusieurs sessions travaillent au même endroit. Elle dit ce qui n'est pas à vous.</p>
+<pre><code class="language-bash">git add -A -- ':!un/fichier' ':!un/autre'
+</code></pre>
+<p>Verse tout <strong>sauf</strong> ce qui est nommé. C'est ainsi qu'on committe son travail sans emporter celui du voisin.</p>
+<pre><code class="language-bash">git log --oneline -5
+git ls-tree --name-only origin/une-branche -- un/dossier/
+</code></pre>
+<p>La seconde regarde ce qu'une branche <strong>distante</strong> contient, sans y basculer ni la télécharger — utile pour vérifier qu'une publication est bien partie.</p></div></article>
+</main>
+
+<footer class="pied">
+  <div class="enveloppe">
+    <div class="pied-grille">
+      <div>
+        <h2>Le Carnet du Verdier</h2>
+        <p>Pense-bêtes Linux d&#39;un atelier : ce qui a marché, et pourquoi.</p>
+      </div>
+      <div>
+        <h2>Contact</h2>
+        <ul><li><a href="mailto:leverdier@ik.me">leverdier@ik.me</a></li></ul>
+      </div>
+      <div>
+        <h2>Langue</h2>
+        <ul>          <li><a href="/fr/commandes/">Français</a></li>          <li><a href="/en/commands/">English</a></li>        </ul>
+      </div>
+    </div>
+    <div class="pied-bas">
+      <p>© 2026 Le Carnet du Verdier</p>
+      <p>Site statique engendré par un script Python.</p>
+    </div>
+  </div>
+</footer>
+
+<script src="/assets/site.js?v=88c63c3e" defer></script>
+</body>
+</html>

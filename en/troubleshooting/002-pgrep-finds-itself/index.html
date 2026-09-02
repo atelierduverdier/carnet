@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>pgrep -f finds itself (and pkill kills your script) — Troubleshooting — The Verdier Notebook</title>
+<meta name="description" content="A script that checks whether a service is running always finds it running — because it sees itself. Three ways out, one of which is not enough."><meta name="robots" content="noindex, nofollow"><link rel="alternate" hreflang="fr" href="https://carnet.atelierduverdier.fr/fr/depannage/002-pgrep-se-trouve-lui-meme/"><link rel="alternate" hreflang="en" href="https://carnet.atelierduverdier.fr/en/troubleshooting/002-pgrep-finds-itself/"><link rel="canonical" href="https://carnet.atelierduverdier.fr/en/troubleshooting/002-pgrep-finds-itself/">
+<link rel="icon" href="/assets/favicon-32.png?v=262a95fa" sizes="32x32">
+<link rel="apple-touch-icon" href="/assets/favicon-180.png?v=262a95fa">
+<link rel="stylesheet" href="/assets/polices/dosis.css">
+<link rel="stylesheet" href="/assets/site.css?v=113f0245">
+<meta property="og:title" content="pgrep -f finds itself (and pkill kills your script) — Troubleshooting">
+<meta property="og:description" content="A script that checks whether a service is running always finds it running — because it sees itself. Three ways out, one of which is not enough.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://carnet.atelierduverdier.fr/en/troubleshooting/002-pgrep-finds-itself/">
+<meta property="og:locale" content="en">
+<meta property="og:site_name" content="The Verdier Notebook">
+<meta property="og:image" content="https://carnet.atelierduverdier.fr/assets/logo.png">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<a class="saut-contenu" href="#contenu">Aller au contenu</a>
+
+
+<div class="bandeau">
+<header class="entete">
+  <div class="enveloppe entete-barre">
+    <a class="marque" href="/en/">
+      <img class="marque-logo" src="/assets/logo.png?v=262a95fa"
+           width="216" height="119" alt="" decoding="async">
+      <span class="marque-texte">
+        <span class="marque-nom">The Verdier Notebook</span>
+        <span class="marque-devise">Linux notes from a workshop: what worked, and why.</span>
+      </span>
+    </a>
+
+    <div class="recherche" role="search">
+      <input type="search" id="champ-recherche" placeholder="Search…"
+             aria-label="Search…" autocomplete="off"
+             data-index="/recherche-en.json">
+      <ul class="recherche-resultats" id="resultats-recherche" role="listbox"></ul>
+    </div>
+
+    <nav class="langues" aria-label="Language">      <a href="/fr/depannage/002-pgrep-se-trouve-lui-meme/" hreflang="fr"
+>fr</a>      <a href="/en/troubleshooting/002-pgrep-finds-itself/" hreflang="en"
+aria-current="true">en</a>    </nav>
+
+    <button class="bouton-menu" aria-expanded="false" aria-controls="menu-principal">
+      <span aria-hidden="true">☰</span> Menu
+    </button>
+  </div>
+</header>
+
+<nav class="nav" id="menu-principal" aria-label="Main menu">
+  <div class="enveloppe"><ul><li><a href="/en/">Home</a></li><li><a href="/en/troubleshooting/">Troubleshooting</a></li><li><a href="/en/system/">System</a></li><li><a href="/en/workshop/">At the bench</a></li><li><a href="/en/commands/">Commands</a></li><li><a href="/en/about/">About</a></li></ul></div>
+</nav>
+</div>
+
+<main class="contenu" id="contenu">
+<article class="colonne">
+  <header class="contenu-tete"><nav class="fil" aria-label="Breadcrumb"><a href="/en/troubleshooting/">‹ Troubleshooting</a></nav><p class="date-fiche">22 August 2026</p>    <h1>pgrep -f finds itself (and pkill kills your script)</h1>  </header><nav class="sommaire" aria-label="Contents"><h2>Contents</h2><ul><li><a href="#why">Why</a></li><li><a href="#the-well-known-cure-brackets">The well-known cure: brackets</a></li><li><a href="#the-case-brackets-do-not-cover">The case brackets do not cover</a></li><li><a href="#the-cure-that-beats-all-of-that">The cure that beats all of that</a></li><li><a href="#one-last-reflex">One last reflex</a></li></ul></nav>  <p>A perfectly ordinary watchdog script:</p>
+<pre><code class="language-bash">if pgrep -f cloudflared &gt; /dev/null; then
+    echo &quot;the tunnel is up&quot;
+else
+    echo &quot;the tunnel is down; restarting&quot;
+    cloudflared tunnel run my-tunnel &amp;
+fi
+</code></pre>
+<p>It always reports the tunnel as up. Always. Tunnel stopped, service masked, freshly rebooted — always.</p>
+<h2 id="why">Why</h2>
+<p><code>pgrep -f</code> matches the pattern against each process's <strong>full command line</strong>. Your script <em>is</em> a process, and its command line contains the word <code>cloudflared</code> — because it is written inside it.</p>
+<p>The script finds itself. The test is true before it has looked at anything.</p>
+<p>With <code>pkill</code> it is worse: the script <strong>kills itself</strong>, often mid-loop, which leaves half-executed behaviour that is hard to read back.</p>
+<p>To see it for yourself:</p>
+<pre><code class="language-bash">bash -c 'pgrep -af somepatternthatdoesnotexist'
+</code></pre>
+<p>That command searches for a pattern that exists <strong>nowhere</strong> on the machine — and still prints a line: the shell carrying it, whose command line contains the pattern. Verified on the machine I am writing this on.</p>
+<h3 id="the-trap-inside-the-trap-the-demo-that-proves-nothing">The trap inside the trap: the demo that proves nothing</h3>
+<p>Trying to reproduce the fault in order to show it, you hit this:</p>
+<pre><code class="language-bash">bash -c 'pgrep -af somemissingpattern'
+</code></pre>
+<p>It returns <strong>nothing</strong>. You conclude all is well, and close the terminal.</p>
+<p>That is wrong, for a reason that has nothing to do with <code>pgrep</code>: when <code>bash -c</code> has <strong>only one command</strong> to run, it does not fork — it <strong>replaces itself</strong> with that command. There is no longer a shell carrying the pattern, and <code>pgrep</code>, which always excludes itself, finds nobody.</p>
+<p>Add anything after it and the shell survives — so it gets found:</p>
+<pre><code class="language-bash">bash -c 'pgrep -af somemissingpattern || echo no'
+</code></pre>
+<p>This time a line comes out: the shell itself. And that is exactly the shape of a real watchdog script, which always has something to do next.</p>
+<p><strong>Hence the illusion</strong>, and it is an expensive one: the quick test looks clean, the real script fails. The fault is not intermittent — the test had removed it by simplifying it.</p>
+<h2 id="the-well-known-cure-brackets">The well-known cure: brackets</h2>
+<pre><code class="language-bash">pgrep -f '[c]loudflared'
+</code></pre>
+<p><code>[c]loudflared</code> is a regular expression that <strong>matches</strong> <code>cloudflared</code> but is <strong>not spelled</strong> <code>cloudflared</code>. The script's command line therefore contains the brackets, not the word — and the pattern no longer recognises itself.</p>
+<p>It is elegant, it costs two characters, and it is what you find everywhere. But it only covers one case out of two.</p>
+<h2 id="the-case-brackets-do-not-cover">The case brackets do not cover</h2>
+<p>The trick protects <strong>the pattern</strong>. It does not protect the rest of the command line.</p>
+<pre><code class="language-bash">bash -c &quot;pgrep -f '[c]loudflared' || cloudflared tunnel run my-tunnel&quot;
+</code></pre>
+<p>Here the word <code>cloudflared</code> appears <strong>a second time</strong>, in the clear, in the "otherwise" branch. The shell's full command line therefore contains it, and <code>pgrep</code> finds it — brackets or no brackets. The test is permanently true again.</p>
+<p>The trap is nasty because the protection <em>looks</em> like it is there. You wrote the brackets, you assume you are covered, and the fault comes back. I paid for it three times in two days before seeing what was happening.</p>
+<p><strong>The fix: put the search in a separate call</strong>, whose command line mentions the target only once — the bracketed one.</p>
+<pre><code class="language-bash">if pgrep -f '[c]loudflared' &gt; /dev/null; then
+    echo &quot;the tunnel is up&quot;
+else
+    start_the_tunnel        # the target's name does not appear here
+fi
+</code></pre>
+<p>Or more simply: never write the test and the restart on the <strong>same line</strong>.</p>
+<h2 id="the-cure-that-beats-all-of-that">The cure that beats all of that</h2>
+<p>If the process is a systemd service — and it often is — do not interrogate the process table. Ask systemd:</p>
+<pre><code class="language-bash">systemctl --user is-active --quiet my-service &amp;&amp; echo &quot;running&quot;
+</code></pre>
+<p>No pattern, no command line, no way to match yourself. <code>is-active</code> answers on the unit's real state, not on something that looks like a name in a <code>ps</code> listing.</p>
+<p>For a process that is not a service, a <strong>lock file</strong> holding the PID is safer than a <code>pgrep</code>, and reads back six months later without wondering why there are brackets in it.</p>
+<h2 id="one-last-reflex">One last reflex</h2>
+<p>When a <code>pgrep</code>/<code>pkill</code> behaves oddly, look at what it <strong>actually</strong> sees — the <code>-a</code> option prints the full command line of every match:</p>
+<pre><code class="language-bash">pgrep -af my-pattern
+</code></pre>
+<p>If your own script shows up in the list, that is your answer. It is a two-second check, and it saves you from blaming the service.</p>
+  <nav class="voisines" aria-label="Navigation"><a class="precedente" href="/en/troubleshooting/001-appimage-glx-libdrm/">← An AppImage dies at startup: “Could not initialize GLX”</a>  </nav>
+</article>
+</main>
+
+<footer class="pied">
+  <div class="enveloppe">
+    <div class="pied-grille">
+      <div>
+        <h2>The Verdier Notebook</h2>
+        <p>Linux notes from a workshop: what worked, and why.</p>
+      </div>
+      <div>
+        <h2>Contact</h2>
+        <ul><li><a href="mailto:leverdier@ik.me">leverdier@ik.me</a></li></ul>
+      </div>
+      <div>
+        <h2>Language</h2>
+        <ul>          <li><a href="/fr/depannage/002-pgrep-se-trouve-lui-meme/">Français</a></li>          <li><a href="/en/troubleshooting/002-pgrep-finds-itself/">English</a></li>        </ul>
+      </div>
+    </div>
+    <div class="pied-bas">
+      <p>© 2026 The Verdier Notebook</p>
+      <p>Static site generated by a Python script.</p>
+    </div>
+  </div>
+</footer>
+
+<script src="/assets/site.js?v=88c63c3e" defer></script>
+</body>
+</html>

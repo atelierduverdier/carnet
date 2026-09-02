@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pannes — Le Carnet du Verdier</title>
+<meta name="description" content="Ça ne marche pas, et voilà pourquoi : le symptôme, la fausse piste, la cause, le remède."><meta name="robots" content="noindex, nofollow"><link rel="alternate" hreflang="fr" href="https://carnet.atelierduverdier.fr/fr/depannage/"><link rel="alternate" hreflang="en" href="https://carnet.atelierduverdier.fr/en/troubleshooting/"><link rel="canonical" href="https://carnet.atelierduverdier.fr/fr/depannage/">
+<link rel="icon" href="/assets/favicon-32.png?v=262a95fa" sizes="32x32">
+<link rel="apple-touch-icon" href="/assets/favicon-180.png?v=262a95fa">
+<link rel="stylesheet" href="/assets/polices/dosis.css">
+<link rel="stylesheet" href="/assets/site.css?v=113f0245">
+<meta property="og:title" content="Pannes">
+<meta property="og:description" content="Ça ne marche pas, et voilà pourquoi : le symptôme, la fausse piste, la cause, le remède.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://carnet.atelierduverdier.fr/fr/depannage/">
+<meta property="og:locale" content="fr">
+<meta property="og:site_name" content="Le Carnet du Verdier">
+<meta property="og:image" content="https://carnet.atelierduverdier.fr/assets/logo.png">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<a class="saut-contenu" href="#contenu">Aller au contenu</a>
+
+
+<div class="bandeau">
+<header class="entete">
+  <div class="enveloppe entete-barre">
+    <a class="marque" href="/fr/">
+      <img class="marque-logo" src="/assets/logo.png?v=262a95fa"
+           width="216" height="119" alt="" decoding="async">
+      <span class="marque-texte">
+        <span class="marque-nom">Le Carnet du Verdier</span>
+        <span class="marque-devise">Pense-bêtes Linux d&#39;un atelier : ce qui a marché, et pourquoi.</span>
+      </span>
+    </a>
+
+    <div class="recherche" role="search">
+      <input type="search" id="champ-recherche" placeholder="Rechercher…"
+             aria-label="Rechercher…" autocomplete="off"
+             data-index="/recherche-fr.json">
+      <ul class="recherche-resultats" id="resultats-recherche" role="listbox"></ul>
+    </div>
+
+    <nav class="langues" aria-label="Langue">      <a href="/fr/depannage/" hreflang="fr"
+aria-current="true">fr</a>      <a href="/en/troubleshooting/" hreflang="en"
+>en</a>    </nav>
+
+    <button class="bouton-menu" aria-expanded="false" aria-controls="menu-principal">
+      <span aria-hidden="true">☰</span> Menu
+    </button>
+  </div>
+</header>
+
+<nav class="nav" id="menu-principal" aria-label="Menu principal">
+  <div class="enveloppe"><ul><li><a href="/fr/">Accueil</a></li><li><a href="/fr/depannage/" aria-current="page">Pannes</a></li><li><a href="/fr/systeme/">Système</a></li><li><a href="/fr/atelier/">À l&#39;établi</a></li><li><a href="/fr/commandes/">Mémento</a></li><li><a href="/fr/a-propos/">À propos</a></li></ul></div>
+</nav>
+</div>
+
+<main class="contenu" id="contenu">
+<div class="enveloppe">
+  <header class="contenu-tete colonne">    <h1>Pannes</h1>
+    <p>Le symptôme d'abord — c'est par lui qu'on arrive ici, un message d'erreur collé dans un moteur de recherche. Puis <strong>ce que j'ai cru</strong>, parce qu'une page qui ne montre que la solution laisse croire qu'elle allait de soi. Puis la cause, avec de quoi la vérifier chez vous. Le remède vient en dernier : c'est souvent la ligne la plus courte.</p>
+  </header>
+
+  <p class="compteur">
+    <span class="compteur-nombre">2</span>
+    <span class="compteur-mot">pannes</span>
+  </p>
+  <ul class="fiches">    <li><a class="fiche-carte" href="/fr/depannage/001-appimage-glx-libdrm/"
+><img class="fiche-vignette" src="/medias/captures/glx-symbole.png" alt="" srcset="/medias/captures/glx-symbole-480.webp 480w, /medias/captures/glx-symbole-960.webp 960w, /medias/captures/glx-symbole.png 1600w" sizes="(min-width: 46rem) 20rem, 100vw" width="1600" height="700" loading="lazy" decoding="async"><span class="date-fiche">24 août 2026</span>      <h2>Un AppImage meurt au démarrage : « Could not initialize GLX »</h2><p>Sur Arch avec une carte AMD, les AppImages Qt s&#39;arrêtent net sans fenêtre ni message. La cause n&#39;est pas Qt : c&#39;est une libdrm embarquée trop vieille qui prend le pas sur celle du système.</p>    </a></li>    <li><a class="fiche-carte" href="/fr/depannage/002-pgrep-se-trouve-lui-meme/"
+><img class="fiche-vignette" src="/medias/captures/pgrep-se-trouve.png" alt="" srcset="/medias/captures/pgrep-se-trouve-480.webp 480w, /medias/captures/pgrep-se-trouve-960.webp 960w, /medias/captures/pgrep-se-trouve.png 1600w" sizes="(min-width: 46rem) 20rem, 100vw" width="1600" height="700" loading="lazy" decoding="async"><span class="date-fiche">22 août 2026</span>      <h2>pgrep -f se trouve lui-même (et pkill tue votre script)</h2><p>Un script qui vérifie si un service tourne le trouve toujours en marche — parce qu&#39;il se voit lui-même. Trois façons de s&#39;en sortir, dont une qui ne suffit pas.</p>    </a></li>  </ul></div>
+</main>
+
+<footer class="pied">
+  <div class="enveloppe">
+    <div class="pied-grille">
+      <div>
+        <h2>Le Carnet du Verdier</h2>
+        <p>Pense-bêtes Linux d&#39;un atelier : ce qui a marché, et pourquoi.</p>
+      </div>
+      <div>
+        <h2>Contact</h2>
+        <ul><li><a href="mailto:leverdier@ik.me">leverdier@ik.me</a></li></ul>
+      </div>
+      <div>
+        <h2>Langue</h2>
+        <ul>          <li><a href="/fr/depannage/">Français</a></li>          <li><a href="/en/troubleshooting/">English</a></li>        </ul>
+      </div>
+    </div>
+    <div class="pied-bas">
+      <p>© 2026 Le Carnet du Verdier</p>
+      <p>Site statique engendré par un script Python.</p>
+    </div>
+  </div>
+</footer>
+
+<script src="/assets/site.js?v=88c63c3e" defer></script>
+</body>
+</html>

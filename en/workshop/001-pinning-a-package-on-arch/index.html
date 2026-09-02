@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pinning a package on Arch, and why a machine tool demands it — At the bench — The Verdier Notebook</title>
+<meta name="description" content="A rolling distribution and a fabrication program do not want the same thing. IgnorePkg settles the conflict — provided you know what you are buying with it."><meta name="robots" content="noindex, nofollow"><link rel="alternate" hreflang="fr" href="https://carnet.atelierduverdier.fr/fr/atelier/001-epingler-un-paquet-arch/"><link rel="alternate" hreflang="en" href="https://carnet.atelierduverdier.fr/en/workshop/001-pinning-a-package-on-arch/"><link rel="canonical" href="https://carnet.atelierduverdier.fr/en/workshop/001-pinning-a-package-on-arch/">
+<link rel="icon" href="/assets/favicon-32.png?v=262a95fa" sizes="32x32">
+<link rel="apple-touch-icon" href="/assets/favicon-180.png?v=262a95fa">
+<link rel="stylesheet" href="/assets/polices/dosis.css">
+<link rel="stylesheet" href="/assets/site.css?v=113f0245">
+<meta property="og:title" content="Pinning a package on Arch, and why a machine tool demands it — At the bench">
+<meta property="og:description" content="A rolling distribution and a fabrication program do not want the same thing. IgnorePkg settles the conflict — provided you know what you are buying with it.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://carnet.atelierduverdier.fr/en/workshop/001-pinning-a-package-on-arch/">
+<meta property="og:locale" content="en">
+<meta property="og:site_name" content="The Verdier Notebook">
+<meta property="og:image" content="https://carnet.atelierduverdier.fr/assets/logo.png">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<a class="saut-contenu" href="#contenu">Aller au contenu</a>
+
+
+<div class="bandeau">
+<header class="entete">
+  <div class="enveloppe entete-barre">
+    <a class="marque" href="/en/">
+      <img class="marque-logo" src="/assets/logo.png?v=262a95fa"
+           width="216" height="119" alt="" decoding="async">
+      <span class="marque-texte">
+        <span class="marque-nom">The Verdier Notebook</span>
+        <span class="marque-devise">Linux notes from a workshop: what worked, and why.</span>
+      </span>
+    </a>
+
+    <div class="recherche" role="search">
+      <input type="search" id="champ-recherche" placeholder="Search…"
+             aria-label="Search…" autocomplete="off"
+             data-index="/recherche-en.json">
+      <ul class="recherche-resultats" id="resultats-recherche" role="listbox"></ul>
+    </div>
+
+    <nav class="langues" aria-label="Language">      <a href="/fr/atelier/001-epingler-un-paquet-arch/" hreflang="fr"
+>fr</a>      <a href="/en/workshop/001-pinning-a-package-on-arch/" hreflang="en"
+aria-current="true">en</a>    </nav>
+
+    <button class="bouton-menu" aria-expanded="false" aria-controls="menu-principal">
+      <span aria-hidden="true">☰</span> Menu
+    </button>
+  </div>
+</header>
+
+<nav class="nav" id="menu-principal" aria-label="Main menu">
+  <div class="enveloppe"><ul><li><a href="/en/">Home</a></li><li><a href="/en/troubleshooting/">Troubleshooting</a></li><li><a href="/en/system/">System</a></li><li><a href="/en/workshop/">At the bench</a></li><li><a href="/en/commands/">Commands</a></li><li><a href="/en/about/">About</a></li></ul></div>
+</nav>
+</div>
+
+<main class="contenu" id="contenu">
+<article class="colonne">
+  <header class="contenu-tete"><nav class="fil" aria-label="Breadcrumb"><a href="/en/workshop/">‹ At the bench</a></nav><p class="date-fiche">16 August 2026</p>    <h1>Pinning a package on Arch, and why a machine tool demands it</h1>  </header><nav class="sommaire" aria-label="Contents"><h2>Contents</h2><ul><li><a href="#the-move">The move</a></li><li><a href="#checking-the-pin-holds">Checking the pin holds</a></li><li><a href="#what-you-buy-and-what-you-pay">What you buy, and what you pay</a></li><li><a href="#the-logical-sequel-two-versions-side-by-side">The logical sequel: two versions side by side</a></li><li><a href="#when-to-remove-the-pin">When to remove the pin</a></li></ul></nav>  <p>Arch updates everything, all the time, and that is what we ask of it. But one day a <code>pacman -Syu</code> moves a CAD program from one major version to the next — and the add-on you wrote for it stops working, generally at the worst moment.</p>
+<p>This is not an inconvenience for a computer person. It is a piece of wood already clamped on the table, an engraving session planned for the afternoon, and a workshop producing nothing until the add-on has been ported.</p>
+<h2 id="the-move">The move</h2>
+<p>In <code>/etc/pacman.conf</code>, under <code>[options]</code>:</p>
+<pre><code class="language-ini">IgnorePkg = freecad
+</code></pre>
+<p>Several packages are separated by spaces, and wildcards are accepted:</p>
+<pre><code class="language-ini">IgnorePkg = freecad linux linux-headers
+IgnoreGroup = kde-applications
+</code></pre>
+<p>From then on, <code>pacman -Syu</code> updates everything <strong>except</strong> those packages, and says so on every pass:</p>
+<pre><code class="language-text">warning: freecad: ignoring package upgrade (1.1.3-1 =&gt; 1.2.0-1)
+</code></pre>
+<p>That warning is useful: it reminds you a debt is accumulating. Do not silence it.</p>
+<h2 id="checking-the-pin-holds">Checking the pin holds</h2>
+<p>It is easy to lose — a <code>pacman.conf</code> replaced by a <code>.pacnew</code> during a package-manager update, and the pin vanishes without a word.</p>
+<pre><code class="language-bash">grep -n &quot;^IgnorePkg\|^IgnoreGroup&quot; /etc/pacman.conf
+</code></pre>
+<p>If the command answers nothing, the pin is gone. Check after every <code>.pacnew</code> you process — that is, after every <code>pacdiff</code>.</p>
+<p>And to see what would have gone up without it:</p>
+<pre><code class="language-bash">pacman -Qu
+</code></pre>
+<h2 id="what-you-buy-and-what-you-pay">What you buy, and what you pay</h2>
+<p><strong>What you buy</strong>: the machine produces tomorrow morning. That is all, and it is enough.</p>
+<p><strong>What you pay</strong>, and you should know before:</p>
+<ul>
+<li><strong>a debt that grows.</strong> Pinning for three months is a choice; pinning for two years is a problem you built yourself. The pinned version will eventually fail to link against the system's libraries;</li>
+<li><strong>security fixes are skipped too.</strong> For an offline CAD program the risk is low. For a browser or an exposed service, pinning is a bad idea — and if you really must, it is the wrong solution to the right problem;</li>
+<li><strong>the dependencies keep moving.</strong> That is the real trap: the pinned package stays, but everything it rests on shifts. One day the frozen version stops starting, not because it changed, but because the ground moved under it.</li>
+</ul>
+<h2 id="the-logical-sequel-two-versions-side-by-side">The logical sequel: two versions side by side</h2>
+<p>Pinning is only bearable if you can <strong>try the new version without risking the one that works</strong>. That is the real cure, and it turns the pin into a decision instead of a postponement.</p>
+<p>Most fabrication programs also exist as an AppImage. Two precautions are enough to make one coexist with the system package:</p>
+<p><strong>1. A separate configuration directory.</strong> Otherwise both versions write to the same place, and the development one silently migrates settings the old one can no longer read. Many applications accept an environment variable for this.</p>
+<p><strong>2. A dedicated launcher</strong>, in <code>~/.local/bin</code>, that sets the variable and starts the AppImage:</p>
+<pre><code class="language-bash">#!/usr/bin/env bash
+set -euo pipefail
+export MYAPP_USER_HOME=&quot;$HOME/.local/share/myapp-dev&quot;
+mkdir -p &quot;$MYAPP_USER_HOME&quot;
+exec &quot;$HOME/Applications/MyApp-weekly.AppImage&quot; &quot;$@&quot;
+</code></pre>
+<p>You then test the add-on against the coming version when you have the time, not when <code>pacman</code> decides. The day it passes, you drop the pin — and you chose to.</p>
+<p>One detail that matters if you do this: the development version writes to <strong>its</strong> directory, so <strong>settings you change there do not come back</strong> to the version that works. That is the point, but you forget it and redo the same setting twice wondering why it will not stick.</p>
+<p>On this machine, the development AppImage additionally needs an <code>LD_PRELOAD</code> to start at all — that is another story, told in <a href="/en/troubleshooting/001-appimage-glx-libdrm/">the note on “Could not initialize GLX”</a>.</p>
+<h2 id="when-to-remove-the-pin">When to remove the pin</h2>
+<p>When the three boxes are ticked, and not before:</p>
+<ol>
+<li>the add-on or workflow works on the new version, <strong>tried on a real file</strong>, not on a cube;</li>
+<li>there is no work in progress on the machine;</li>
+<li>the working version can still be installed if you need to go back — pacman's cache (<code>/var/cache/pacman/pkg/</code>) keeps it, provided you have not emptied it.</li>
+</ol>
+<p>That third box is the one you discover too late. Before pulling a pin:</p>
+<pre><code class="language-bash">ls /var/cache/pacman/pkg/ | grep '^freecad-'
+</code></pre>
+<p>If the package for the current version is gone, set it aside somewhere else before updating. Rolling back without the package means compiling, and compiling means the whole day.</p>
+  <nav class="voisines" aria-label="Navigation">  </nav>
+</article>
+</main>
+
+<footer class="pied">
+  <div class="enveloppe">
+    <div class="pied-grille">
+      <div>
+        <h2>The Verdier Notebook</h2>
+        <p>Linux notes from a workshop: what worked, and why.</p>
+      </div>
+      <div>
+        <h2>Contact</h2>
+        <ul><li><a href="mailto:leverdier@ik.me">leverdier@ik.me</a></li></ul>
+      </div>
+      <div>
+        <h2>Language</h2>
+        <ul>          <li><a href="/fr/atelier/001-epingler-un-paquet-arch/">Français</a></li>          <li><a href="/en/workshop/001-pinning-a-package-on-arch/">English</a></li>        </ul>
+      </div>
+    </div>
+    <div class="pied-bas">
+      <p>© 2026 The Verdier Notebook</p>
+      <p>Static site generated by a Python script.</p>
+    </div>
+  </div>
+</footer>
+
+<script src="/assets/site.js?v=88c63c3e" defer></script>
+</body>
+</html>

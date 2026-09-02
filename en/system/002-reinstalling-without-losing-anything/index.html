@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reinstalling without losing anything: the order of operations — System — The Verdier Notebook</title>
+<meta name="description" content="A reinstall is not prepared on the day you do it. What gets lost is almost never the files: it is the backup repository passphrase, and the “enabled” state of everything you restored."><meta name="robots" content="noindex, nofollow"><link rel="alternate" hreflang="fr" href="https://carnet.atelierduverdier.fr/fr/systeme/002-reinstaller-sans-rien-perdre/"><link rel="alternate" hreflang="en" href="https://carnet.atelierduverdier.fr/en/system/002-reinstalling-without-losing-anything/"><link rel="canonical" href="https://carnet.atelierduverdier.fr/en/system/002-reinstalling-without-losing-anything/">
+<link rel="icon" href="/assets/favicon-32.png?v=262a95fa" sizes="32x32">
+<link rel="apple-touch-icon" href="/assets/favicon-180.png?v=262a95fa">
+<link rel="stylesheet" href="/assets/polices/dosis.css">
+<link rel="stylesheet" href="/assets/site.css?v=113f0245">
+<meta property="og:title" content="Reinstalling without losing anything: the order of operations — System">
+<meta property="og:description" content="A reinstall is not prepared on the day you do it. What gets lost is almost never the files: it is the backup repository passphrase, and the “enabled” state of everything you restored.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://carnet.atelierduverdier.fr/en/system/002-reinstalling-without-losing-anything/">
+<meta property="og:locale" content="en">
+<meta property="og:site_name" content="The Verdier Notebook">
+<meta property="og:image" content="https://carnet.atelierduverdier.fr/assets/logo.png">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<a class="saut-contenu" href="#contenu">Aller au contenu</a>
+
+
+<div class="bandeau">
+<header class="entete">
+  <div class="enveloppe entete-barre">
+    <a class="marque" href="/en/">
+      <img class="marque-logo" src="/assets/logo.png?v=262a95fa"
+           width="216" height="119" alt="" decoding="async">
+      <span class="marque-texte">
+        <span class="marque-nom">The Verdier Notebook</span>
+        <span class="marque-devise">Linux notes from a workshop: what worked, and why.</span>
+      </span>
+    </a>
+
+    <div class="recherche" role="search">
+      <input type="search" id="champ-recherche" placeholder="Search…"
+             aria-label="Search…" autocomplete="off"
+             data-index="/recherche-en.json">
+      <ul class="recherche-resultats" id="resultats-recherche" role="listbox"></ul>
+    </div>
+
+    <nav class="langues" aria-label="Language">      <a href="/fr/systeme/002-reinstaller-sans-rien-perdre/" hreflang="fr"
+>fr</a>      <a href="/en/system/002-reinstalling-without-losing-anything/" hreflang="en"
+aria-current="true">en</a>    </nav>
+
+    <button class="bouton-menu" aria-expanded="false" aria-controls="menu-principal">
+      <span aria-hidden="true">☰</span> Menu
+    </button>
+  </div>
+</header>
+
+<nav class="nav" id="menu-principal" aria-label="Main menu">
+  <div class="enveloppe"><ul><li><a href="/en/">Home</a></li><li><a href="/en/troubleshooting/">Troubleshooting</a></li><li><a href="/en/system/">System</a></li><li><a href="/en/workshop/">At the bench</a></li><li><a href="/en/commands/">Commands</a></li><li><a href="/en/about/">About</a></li></ul></div>
+</nav>
+</div>
+
+<main class="contenu" id="contenu">
+<article class="colonne">
+  <header class="contenu-tete"><nav class="fil" aria-label="Breadcrumb"><a href="/en/system/">‹ System</a></nav><p class="date-fiche">15 August 2026</p>    <h1>Reinstalling without losing anything: the order of operations</h1>  </header><nav class="sommaire" aria-label="Contents"><h2>Contents</h2><ul><li><a href="#do-this-now-not-on-the-day">Do this now, not on the day</a></li><li><a href="#the-order-that-works">The order that works</a></li><li><a href="#a-restored-file-is-not-a-running-service">A restored file is not a running service</a></li><li><a href="#two-kinds-of-application-not-to-restore-blindly">Two kinds of application not to restore blindly</a></li><li><a href="#the-final-check">The final check</a></li><li><a href="#what-i-learned-the-hard-way">What I learned the hard way</a></li></ul></nav>  <p>Written after an SSD failure, and reread after the reinstall that followed. This is not an Arch installation guide — there are very good ones — but a list of what <strong>gets lost</strong> when you reinstall, and which is not in the files.</p>
+<h2 id="do-this-now-not-on-the-day">Do this now, not on the day</h2>
+<p>Only one thing is genuinely urgent, and it must be done <strong>while the current machine still works</strong>.</p>
+<p><strong>Get the backup repository passphrase out of the desktop keyring.</strong></p>
+<p>If you back up with Borg (or restic, same thing) and the passphrase is stored in KWallet, GNOME Keyring, or your backup tool's own keyring, then it exists <strong>only there</strong>. Dotfile managers do not version keyrings — deliberately, so that secrets never end up in a git repository. That is the right choice, and it is exactly what makes the passphrase invisible on the day you forget it.</p>
+<p>Without it, the entire backup history becomes <strong>permanently unreadable</strong>. Borg offers no recovery: it is encryption, doing its job.</p>
+<p>Getting it out takes two minutes:</p>
+<ol>
+<li>open the keyring manager and find the repository's entry;</li>
+<li>copy the passphrase into a password manager — or onto paper, somewhere safe;</li>
+<li><strong>not</strong> into a plaintext file on the machine you are about to wipe.</li>
+</ol>
+<p>As long as the passphrase does not change, this is done once and for all.</p>
+<h2 id="the-order-that-works">The order that works</h2>
+<p><strong>1. The system, then the three tools that matter.</strong></p>
+<pre><code class="language-bash">sudo pacman -Syu
+sudo pacman -S git chezmoi borgbackup
+</code></pre>
+<p>Nothing else yet: everything else will come from the dotfiles.</p>
+<p><strong>2. The dotfiles.</strong></p>
+<pre><code class="language-bash">chezmoi init --apply &lt;your-account&gt;/dotfiles
+</code></pre>
+<p>One command, and back come the shells, the desktop configuration, the keyboard shortcuts, the terminals, the editors, the applications. This is the gesture that makes a reinstall bearable — provided you versioned the dotfiles <em>beforehand</em>, which is the real work and gets done on a quiet day.</p>
+<p><strong>3. The backup repository, with the passphrase you just retrieved.</strong></p>
+<p>Plug the disk back in, reattach the repository in the tool, and <strong>check that the history goes back further than the reinstall</strong>. Do not settle for seeing the list: run one manual backup to confirm that writing works too. A repository you can read is not a repository you can write to.</p>
+<p><strong>4. Re-enable what you restored.</strong></p>
+<p>This is the forgotten box, and it deserves its own section.</p>
+<h2 id="a-restored-file-is-not-a-running-service">A restored file is not a running service</h2>
+<p>Dotfiles restore the <strong>files</strong> of systemd user timers and services, since they live in <code>~/.config/systemd/user/</code>. They do <strong>not</strong> restore their "enabled" state, which lives in symlinks created by <code>systemctl enable</code>.</p>
+<p>The result: everything is there, nothing runs, and you only notice when a reminder you were expecting fails to arrive the following week.</p>
+<pre><code class="language-bash">systemctl --user daemon-reload
+systemctl --user enable --now my-timer.timer
+systemctl --user list-timers --all
+</code></pre>
+<p>The last command is the check: every expected timer must appear, with a next-firing time. A timer missing from that list will never fire.</p>
+<p>The same principle applies elsewhere. A restored <strong>udev rule</strong> needs a <code>udevadm control --reload</code> and the hardware replugged. A <strong>firewall</strong> whose configuration you restored often stays disabled. The general rule: <em>anything with a switch comes back switched off</em>.</p>
+<h2 id="two-kinds-of-application-not-to-restore-blindly">Two kinds of application not to restore blindly</h2>
+<p><strong>Cloud sync clients.</strong> Configure the local folder <strong>in the application, before the folder exists or is filled</strong>. If you restore the files first and then point the application at them, many clients fail to recognise the content and re-download everything — tens of gigabytes, and sometimes a mess of duplicates.</p>
+<p><strong>Library applications</strong> — book manager, font manager, note vault, 3D model library. Open the application <em>first</em> and point it at the intended location. Copying the configuration folder by hand works sometimes, fails silently often, and leaves an index database talking about old paths.</p>
+<p>In both cases it is the same principle: <strong>the application must be told the path, not discover it</strong>.</p>
+<h2 id="the-final-check">The final check</h2>
+<p>Three commands and a look:</p>
+<pre><code class="language-bash">systemctl --user list-timers --all
+git -C ~/Projects/something-important status
+</code></pre>
+<ul>
+<li>the expected timers are there and enabled;</li>
+<li>the git repositories are clean and on the right branch;</li>
+<li>the backup history goes back further than the reinstall;</li>
+<li>one manual backup completes.</li>
+</ul>
+<p>That last line is the one you skip because you are tired, and it is the only one that proves the whole chain works. The rest proves it looks like it works.</p>
+<h2 id="what-i-learned-the-hard-way">What I learned the hard way</h2>
+<p>An archive you <strong>believe</strong> exists does not exist. After the failure I was convinced I had made a backup the day before — there was no trace, no commit, nothing. Conviction does not count; what counts is what the verification command answers.</p>
+<p>Since then a small check script goes over the repository and <strong>says</strong> what it finds, rather than letting me assume. It is three lines, and it replaces a belief with a fact.</p>
+  <nav class="voisines" aria-label="Navigation"><a class="precedente" href="/en/system/001-systemd-timer-not-cron/">← Scheduling a task: a systemd timer, not cron</a>  </nav>
+</article>
+</main>
+
+<footer class="pied">
+  <div class="enveloppe">
+    <div class="pied-grille">
+      <div>
+        <h2>The Verdier Notebook</h2>
+        <p>Linux notes from a workshop: what worked, and why.</p>
+      </div>
+      <div>
+        <h2>Contact</h2>
+        <ul><li><a href="mailto:leverdier@ik.me">leverdier@ik.me</a></li></ul>
+      </div>
+      <div>
+        <h2>Language</h2>
+        <ul>          <li><a href="/fr/systeme/002-reinstaller-sans-rien-perdre/">Français</a></li>          <li><a href="/en/system/002-reinstalling-without-losing-anything/">English</a></li>        </ul>
+      </div>
+    </div>
+    <div class="pied-bas">
+      <p>© 2026 The Verdier Notebook</p>
+      <p>Static site generated by a Python script.</p>
+    </div>
+  </div>
+</footer>
+
+<script src="/assets/site.js?v=88c63c3e" defer></script>
+</body>
+</html>

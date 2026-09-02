@@ -1,0 +1,11 @@
+# Engendré par site/generer.py — inclus par le vhost nginx.
+# 0 anciennes adresses WordPress.
+
+# INDISPENSABLE. Sans cela, nginx fabrique l’adresse de
+# destination à partir de son propre server_name et renvoie vers
+# http://srv.leverdier.lan/… quel que soit le domaine par lequel
+# on est arrivé : un visiteur venu par le tunnel serait expédié
+# vers une adresse injoignable depuis l’extérieur. En relatif, le
+# navigateur résout sur le domaine courant, et c’est toujours bon.
+absolute_redirect off;
+

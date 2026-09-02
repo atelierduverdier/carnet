@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Planifier une tâche : un timer systemd, pas cron — Système — Le Carnet du Verdier</title>
+<meta name="description" content="Pourquoi une tâche planifiée sur un poste de bureau tient mieux en timer systemd utilisateur qu&#39;en ligne de crontab — et comment en écrire un qui affiche une notification."><meta name="robots" content="noindex, nofollow"><link rel="alternate" hreflang="fr" href="https://carnet.atelierduverdier.fr/fr/systeme/001-timer-systemd-plutot-que-cron/"><link rel="alternate" hreflang="en" href="https://carnet.atelierduverdier.fr/en/system/001-systemd-timer-not-cron/"><link rel="canonical" href="https://carnet.atelierduverdier.fr/fr/systeme/001-timer-systemd-plutot-que-cron/">
+<link rel="icon" href="/assets/favicon-32.png?v=262a95fa" sizes="32x32">
+<link rel="apple-touch-icon" href="/assets/favicon-180.png?v=262a95fa">
+<link rel="stylesheet" href="/assets/polices/dosis.css">
+<link rel="stylesheet" href="/assets/site.css?v=113f0245">
+<meta property="og:title" content="Planifier une tâche : un timer systemd, pas cron — Système">
+<meta property="og:description" content="Pourquoi une tâche planifiée sur un poste de bureau tient mieux en timer systemd utilisateur qu&#39;en ligne de crontab — et comment en écrire un qui affiche une notification.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://carnet.atelierduverdier.fr/fr/systeme/001-timer-systemd-plutot-que-cron/">
+<meta property="og:locale" content="fr">
+<meta property="og:site_name" content="Le Carnet du Verdier">
+<meta property="og:image" content="https://carnet.atelierduverdier.fr/assets/logo.png">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<a class="saut-contenu" href="#contenu">Aller au contenu</a>
+
+
+<div class="bandeau">
+<header class="entete">
+  <div class="enveloppe entete-barre">
+    <a class="marque" href="/fr/">
+      <img class="marque-logo" src="/assets/logo.png?v=262a95fa"
+           width="216" height="119" alt="" decoding="async">
+      <span class="marque-texte">
+        <span class="marque-nom">Le Carnet du Verdier</span>
+        <span class="marque-devise">Pense-bêtes Linux d&#39;un atelier : ce qui a marché, et pourquoi.</span>
+      </span>
+    </a>
+
+    <div class="recherche" role="search">
+      <input type="search" id="champ-recherche" placeholder="Rechercher…"
+             aria-label="Rechercher…" autocomplete="off"
+             data-index="/recherche-fr.json">
+      <ul class="recherche-resultats" id="resultats-recherche" role="listbox"></ul>
+    </div>
+
+    <nav class="langues" aria-label="Langue">      <a href="/fr/systeme/001-timer-systemd-plutot-que-cron/" hreflang="fr"
+aria-current="true">fr</a>      <a href="/en/system/001-systemd-timer-not-cron/" hreflang="en"
+>en</a>    </nav>
+
+    <button class="bouton-menu" aria-expanded="false" aria-controls="menu-principal">
+      <span aria-hidden="true">☰</span> Menu
+    </button>
+  </div>
+</header>
+
+<nav class="nav" id="menu-principal" aria-label="Menu principal">
+  <div class="enveloppe"><ul><li><a href="/fr/">Accueil</a></li><li><a href="/fr/depannage/">Pannes</a></li><li><a href="/fr/systeme/">Système</a></li><li><a href="/fr/atelier/">À l&#39;établi</a></li><li><a href="/fr/commandes/">Mémento</a></li><li><a href="/fr/a-propos/">À propos</a></li></ul></div>
+</nav>
+</div>
+
+<main class="contenu" id="contenu">
+<article class="colonne">
+  <header class="contenu-tete"><nav class="fil" aria-label="Fil d&#39;Ariane"><a href="/fr/systeme/">‹ Système</a></nav><p class="date-fiche">17 août 2026</p>    <h1>Planifier une tâche : un timer systemd, pas cron</h1>  </header><nav class="sommaire" aria-label="Sommaire"><h2>Sommaire</h2><ul><li><a href="#les-trois-raisons">Les trois raisons</a></li><li><a href="#un-exemple-complet">Un exemple complet</a></li><li><a href="#le-motif-un-timer-bete-un-script-qui-decide">Le motif : un timer bête, un script qui décide</a></li><li><a href="#lactiver-et-verifier">L&#39;activer, et vérifier</a></li><li><a href="#deux-pieges">Deux pièges</a></li><li><a href="#ne-lactivez-pas-pour-quelquun-dautre">Ne l&#39;activez pas pour quelqu&#39;un d&#39;autre</a></li></ul></nav>  <p>Sur un serveur qui tourne en continu, cron fait très bien l'affaire. Sur un <strong>poste de bureau</strong>, il a trois défauts qui se paient tôt ou tard, et un timer systemd les corrige tous les trois.</p>
+<h2 id="les-trois-raisons">Les trois raisons</h2>
+<p><strong>1. Le poste est éteint la nuit.</strong> Une ligne de crontab prévue à 3 h ne se rattrape pas : la machine était éteinte, l'occasion est passée, on recommence demain. Un timer systemd avec <code>Persistent=true</code> <strong>rattrape</strong> le rendez-vous manqué au démarrage suivant. Pour un rappel hebdomadaire, la différence n'est pas cosmétique : c'est la différence entre un rappel qui arrive et un rappel qui n'arrive jamais.</p>
+<p><strong>2. La sortie de cron se perd.</strong> Elle part dans un courrier local que personne ne lit. La sortie d'un service systemd va dans le journal, et se relit avec une commande qu'on connaît déjà.</p>
+<p><strong>3. Cron n'a pas votre session.</strong> Une tâche qui veut afficher une notification sur le bureau a besoin de savoir à quel bus de session parler. En crontab, il faut le deviner et le coder en dur. En timer <strong>utilisateur</strong> (<code>systemctl --user</code>), on est déjà dedans.</p>
+<h2 id="un-exemple-complet">Un exemple complet</h2>
+<p>Un rappel la veille du jour de collecte des ordures — le genre de chose qu'on oublie précisément parce qu'elle revient toutes les semaines.</p>
+<p>Trois fichiers. D'abord le script, dans <code>~/.local/bin/rappel-poubelles</code> :</p>
+<pre><code class="language-bash">#!/usr/bin/env bash
+# Décide s'il y a quelque chose à sortir ce soir, et le dit.
+set -euo pipefail
+
+jour=$(date +%u)          # 1 = lundi … 7 = dimanche
+[ &quot;$jour&quot; -eq 2 ] || exit 0   # collecte le mercredi : on prévient le mardi
+
+notify-send --icon=user-trash-full \
+            --urgency=normal \
+            &quot;Poubelles&quot; &quot;Collecte demain matin : sortir le bac.&quot;
+</code></pre>
+<p>Rendez-le exécutable :</p>
+<pre><code class="language-bash">chmod +x ~/.local/bin/rappel-poubelles
+</code></pre>
+<p>Puis le service, <code>~/.config/systemd/user/rappel-poubelles.service</code> :</p>
+<pre><code class="language-ini">[Unit]
+Description=Rappel de sortie des poubelles
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/rappel-poubelles
+</code></pre>
+<p>Et le timer, <code>~/.config/systemd/user/rappel-poubelles.timer</code> :</p>
+<pre><code class="language-ini">[Unit]
+Description=Rappel de sortie des poubelles, tous les soirs
+
+[Timer]
+OnCalendar=*-*-* 19:00:00
+Persistent=true
+AccuracySec=1m
+
+[Install]
+WantedBy=timers.target
+</code></pre>
+<p>Le service et le timer portent <strong>le même nom</strong> avant l'extension : c'est ainsi que systemd les apparie, sans qu'on ait à le dire.</p>
+<h2 id="le-motif-un-timer-bete-un-script-qui-decide">Le motif : un timer bête, un script qui décide</h2>
+<p>Remarquez que le timer se déclenche <strong>tous les soirs</strong>, et que c'est le <em>script</em> qui décide s'il y a lieu de parler. On aurait pu écrire <code>OnCalendar=Tue *-*-* 19:00:00</code> et supprimer le test.</p>
+<p>Le choix n'est pas indifférent. Un timer qui se déclenche tous les jours se <strong>vérifie tous les jours</strong> : si le script est cassé, on le sait sous vingt-quatre heures. Un timer hebdomadaire garde son défaut une semaine — et comme on ne le voit pas passer, on ne sait même pas qu'il aurait dû parler.</p>
+<p>La règle générale : <strong>la planification dit <em>quand regarder</em>, le script dit <em>s'il faut agir</em>.</strong> C'est aussi plus facile à essayer, puisqu'on peut lancer le script à la main n'importe quand.</p>
+<h2 id="lactiver-et-verifier">L'activer, et vérifier</h2>
+<pre><code class="language-bash">systemctl --user daemon-reload
+systemctl --user enable --now rappel-poubelles.timer
+</code></pre>
+<p>Les deux commandes qui servent ensuite :</p>
+<pre><code class="language-bash">systemctl --user list-timers --all
+</code></pre>
+<p>Elle montre, pour chaque timer, le prochain déclenchement, le précédent, et l'unité associée. C'est le tableau de bord — s'il n'y a rien dedans, rien n'est armé.</p>
+<pre><code class="language-bash">journalctl --user -u rappel-poubelles.service -n 20
+</code></pre>
+<p>La sortie des vingt derniers passages. C'est là que se lisent les erreurs qu'on n'a pas vues passer.</p>
+<p>Pour essayer sans attendre 19 h :</p>
+<pre><code class="language-bash">systemctl --user start rappel-poubelles.service
+</code></pre>
+<h2 id="deux-pieges">Deux pièges</h2>
+<p><strong>La notification muette.</strong> Si <code>notify-send</code> ne fait rien depuis le service alors qu'il marche en terminal, c'est presque toujours l'environnement de session qui manque. En timer <em>utilisateur</em> le problème est rare ; s'il survient, <code>systemctl --user import-environment DISPLAY WAYLAND_DISPLAY DBUS_SESSION_BUS_ADDRESS</code> au démarrage de session le règle.</p>
+<p><strong>Le fichier restauré n'est pas un timer armé.</strong> Si vous versionnez <code>~/.config/systemd/user/</code> (avec chezmoi ou autre), la restauration recopie bien les fichiers — mais <strong>pas l'état « enabled »</strong>, qui vit dans des liens symboliques ailleurs. Après une réinstallation, il faut refaire le <code>enable --now</code>. C'est la case qu'on oublie, et on croit le timer perdu alors qu'il est simplement au repos.</p>
+<h2 id="ne-lactivez-pas-pour-quelquun-dautre">Ne l'activez pas pour quelqu'un d'autre</h2>
+<p>Une dernière chose, qui n'est pas technique. Un timer est une chose qui <strong>parlera toute seule</strong>, plus tard, sans qu'on s'y attende. Écrire les trois fichiers pour quelqu'un est un service ; les activer à sa place est une décision qui ne vous appartient pas. Laissez la dernière commande à faire.</p>
+  <nav class="voisines" aria-label="Navigation"><a class="suivante" href="/fr/systeme/002-reinstaller-sans-rien-perdre/">Réinstaller sans rien perdre : l&#39;ordre des gestes →</a>  </nav>
+</article>
+</main>
+
+<footer class="pied">
+  <div class="enveloppe">
+    <div class="pied-grille">
+      <div>
+        <h2>Le Carnet du Verdier</h2>
+        <p>Pense-bêtes Linux d&#39;un atelier : ce qui a marché, et pourquoi.</p>
+      </div>
+      <div>
+        <h2>Contact</h2>
+        <ul><li><a href="mailto:leverdier@ik.me">leverdier@ik.me</a></li></ul>
+      </div>
+      <div>
+        <h2>Langue</h2>
+        <ul>          <li><a href="/fr/systeme/001-timer-systemd-plutot-que-cron/">Français</a></li>          <li><a href="/en/system/001-systemd-timer-not-cron/">English</a></li>        </ul>
+      </div>
+    </div>
+    <div class="pied-bas">
+      <p>© 2026 Le Carnet du Verdier</p>
+      <p>Site statique engendré par un script Python.</p>
+    </div>
+  </div>
+</footer>
+
+<script src="/assets/site.js?v=88c63c3e" defer></script>
+</body>
+</html>
